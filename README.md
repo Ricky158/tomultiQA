@@ -3,7 +3,7 @@
 User-provided question and answer Android App.
 Welcome to this Project, this is a trial about making learning with more fun.User can add "Quest" (Question) in App to give itself training.
 Like a RPG game, user can get "growth" in App, and they can learned from self-asking and answering.
-Development of this App are inspired by AyagiKei's App: Life Up，thanks for his/her idea.
+Development of this App are inspired by AyagiKei's App: Life Up，thanks for his/her idea.\n
 [中文]
 tomultiQA
 用户提供内容的问答APP。
