@@ -5,7 +5,7 @@ Welcome to this Project, this is a trial about making learning with more fun.
 User can add "Quest" (Question) in App to give itself training.  
 Like a RPG game, user can get "growth" in App, and they can learned from self-asking and answering.  
 Development of this App are inspired by AyagiKei's App: Life Up，thanks for his/her idea.  
-[中文]  
+[中文版]  
 tomultiQA  
 用户提供内容的问答APP  
 欢迎来到这个项目，这是一个“让学习变得更加有趣的企划”。用户可以在App当中提出“题目”（也就是“问题”）来训练自己。  
