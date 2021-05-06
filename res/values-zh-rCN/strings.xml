@@ -223,4 +223,5 @@
     <string name="NoQuestWaitToEditTran">编辑器空闲中。</string>
     <string name="ReQuestEditTran">如果需要继续编辑，请重复一次流程。</string>
     <string name="QuestEditStartHintTran">点击[放大镜]按钮开始。</string>
+    <string name="EditEmptyFailTran">编辑失败--无法保存空值。</string>
 </resources>

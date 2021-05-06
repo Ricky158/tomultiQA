@@ -223,4 +223,5 @@
     <string name="NoQuestWaitToEditTran">No Quest is Editing.</string>
     <string name="ReQuestEditTran">If you need more Edit operation, do the process Again.</string>
     <string name="QuestEditStartHintTran">Please touch [Magnifier] to load data.</string>
+    <string name="EditEmptyFailTran">Edit Fail. --Can not save empty value.</string>
 </resources>
