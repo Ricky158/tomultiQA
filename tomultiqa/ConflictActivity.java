@@ -128,7 +128,7 @@ public class ConflictActivity extends AppCompatActivity {
                             getString(R.string.ConfirmWordTran),
                             "Nothing",
                             true);
-                    CurrentShowFloor = MaxConflictFloor;
+                    CurrentShowFloor = UserConflictFloor;
                 }
             }
             catch (NumberFormatException e)

@@ -26,6 +26,7 @@ public class EditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
         ControlEditor(false);
+        getIdNumberInfo();
 
         //Close all RadioButton.Because we don`t finish the Multi Search Mode yet.
         RadioButton AllSearchMode = findViewById(R.id.AllSearchMode);
@@ -39,25 +40,9 @@ public class EditorActivity extends AppCompatActivity {
     //sub method of StoreQuest.
     //Thanks to:https://www.jianshu.com/p/59b266c644f3!
     @SuppressLint("SetTextI18n")
-    private void SavedShowIdNumber(){
-        TextView ShowQuestNumber = findViewById(R.id.ShowQuestNumber);
-        SharedPreferences IdNumberInfo = getSharedPreferences("IdNumberStoreProfile", MODE_PRIVATE);
-        int IdNumber = IdNumberInfo.getInt("IdNumber", 0);
-        //获取Editor
-        SharedPreferences.Editor editor= IdNumberInfo.edit();
-        //得到Editor后，写入需要保存的数据
-        IdNumber = IdNumber + 1 ;
-        editor.putInt("IdNumber", IdNumber);
-        editor.apply();//提交修改
-        ShowQuestNumber.setText(IdNumber + "");
-    }
-
-    @SuppressLint("SetTextI18n")
     private void getIdNumberInfo(){
         SharedPreferences IdNumberInfo = getSharedPreferences("IdNumberStoreProfile", MODE_PRIVATE);
-        TextView ShowQuestNumber = findViewById(R.id.ShowQuestNumber);
         QuestTotalNumber = IdNumberInfo.getInt("IdNumber", 0);
-        ShowQuestNumber.setText(QuestTotalNumber + "");
     }//end of Quest Making system.
 
 
@@ -95,12 +80,14 @@ public class EditorActivity extends AppCompatActivity {
         EditText EditAnswerView = findViewById(R.id.EditAnswerView);
         LinearLayout DataBaseEditLayout = findViewById(R.id.DataBaseEditLayout);
         TextView SaveStateView = findViewById(R.id.SaveStateView);
+        TextView TitleLevelView = findViewById(R.id.TitleLevelView);
 
-        LastQuestButton.setClickable(CloseFunction);
-        NextQuestButton.setClickable(CloseFunction);
-        EditLevelButton.setClickable(CloseFunction);
-        EditTitleView.setClickable(CloseFunction);
-        EditAnswerView.setClickable(CloseFunction);
+        LastQuestButton.setEnabled(CloseFunction);
+        NextQuestButton.setEnabled(CloseFunction);
+        EditLevelButton.setEnabled(CloseFunction);
+        EditTitleView.setEnabled(CloseFunction);
+        EditAnswerView.setEnabled(CloseFunction);
+
         if(CloseFunction){
             DataBaseEditLayout.setVisibility(View.VISIBLE);
             SaveStateView.setText(getString(R.string.EditNotSaveTran));
@@ -109,6 +96,9 @@ public class EditorActivity extends AppCompatActivity {
             DataBaseEditLayout.setVisibility(View.GONE);
             SaveStateView.setText(getString(R.string.NoQuestWaitToEditTran));
             SaveStateView.setTextColor(Color.GREEN);
+            EditTitleView.setText(getString(R.string.QuestEditStartHintTran));
+            EditAnswerView.setText("--");
+            TitleLevelView.setText("--");
         }
     }//end of protection function.
 
@@ -261,30 +251,39 @@ public class EditorActivity extends AppCompatActivity {
         //TitleLevel`s value is depend on global int variable.
 
         //2.casting data and location where needed in update into ContentValue form "pack". and ready to transport to database.
-        TitleValue.put("QuestTitle",TitleText);
-        AnswerValue.put("QuestAnswer",AnswerText);
-        LevelValue.put("QuestLevel",TitleLevel);
+        if(!TitleText.equals("") && !AnswerText.equals("")){
+            TitleValue.put("QuestTitle",TitleText);
+            AnswerValue.put("QuestAnswer",AnswerText);
+            LevelValue.put("QuestLevel",TitleLevel);
 
-        //2.after which data should deliver to database, use database class ""upgrade" method to update data.
-        db.update("Quest", TitleValue, "QuestTitle = ?", OldTitle);
-        db.update("Quest", AnswerValue,"QuestAnswer = ?",OldAnswer);
-        db.update("Quest", LevelValue,"QuestLevel = ?",OldTitleLevel);
+            //2.after which data should deliver to database, use database class ""upgrade" method to update data.
+            db.update("Quest", TitleValue, "QuestTitle = ?", OldTitle);
+            db.update("Quest", AnswerValue,"QuestAnswer = ?",OldAnswer);
+            db.update("Quest", LevelValue,"QuestLevel = ?",OldTitleLevel);
 
-        //3. finish change, report to user.
-        SupportClass.CreateOnlyTextDialog(this,
-                getString(R.string.NoticeWordTran),
-                getString(R.string.QuestCompletedTran) + "\n" +
-                        getString(R.string.QuestShowTitleTran) + "\n" +
-                        OldTitle[0] + " → " + TitleText + "\n" +
-                        getString(R.string.SetQuestAnswerTitleTran) + "\n" +
-                        OldAnswer[0] + " → " + AnswerText + "\n" +
-                        getString(R.string.QuestLevelWordTran) + "\n" +
-                        OldTitleLevel[0] + " → " + TitleLevel + "\n" +
-                getString(R.string.ReQuestEditTran),
-                getString(R.string.ConfirmWordTran),
-                "Nothing",
-                true
-        );
+            //3. finish change, report to user.
+            SupportClass.CreateOnlyTextDialog(this,
+                    getString(R.string.NoticeWordTran),
+                    getString(R.string.QuestCompletedTran) + "\n" +
+                            getString(R.string.QuestShowTitleTran) + "\n" +
+                            OldTitle[0] + " → " + TitleText + "\n" +
+                            getString(R.string.SetQuestAnswerTitleTran) + "\n" +
+                            OldAnswer[0] + " → " + AnswerText + "\n" +
+                            getString(R.string.QuestLevelWordTran) + "\n" +
+                            OldTitleLevel[0] + " → " + TitleLevel + "\n" +
+                            getString(R.string.ReQuestEditTran),
+                    getString(R.string.ConfirmWordTran),
+                    "Nothing",
+                    true
+            );
+        }else{
+            SupportClass.CreateOnlyTextDialog(this,
+                    getString(R.string.NoticeWordTran),
+                    getString(R.string.EditEmptyFailTran),
+                    getString(R.string.ConfirmWordTran),
+                    "Nothing",
+                    true);
+        }
 
         //4.close the Editor to prevent Edit which not excepted.
         ControlEditor(false);
@@ -292,6 +291,9 @@ public class EditorActivity extends AppCompatActivity {
 
     //Editor system method.
     public void WipeDataBase(View view){
+        SharedPreferences IdNumberInfo = getSharedPreferences("IdNumberStoreProfile", MODE_PRIVATE);
+        SharedPreferences.Editor editor= IdNumberInfo.edit();
+
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.WarningWordTran));
         dialog.setMessage(getString(R.string.WipeAllQuestTran));
@@ -317,6 +319,10 @@ public class EditorActivity extends AppCompatActivity {
                     });
         AlertDialog DialogView = dialog.create();
         DialogView.show();
+
+        QuestTotalNumber = 0;
+        editor.putInt("IdNumber", QuestTotalNumber);
+        editor.apply();
     }//end of Editor system.
 
 
@@ -328,7 +334,8 @@ public class EditorActivity extends AppCompatActivity {
         TextView TitleLevelView = findViewById(R.id.TitleLevelView);
         OldTitle[0] =ResultCursor.getString(ResultCursor.getColumnIndex("QuestTitle")) ;
         OldAnswer[0] =ResultCursor.getString(ResultCursor.getColumnIndex("QuestAnswer"));
-        OldTitleLevel[0] = String.valueOf(ResultCursor.getInt(ResultCursor.getColumnIndex("QuestLevel")));
+        TitleLevel = ResultCursor.getInt(ResultCursor.getColumnIndex("QuestLevel"));
+        OldTitleLevel[0] = String.valueOf(TitleLevel);
         //report the result to user.
         EditTitleView.setText(OldTitle[0] + "");
         EditAnswerView.setText(OldAnswer[0] + "");

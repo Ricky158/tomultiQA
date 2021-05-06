@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             }else if(BossState == 3){
                 BossPtValue = getIntent().getLongExtra("BossPtValue",100);
             }
-            ModeChangeAppearance();
+            //ModeChangeAppearance();
         }
         ModeChangeAppearance();
         InitializingTimer();
@@ -588,12 +588,11 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor= RecordInfo.edit();
             editor.putInt("MaxDailyDifficulty", DailyDifficulty);
             editor.apply();
-
-            //if user win on higher floor, record that data.
-            if(CurrentShowFloor >= UserConflictFloor){
-                UserConflictFloor = CurrentShowFloor;
-                SupportClass.saveIntData(this,"BattleDataProfile","UserConflictFloor",UserConflictFloor);
-            }
+        }
+        //if user win on higher floor, record that data.
+        if(CurrentShowFloor >= UserConflictFloor){
+            UserConflictFloor = CurrentShowFloor;
+            SupportClass.saveIntData(this,"BattleDataProfile","UserConflictFloor",UserConflictFloor);
         }
     }
 
@@ -688,20 +687,16 @@ public class MainActivity extends AppCompatActivity {
                     //Ability: "宝藏"， User will have double reward after Boss which has this Ability had beaten.
                     RewardTimes = 2;
                 }
+
                 if(UserConflictFloor < CurrentShowFloor){//every floor could only get reward for 1 time.
                     GetEXP(BossEXPValue * RewardTimes);
                     GetPoint(BossPointValue * RewardTimes);
                     GetMaterial(BossMaterialValue * RewardTimes);
                 }
 
-
                 //if this battle is happen in Conflict, this part will ripe off any data which not belongs to normal Boss.
                 ClearAllAbility();
                 BossAbility.add("Nothing");
-
-                //create a normal boss, but don`t show Battle interface yet.
-                int BossHP = (int)( 23 * (BossDeadTime + 1) * ( 14 + (0.1 * (BossDeadTime + 1) ) ) );
-                SetBossValues("Experience",UserLevel,BossHP,0,1,10,0,0);
 
                 //cancel Conflict Battle state.
                 BossState = 0;
@@ -726,6 +721,7 @@ public class MainActivity extends AppCompatActivity {
             } else if(!IsWin && AppMode.equals("Game")) {
                 Toast.makeText(getApplicationContext(), getString(R.string.BattleLostTran), Toast.LENGTH_SHORT).show();
             }
+            //save battle data is belongs to RecordBattleData() method.
         }//end of battle system.
 
 
@@ -817,7 +813,7 @@ public class MainActivity extends AppCompatActivity {
         // nextInt is normally exclusive of the top value,
         // so add 1 to make it inclusive
         int RandomNumber = ThreadLocalRandom.current().nextInt(min, max + 1);//The end of random number generator.
-        QuestIDShow.setText(RandomNumber + "");
+        QuestIDShow.setText((RandomNumber + 1) + "");
 
         //define rules used in searching data in database. Returning entire table in database. And the results will be sorted in the resulting Cursor.
         //return whole table in "Cursor" form.
@@ -862,7 +858,7 @@ public class MainActivity extends AppCompatActivity {
         QuestComboShowView.setText(QuestCombo + "");
 
         //if you turn on "Game" Mode, you have 3% chance to meet Boss when you try to reload the Quest.
-        if(AppMode.equals("Game") && SupportClass.CreateRandomNumber(1,100) <= 3){
+        if(AppMode.equals("Game") && SupportClass.CreateRandomNumber(1,100) <= 3 && BattleInfLayout.getVisibility() == View.GONE){
             //calculate User`s battle data.
             ImportUserBattleData();
             //create a Normal Boss.

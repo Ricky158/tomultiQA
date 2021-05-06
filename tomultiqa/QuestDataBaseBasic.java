@@ -106,5 +106,6 @@ public final class QuestDataBaseBasic extends SQLiteOpenHelper {
 
     public void DeleteEntire (SQLiteDatabase db){
         db.execSQL(SQL_DELETE_ENTRIES);
+        onCreate(db);
     }
 }

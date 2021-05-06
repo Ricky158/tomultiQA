@@ -65,14 +65,21 @@ public class AssistActivity extends AppCompatActivity {
                 "This part is only provided with Chinese.\n"+
                         "Make sure you have skill to read Chinese.\n"+
                         "\n" +//do not remove text above this line. these are language hint.
-                        "【0.10.4】 2021.5.1"+
-                        "【功能性更新】\n" +
-                        "1.“题库编辑”系统v1完成。\n" +
-                        "1.1 支持遍历题库，导出和修改特定题目，清空数据库的操作。\n" +
-                        "1.2 系统文本已完全翻译。"+
-                        "【已知问题】\n" +
-                        "1.App的部分文本存在汉英混合的问题。\n" +
-                        "2.“设置”-“附加功能”-“简化弹窗”关闭伤害弹窗开关无效。",
+                        "【0.10.5版】2021.5.6\n" +
+                        "【优化相关】\n" +
+                        "1.删除了战斗结算阶段的多余代码。\n" +
+                        "【bug修复】\n" +
+                        "1.修复了题库编辑器在未对难度作修改时，保存将会使难度数值重置为1的bug。\n" +
+                        "2.修复了题库编辑器可以将题目和答案保存为空值的bug。\n" +
+                        "3.修复了题库编辑器在保存更改后不会重置显示文本的bug。\n" +
+                        "4.修复了题库编辑器在未导入题目时仍可使用的bug。\n" +
+                        "5.修复了题库编辑器“清空题库数据”的功能导致题库管理系统无法运行的bug。\n" +
+                        "6.修复了“敌临境”可以传送至未曾通关的层数的bug。\n" +
+                        "7.修复了无法记录“敌临境”通关层数，进而影响层数解锁的bug。\n" +
+                        "8.修复了“比武台”统计项显示格式不正确的bug。\n" +
+                        "9.修复了已经有boss存在时，仍有可能生成普通boss，导致战斗过程异常的bug。\n" +
+                        "10.修复了天赋升级时，当暴击率天赋已达满级时，不会自动取消升级勾选的bug。\n" +
+                        "11.修复了题号显示不正确的bug。\n",
                 getString(R.string.ConfirmWordTran),
                 "Nothing",
                 true);

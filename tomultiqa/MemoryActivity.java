@@ -164,7 +164,7 @@ public class MemoryActivity extends AppCompatActivity {
         MaterialGottenCount.setText(SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0) + " " + getString(R.string.MaterialWordTran));
         DefeatBossCount.setText("Boss defeated "+ SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0));
         PassedConflictCount.setText("Conflict Floor " + SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0));
-        TourneyPtView.setText(getString(R.string.TourneyPtWordTran) + "" + SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0));
+        TourneyPtView.setText(getString(R.string.TourneyPtWordTran) + " " + SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0));
         //1.1 calculating the Answering data.
         int RightAnswering = SupportClass.getIntData(this,"RecordDataFile","RightAnswering",0);
         int WrongAnswering = SupportClass.getIntData(this,"RecordDataFile","WrongAnswering",0);

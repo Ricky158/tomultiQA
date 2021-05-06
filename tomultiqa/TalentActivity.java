@@ -223,7 +223,7 @@ public class TalentActivity extends AppCompatActivity {
                 CalculateAndShowTalentCost();
             }else if(CriticalRateCheckBox.isChecked() && CRTalentLevel >= 1000){
                 //2.1.2.1 if user`s CR or CD talent Level is max, remove this part of cost. And cancel this part of upgrade. but the circulation will keep running.
-                CriticalDamageCheckBox.setChecked(false);
+                CriticalRateCheckBox.setChecked(false);
             }else if(UserPoint < CRTalentCost){
                 //if point is not enough to upgrade, it will quit entire UpgradeTalentSub() method.
                 return;
