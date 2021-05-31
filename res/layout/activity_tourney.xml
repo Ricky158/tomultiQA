@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -31,7 +31,6 @@
         app:layout_constraintTop_toBottomOf="@+id/textView90" />
 
     <TextView
-        android:id="@+id/textView85"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -99,7 +98,6 @@
         app:layout_constraintTop_toTopOf="@+id/button52" />
 
     <TextView
-        android:id="@+id/textView93"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -154,7 +152,6 @@
         app:layout_constraintTop_toBottomOf="@+id/button50" />
 
     <ScrollView
-        android:id="@+id/AbilityScrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
@@ -172,7 +169,6 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/TextViewXXX"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -183,7 +179,6 @@
                 android:textSize="18sp" />
 
             <TextView
-                android:id="@+id/BossNerfTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -193,35 +188,30 @@
                 android:textSize="16sp" />
 
             <CheckBox
-                android:id="@+id/SlowAbilityChoice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="迟缓" />
 
             <CheckBox
-                android:id="@+id/checkBox14"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="脆弱" />
 
             <CheckBox
-                android:id="@+id/checkBox15"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="弱点" />
 
             <CheckBox
-                android:id="@+id/checkBox16"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="残伤" />
 
             <TextView
-                android:id="@+id/BossBuffTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -232,98 +222,84 @@
                 android:textSize="16sp" />
 
             <CheckBox
-                android:id="@+id/checkBox17"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="速攻" />
 
             <CheckBox
-                android:id="@+id/checkBox18"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="诅咒" />
 
             <CheckBox
-                android:id="@+id/checkBox19"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="卸力" />
 
             <CheckBox
-                android:id="@+id/checkBox20"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="腐蚀" />
 
             <CheckBox
-                android:id="@+id/checkBox21"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="恢复" />
 
             <CheckBox
-                android:id="@+id/checkBox22"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="傲立" />
 
             <CheckBox
-                android:id="@+id/checkBox23"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="惧意" />
 
             <CheckBox
-                android:id="@+id/checkBox24"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="考验" />
 
             <CheckBox
-                android:id="@+id/checkBox25"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="护盾" />
 
             <CheckBox
-                android:id="@+id/checkBox26"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="加护" />
 
             <CheckBox
-                android:id="@+id/checkBox27"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="快进" />
 
             <CheckBox
-                android:id="@+id/checkBox28"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="削弱" />
 
             <CheckBox
-                android:id="@+id/checkBox29"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
                 android:text="钝化" />
 
             <CheckBox
-                android:id="@+id/checkBox30"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="ChangeChoice"
@@ -333,7 +309,6 @@
     </ScrollView>
 
     <TextView
-        android:id="@+id/textView96"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -387,4 +362,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

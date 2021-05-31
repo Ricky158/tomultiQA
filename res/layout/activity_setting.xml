@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +7,7 @@
     android:background="#00FFFEFB"
     tools:context=".SettingActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/QuestSettingLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -15,10 +15,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ButtonLayout"
-        tools:visibility="gone">
+        tools:visibility="visible">
 
         <TextView
-            android:id="@+id/textView17"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -114,19 +113,19 @@
             app:layout_constraintTop_toBottomOf="@+id/textView13" />
 
         <Button
-            android:id="@+id/StoreTypeQuestButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:onClick="StoreQuest"
             android:text="@string/StoreCustomQuestTitleTran"
             android:textAllCaps="false"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/button2"
             app:layout_constraintTop_toBottomOf="@+id/ChooseQuestLevelBar" />
 
         <TextView
-            android:id="@+id/textView19"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -169,9 +168,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </android.support.constraint.ConstraintLayout>
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/AutoFillQuestLevelTran"
+            android:textAllCaps="false"
+            app:layout_constraintStart_toEndOf="@+id/button24"
+            app:layout_constraintTop_toBottomOf="@+id/ChooseQuestLevelBar" />
 
-    <android.support.constraint.ConstraintLayout
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ModeChooseLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -182,7 +191,6 @@
         tools:visibility="gone">
 
         <TextView
-            android:id="@+id/textView21"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -240,7 +248,7 @@
                 android:textSize="18sp" />
 
         </RadioGroup>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/ButtonLayout"
@@ -252,14 +260,15 @@
         app:layout_constraintTop_toBottomOf="@+id/ReturnSettingButton">
 
         <Button
-            android:id="@+id/button23"
+            android:id="@+id/QuestSettingbutton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="OpenFunctionLayout"
-            android:text="@string/AboutQuestTitleTran" />
+            android:text="@string/AboutQuestTitleTran"
+            android:textAllCaps="false" />
 
         <Button
-            android:id="@+id/button22"
+            android:id="@+id/AppModeSettingButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="OpenFunctionLayout"
@@ -267,11 +276,17 @@
             android:textAllCaps="false" />
 
         <Button
-            android:id="@+id/button27"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="GoToAssistActivity"
             android:text="@string/AdditionalFunctionTran"
+            android:textAllCaps="false" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="GoToBackUpActivity"
+            android:text="@string/BackUpWordTran"
             android:textAllCaps="false" />
 
     </LinearLayout>
@@ -288,4 +303,4 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="gone" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

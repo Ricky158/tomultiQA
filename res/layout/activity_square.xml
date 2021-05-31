@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -29,18 +29,7 @@
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DailyEntryButton" />
-
-    <Button
-        android:id="@+id/ConflictEntryButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="OpenConflictActivity"
-        android:text="@string/ConflictTitleTran"
-        android:textAllCaps="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/OpenTalentButton" />
+        app:layout_constraintTop_toBottomOf="@+id/OpenShopButton" />
 
     <Button
         android:id="@+id/button17"
@@ -52,32 +41,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button37" />
-
-    <Button
-        android:id="@+id/DailyEntryButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="OpenDailyActivity"
-        android:text="@string/DailyButtonTran"
-        android:textAllCaps="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/OpenShopButton" />
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 
     <Button
         android:id="@+id/button18"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:enabled="false"
         android:onClick="OpenMissionActivity"
         android:text="@string/MissionButtonTran"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ConflictEntryButton" />
+        app:layout_constraintTop_toBottomOf="@+id/OpenTalentButton" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ResourceShowLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -102,7 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="@string/MaterialTitleTran"
-            app:layout_constraintEnd_toStartOf="@+id/MaterialCountingView"
+            app:layout_constraintEnd_toStartOf="@+id/MaterialCountInExcess"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -124,7 +102,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/PointCountingView"
+            android:id="@+id/PointCountInExcess"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -135,17 +113,17 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/MaterialCountingView"
+            android:id="@+id/MaterialCountInExcess"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/button26"
+        android:id="@+id/AlchemyEntryButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:onClick="OpenAlchemyActivity"
@@ -154,17 +132,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button18" />
-
-    <Button
-        android:id="@+id/button39"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:onClick="OpenTourneyActivity"
-        android:text="@string/TourneyWordTran"
-        android:textAllCaps="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button26" />
 
     <Button
         android:id="@+id/button37"
@@ -178,4 +145,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ResourceShowLayout" />
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="OpenBackpackActivity"
+        android:text="@string/BackpackWordTran"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button37" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

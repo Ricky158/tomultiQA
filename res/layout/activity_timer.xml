@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,15 +10,18 @@
         android:id="@+id/SquareTimerView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif-condensed"
         android:text="00:00"
-        android:textSize="42sp"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/StartWithSwitch"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.97"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        tools:visibility="visible" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/SquareTimerStartButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,16 +42,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
-        android:max="9"
+        android:max="100"
         android:progress="0"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/SquareTimerView" />
+        app:layout_constraintTop_toBottomOf="@+id/TimerShowView" />
 
     <ImageView
-        android:id="@+id/ResetTimerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -63,7 +66,6 @@
         app:srcCompat="@android:drawable/ic_menu_rotate" />
 
     <ImageView
-        android:id="@+id/SaveTimerResultButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
@@ -80,14 +82,14 @@
         android:id="@+id/WorkStateView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/TimerRestingTran"
-        android:textSize="20sp"
+        android:layout_marginTop="16dp"
+        android:text="@string/TimerReadyTran"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="@+id/SquareTimerProgress"
         app:layout_constraintStart_toStartOf="@+id/SquareTimerProgress"
         app:layout_constraintTop_toBottomOf="@+id/SquareTimerProgress" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/TimerRewardLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -103,7 +105,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="Point / s"
+            android:text="@string/TimerPointPerSecondTran"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView105" />
 
@@ -113,7 +115,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Reward"
+            android:text="@string/RewardWordTran"
             android:textSize="24sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -124,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Gathering:"
+            android:text="@string/TimerRewardGatheredTran"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView105" />
 
@@ -144,7 +146,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="Reward:"
+            android:text="@string/RewardWordTran"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView106" />
 
@@ -181,19 +183,17 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
-            android:id="@+id/textView111"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Total:"
+            android:text="@string/TotalWordTran"
             app:layout_constraintBottom_toTopOf="@+id/button56"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView108" />
 
         <TextView
-            android:id="@+id/textView112"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -212,10 +212,9 @@
             app:layout_constraintEnd_toStartOf="@+id/textView104"
             app:layout_constraintTop_toBottomOf="@+id/GatherNumberView" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/button58"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -233,9 +232,44 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:onClick="OpenRewardLayout"
-        android:text="Reward"
+        android:text="@string/RewardWordTran"
         android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-</android.support.constraint.ConstraintLayout>
+    <TextView
+        android:id="@+id/TimerShowView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="00:00:00"
+        android:textSize="42sp"
+        app:layout_constraintEnd_toEndOf="@+id/SquareTimerProgress"
+        app:layout_constraintStart_toStartOf="@+id/SquareTimerProgress"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/TimerStartedTran"
+        app:layout_constraintBottom_toTopOf="@+id/StartWithSwitch"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Switch
+        android:id="@+id/StartWithSwitch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:checked="true"
+        android:onClick="SetSwitchText"
+        android:text="@string/TimerInitializedTran"
+        app:layout_constraintBottom_toTopOf="@+id/TimerRewardLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

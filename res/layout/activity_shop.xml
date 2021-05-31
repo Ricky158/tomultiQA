@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ShopActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/ResourceShowLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="@string/MaterialTitleTran"
-            app:layout_constraintEnd_toStartOf="@+id/MaterialCountingView"
+            app:layout_constraintEnd_toStartOf="@+id/MaterialCountInExcess"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -53,7 +53,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/PointCountingView"
+            android:id="@+id/PointCountInExcess"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -64,17 +64,16 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/MaterialCountingView"
+            android:id="@+id/MaterialCountInExcess"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/ShopLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="24dp"
@@ -112,7 +111,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Goods"
+            android:text="@string/GoodsWordTran"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -135,7 +134,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="32dp"
-            android:text="Price(Points/Item)"
+            android:text="@string/ShopSinglePriceTran"
             app:layout_constraintEnd_toStartOf="@+id/textView22"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/textView34"
@@ -152,12 +151,11 @@
             app:layout_constraintTop_toBottomOf="@+id/textView37" />
 
         <TextView
-            android:id="@+id/textView39"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="16dp"
-            android:text="Number"
+            android:text="@string/ShopGoodNumberWordTran"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/textView41"
             app:layout_constraintStart_toStartOf="parent" />
@@ -184,7 +182,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Cost"
+            android:text="@string/CostWordTran"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/button9"
             app:layout_constraintStart_toStartOf="parent" />
@@ -206,7 +204,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Point(100%)"
+            android:text="@string/ShowPriceOffTextTran"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/BuyButton"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -226,7 +224,6 @@
             app:layout_constraintStart_toEndOf="@+id/ShopEventButton" />
 
         <TextView
-            android:id="@+id/Good2NameView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -236,7 +233,6 @@
             app:layout_constraintTop_toBottomOf="@+id/Good1NameView" />
 
         <TextView
-            android:id="@+id/Good2PriceView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -259,7 +255,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:text="Take"
+            android:text="@string/ShopTakeGoodsTran"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -301,7 +297,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
             android:gravity="center"
-            android:text="--Limited Goods--"
+            android:text="@string/ShopLimitedGoodTitleTran"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -313,12 +309,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text='Achievement:"Million Master"'
+            android:text="@string/MMAchievementGoodTran"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView76" />
 
         <TextView
-            android:id="@+id/Limited1PriceView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -336,6 +331,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView76" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
