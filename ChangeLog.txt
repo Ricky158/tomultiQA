@@ -1,0 +1,29 @@
+This is ChangeLog of tomultiQA.
+Notice1:Because of the limitation of developer, this file is only provided with Chinese version now.
+Notice2: Not all update will be showed in this changelog, because of some version are combined to another update, or deleted for App stable reason.
+
+【0.10.4版】2021.4.30
+the first version published on Github.
+【功能性更新】
+1.“题库编辑”系统v1完成。
+1.1 支持遍历题库，导出和修改特定题目，清空数据库的操作。
+1.2 该系统文本已完全翻译。
+
+【0.10.5版】2021.5.6
+【优化相关】
+1.删除了战斗结算阶段的多余代码。
+【bug修复】
+1.修复了题库编辑器在未对难度作修改时，保存将会使难度数值重置为1的bug。
+2.修复了题库编辑器可以将题目和答案保存为空值的bug。
+3.修复了题库编辑器在保存更改后不会重置显示文本的bug。
+4.修复了题库编辑器在未导入题目时仍可使用的bug。
+5.修复了题库编辑器“清空题库数据”的功能导致题库管理系统无法运行的bug。
+6.修复了“敌临境”可以传送至未曾通关的层数的bug。
+7.修复了无法记录“敌临境”通关层数，进而影响层数解锁的bug。
+8.修复了“比武台”统计项显示格式不正确的bug。
+9.修复了已经有boss存在时，仍有可能生成普通boss，导致战斗过程异常的bug。
+10.修复了天赋升级时，当暴击率天赋已达满级时，不会自动取消升级勾选的bug。
+11.修复了题号显示不正确的bug。
+
+Further version is in development.
+The next published version of App will be 0.13.0, the update / changes between 0.10.5 to 0.13.0 will be combined in this version.
