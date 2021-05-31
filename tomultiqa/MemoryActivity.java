@@ -3,12 +3,14 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -22,6 +24,15 @@ public class MemoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memory);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         CloseAllLayout();
         SetLanguageHint();
     }
@@ -101,7 +112,7 @@ public class MemoryActivity extends AppCompatActivity {
         CurrentShowingLayout = ButtonText;
 
         //4.show return button to user.And close choose Function layout.
-        ReturnLayoutButton.setText(getString(R.string.ReturnToWordTran)+ CurrentShowingLayout +" >");
+        ReturnLayoutButton.setText(getString(R.string.ReturnToWordTran)+ " " + CurrentShowingLayout +" >");
         ReturnLayoutButton.setVisibility(View.VISIBLE);
         ButtonLayout.setVisibility(View.GONE);
     }
@@ -154,26 +165,25 @@ public class MemoryActivity extends AppCompatActivity {
         TextView RightAnsweringCount = findViewById(R.id.RightAnsweringCount);
         TextView WrongAnsweringCount = findViewById(R.id.WrongAnsweringCount);
         TextView TourneyPtView = findViewById(R.id.TourneyPtView);
-        SharedPreferences RecordInfo = getSharedPreferences("RecordDataFile", MODE_PRIVATE);
         //1.loading data.
         UserLevelCount.setText("Lv."+ SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1));
-        ComboCount.setText("Quest Combo "+ SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0));
-        DailyDifficultyCount.setText("Daily Difficulty " + RecordInfo.getInt("MaxDailyDifficulty",0));
-        EXPGottenCount.setText(SupportClass.getIntData(this,"RecordDataFile","EXPGotten",0) + " " + getString(R.string.EXPWordTran));
-        PointGottenCount.setText(SupportClass.getLongData(this,"RecordDataFile","PointGotten",0) + " " + getString(R.string.PointWordTran));
-        MaterialGottenCount.setText(SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0) + " " + getString(R.string.MaterialWordTran));
-        DefeatBossCount.setText("Boss defeated "+ SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0));
-        PassedConflictCount.setText("Conflict Floor " + SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0));
-        TourneyPtView.setText(getString(R.string.TourneyPtWordTran) + " " + SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0));
+        ComboCount.setText(getString(R.string.MaxComboTran)+ " " + SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0));
+        DailyDifficultyCount.setText(getString(R.string.DailyClearTran) + " " + SupportClass.getIntData(this,"RecordDataFile","MaxDailyDifficulty",0));
+        EXPGottenCount.setText(SupportClass.ReturnKiloIntString(SupportClass.getIntData(this,"RecordDataFile","EXPGotten",0)) + " " + getString(R.string.EXPWordTran));
+        PointGottenCount.setText(SupportClass.ReturnKiloLongString(SupportClass.getLongData(this,"RecordDataFile","PointGotten",0)) + " " + getString(R.string.PointWordTran));
+        MaterialGottenCount.setText(SupportClass.ReturnKiloIntString(SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0)) + " " + getString(R.string.MaterialWordTran));
+        DefeatBossCount.setText(getString(R.string.BossDeadTimeTran) +" " +  SupportClass.ReturnKiloIntString(SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0)));
+        PassedConflictCount.setText(getString(R.string.ConflictClearTran) + " " + SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0));
+        TourneyPtView.setText(getString(R.string.TourneyPtWordTran) + " " + SupportClass.ReturnKiloLongString(SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0)));
         //1.1 calculating the Answering data.
         int RightAnswering = SupportClass.getIntData(this,"RecordDataFile","RightAnswering",0);
         int WrongAnswering = SupportClass.getIntData(this,"RecordDataFile","WrongAnswering",0);
         int TotalAnswering = RightAnswering + WrongAnswering;
         int RightRate = SupportClass.CalculatePercent(RightAnswering,TotalAnswering);
         int WrongRate = SupportClass.CalculatePercent(WrongAnswering,TotalAnswering);
-        RightAnsweringCount.setText(RightRate + "% / " + RightAnswering + " Correct");
-        WrongAnsweringCount.setText(WrongRate + "% / " + WrongAnswering + " Wrong");
-        UserAnsweringCount.setText(TotalAnswering + " Answering");
+        RightAnsweringCount.setText(RightRate + "% / " + RightAnswering + " " + getString(R.string.CorrectWordTran));
+        WrongAnsweringCount.setText(WrongRate + "% / " + WrongAnswering + " " + getString(R.string.WrongWordTran));
+        UserAnsweringCount.setText(TotalAnswering + " " + getString(R.string.TotalAnsweringTran));
 }
 
     public void ReloadButtonMethod(View view){
@@ -215,7 +225,7 @@ public class MemoryActivity extends AppCompatActivity {
     public void ShowFormulaDialog(View view){
         SupportClass.CreateOnlyTextDialog(this,
                 getString(R.string.GameFormulaWordTran),
-                "2021.4.22 更新\n" +
+                "2021.5.21 更新\n" +
                         "APP内的公式：\n" +
                         "1 用户相关\n" +
                         "1.1 升级所需的EXP\n" +
@@ -258,6 +268,17 @@ public class MemoryActivity extends AppCompatActivity {
                         "（注：A = boss的累计击败数）\n" +
                         "4.1 普通Boss的HP\n" +
                         "23 * (A + 1) * {14 + 【0.1 *  (A+ 1) 】}\n" +
+                        "4.2 伤害构成\n" +
+                        "伤害计算共有3个乘区，其公式如下：\n" +
+                        "攻击力 * 暴击伤害 / 100 * 增伤数值\n" +
+                        "公式为浮点计算，在所有步骤（包含能力部分的计算）结束后，转为整数显示。\n" +
+                        "“攻击力”乘区包含：\n" +
+                        "基础值（10），等级基础值（10 * 等级），天赋加成，炼金加成，作弊加成，等级突破加成\n" +
+                        "“暴击伤害”乘区包含：\n" +
+                        "基础值（150.0），天赋加成，炼金加成，等级突破加成\n" +
+                        "“增伤数值”乘区包含：\n" +
+                        "等级压制效果\n" +
+                        "（boss较用户等级高1级，受到伤害 -3%，反之 +3% / 级）\n" +
                         "\n" +
                         "5 炼金相关\n" +
                         "（注：A = 要素数量， B = 要素上限--通常是6个（最大可达8个），C = 二阶要素使用量）\n" +
@@ -273,15 +294,15 @@ public class MemoryActivity extends AppCompatActivity {
                         "注1：升级后原有EXP将会被扣除！\n" +
                         "注2：各级效果不叠加，取最高值计算。\n" +
                         "等级 / 升级经验 / 效果\n" +
-                        "lv.1  300EXP 成功率+2%\n" +
-                        "lv.2  500EXP 成功率+4%\n" +
-                        "lv.3  900EXP 成功率+7%\n" +
-                        "lv.4  1400EXP 成功率+7%，要素上限+1\n" +
-                        "lv.5  1900EXP 成功率+10%，要素上限+1\n" +
-                        "lv.6  2500EXP 成功率+12%，要素上限+1\n" +
-                        "lv.7  3200EXP 成功率+14%，要素上限+1\n" +
-                        "lv.8  3900EXP 成功率+16%，要素上限+1\n" +
-                        "lv.9  4700EXP 成功率+18%，要素上限+1\n" +
+                        "lv.1    300EXP 成功率+2%\n" +
+                        "lv.2 500EXP 成功率+4%\n" +
+                        "lv.3 900EXP 成功率+7%\n" +
+                        "lv.4 1400EXP 成功率+7%，要素上限+1\n" +
+                        "lv.5 1900EXP 成功率+10%，要素上限+1\n" +
+                        "lv.6 2500EXP 成功率+12%，要素上限+1\n" +
+                        "lv.7 3200EXP 成功率+14%，要素上限+1\n" +
+                        "lv.8 3900EXP 成功率+16%，要素上限+1\n" +
+                        "lv.9 4700EXP 成功率+18%，要素上限+1\n" +
                         "lv.10 5500EXP 成功率+20%，要素上限+1\n" +
                         "lv.11 6400EXP 成功率+22%，要素上限+1\n" +
                         "lv.12 7300EXP 成功率+22%，要素上限+2\n" +
@@ -294,7 +315,62 @@ public class MemoryActivity extends AppCompatActivity {
                         "5.5 炼金效果及补充说明\n" +
                         "5.5.1 不同种类要素的效果是同时生效的。\n" +
                         "5.5.2 一次炼金当中，不同种类要素，多个同种要素的效果均会叠加，并持续至炼金效果的持续回合耗尽。\n" +
-                        "5.5.3 一次炼金当中，包含的所有要素将同时开始和结束计时。",
+                        "5.5.3 一次炼金当中，包含的所有要素将同时开始和结束计时。\n" +
+                        "\n" +
+                        "6“修身馆”相关\n" +
+                        "6.1 【工作中】计时奖励积分\n" +
+                        "【0.1 + （用户累计答题数）/ 800】 积分 / 秒\n" +
+                        "\n" +
+                        "7“比武台”相关\n" +
+                        "7.1 评价计算公式：\n" +
+                        "boss的HP / boss的回合数 * 评价加成系数。\n" +
+                        "公式为int整数运算,最大值同int型上限。\n" +
+                        "7.2 评价加成系数：\n" +
+                        "所有已选择能力数值的总和。（注：其数值为0时，等价于1。）\n" +
+                        "数值详情：\n" +
+                        "名称（中/英），评价加成系数\n" +
+                        "考验 Trial，+30\n" +
+                        "速攻 Rush，-17\n" +
+                        "脆弱 Fragile,-70\n" +
+                        "弱点 WeakSpot,-25\n" +
+                        "迟缓 Slow,-17\n" +
+                        "腐蚀 Corrosion\n" +
+                        "诅咒 Curse, +60\n" +
+                        "卸力 Diversion, +25\n" +
+                        "恢复 Recover, +85\n" +
+                        "残伤 LastHurt, -105\n" +
+                        "护盾 Shield, +35\n" +
+                        "快进 FastStep, +100\n" +
+                        "傲立 Proud, +36\n" +
+                        "惧意 Fear, +8\n" +
+                        "时滞 ReTime，-33\n" +
+                        "\n" +
+                        "8“试炼场”相关\n" +
+                        "8.1 等级突破\n" +
+                        "8.1.1 突破需求\n" +
+                        "突破阶段/积分/EXP/答题正确率（%）/总答题数/最高答题连对\n" +
+                        "1/10万/750/50/25/2\n" +
+                        "2/25万/2000/60/100/3\n" +
+                        "3/50万/3500/65/220/4\n" +
+                        "4/80万/5000/70/400/5\n" +
+                        "5/120万/7000/75/600/6\n" +
+                        "6/160万/9000/80/850/7\n" +
+                        "7/200万/1.1万/83/1200/8\n" +
+                        "8/250万/1.3万/86/1800/9\n" +
+                        "9/325万/1.5万/89/3000/10\n" +
+                        "10/500万/2.0万/90/4500/10\n" +
+                        "8.1.2 突破效果\n" +
+                        "突破阶段/等级上限/攻击加成/暴击加成/暴伤加成\n" +
+                        "1/75/80/2/5\n" +
+                        "2/100/250/4/10\n" +
+                        "3/125/400/6/15\n" +
+                        "4/150/600/8/20\n" +
+                        "5/175/1000/10/25\n" +
+                        "6/200/1500/12/30\n" +
+                        "7/225/2300/14/35\n" +
+                        "8/250/3000/17/40\n" +
+                        "9/275/4000/20/50\n" +
+                        "10/300/5000/25/50",
                 getString(R.string.ConfirmWordTran),
                 "Nothing",
                 true);

@@ -4,8 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SupportClass {
@@ -79,6 +80,29 @@ public class SupportClass {
         return String.format("%.2f", NeedToReturn);
     }
 
+    //make int number like financial form, like 1000000 will be transformed to 1,000,000.
+    //thanks to: https://blog.csdn.net/sinat_35241409/article/details/53710227?utm_medium=distribute.pc_relevant.none-task-blog-baidujs_title-1&spm=1001.2101.3001.4242 !
+    public static String ReturnKiloIntString(int num) {
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
+        return decimalFormat.format(num);
+    }
+
+    public static String ReturnKiloLongString(long num) {
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0");
+        return decimalFormat.format(num);
+    }
+
+    @SuppressLint("DefaultLocale")
+    public static String ReturnTimerString(int SecondNumber){
+        int Hour;
+        int Minute;
+        int Second;
+        Hour = SecondNumber/3600;
+        Minute = (SecondNumber%3600)/60;
+        Second = (SecondNumber%3600)%60;
+        return String.format("%02d:%02d:%02d", Hour, Minute, Second);
+    }
+
     //provide quick support for read int form data from SharedPreference.
     public static int getIntData(Context MethodContext, String ProfileName, String ContentKey, int DefValue){
         SharedPreferences A = MethodContext.getSharedPreferences(ProfileName, Context.MODE_PRIVATE);
@@ -95,6 +119,12 @@ public class SupportClass {
     public static boolean getBooleanData(Context MethodContext, String Profile, String ContentKey, boolean DefValue){
         SharedPreferences A = MethodContext.getSharedPreferences(Profile, Context.MODE_PRIVATE);
         return A.getBoolean(ContentKey,DefValue);
+    }
+
+    //provide quick support for load boolean form data from SharedPreference.
+    public static String getStringData(Context MethodContext, String Profile, String ContentKey, String DefValue){
+        SharedPreferences A = MethodContext.getSharedPreferences(Profile, Context.MODE_PRIVATE);
+        return A.getString(ContentKey,DefValue);
     }
 
     //provide quick support for save int form data from SharedPreference.
@@ -120,6 +150,14 @@ public class SupportClass {
         SharedPreferences A = MethodContext.getSharedPreferences(ProfileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor= A.edit();
         editor.putBoolean(ContentKey,Content);
+        editor.apply();
+    }
+
+    //provide quick support for save long form data from SharedPreference.
+    public static void saveStringData(Context MethodContext, String ProfileName, String ContentKey, String Content){
+        SharedPreferences A = MethodContext.getSharedPreferences(ProfileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor= A.edit();
+        editor.putString(ContentKey,Content);
         editor.apply();
     }
 }

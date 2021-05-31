@@ -3,10 +3,13 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Color;
 import android.os.Bundle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -22,6 +25,15 @@ public class StoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         SetLanguageHint();
         InitializingProgressLoad();
 
@@ -79,6 +91,7 @@ public class StoryActivity extends AppCompatActivity {
     int MainStoryLimit = 6;
     int DeveloperStoryLimit = 3;
     int SubStoryLimit = 1;
+    int TaleStoryLimit = 1;
     int CurrentStoryNumber = 1;
 
     public void ChangeStoryType(View view){
@@ -86,6 +99,7 @@ public class StoryActivity extends AppCompatActivity {
         RadioGroup StoryTypeChoose = findViewById(R.id.StoryTypeChoose);
         RadioButton MainStoryChoose = findViewById(R.id.MainStoryChoose);
         RadioButton DevelopStoryChoose = findViewById(R.id.DevelopStoryChoose);
+        RadioButton TaleStoryChoose = findViewById(R.id.TaleStoryChoose);
 
         int ModeCheckedId;
         ModeCheckedId = StoryTypeChoose.getCheckedRadioButtonId();
@@ -95,6 +109,9 @@ public class StoryActivity extends AppCompatActivity {
         }else if(ModeCheckedId == DevelopStoryChoose.getId()){
             StoryType = "Develop";
             PageMoveBar.setMax(DeveloperStoryLimit - 1);
+        }else if(ModeCheckedId == TaleStoryChoose.getId()){
+            StoryType = "Tale";
+            PageMoveBar.setMax(TaleStoryLimit - 1);
         }
         //change the reading progress.
         CurrentStoryNumber = 1;
@@ -107,6 +124,8 @@ public class StoryActivity extends AppCompatActivity {
         if(CurrentStoryNumber < MainStoryLimit && StoryType.equals("Main")){
             CurrentStoryNumber = CurrentStoryNumber + 1;
         }else if(CurrentStoryNumber < DeveloperStoryLimit && StoryType.equals("Develop")){
+            CurrentStoryNumber = CurrentStoryNumber + 1;
+        }else if(CurrentStoryNumber < TaleStoryLimit && StoryType.equals("Tale")){
             CurrentStoryNumber = CurrentStoryNumber + 1;
         }else{
             CurrentStoryNumber = 1;
@@ -128,6 +147,8 @@ public class StoryActivity extends AppCompatActivity {
             CurrentStoryNumber = MainStoryLimit;
         }else if(StoryType.equals("Develop")){
             CurrentStoryNumber = DeveloperStoryLimit;
+        }else if(StoryType.equals("Tale")){
+            CurrentStoryNumber = TaleStoryLimit;
         }
 
         PageMoveBar.setProgress(CurrentStoryNumber - 1);
@@ -301,6 +322,26 @@ public class StoryActivity extends AppCompatActivity {
             case "SubLine":
                 ChapterShowView.setText(CurrentStoryNumber + " / " +  SubStoryLimit);
                 break;
+            case "Tale":
+                PrintStoryText(1,"《贵族和炼金术》\n" +
+                        "在“世界”当中，“炼金术”是一门令人羡慕的手艺活。\n" +
+                        "想想看，将一些神秘的物品，加上一点魔法和希望，扔进炼金炉里，就能得到无数的财富。\n" +
+                        "这样简单的致富方式，自然让人神往。\n" +
+                        "那么，（哔——），代价是什么呢？\n" +
+                        "那就是......学院里的实验室三番四次的不停爆炸。\n" +
+                        "甚至，其次数夸张到学院附近街道的居民和商贩面对不知何时又在发出冒烟或是巨响的建筑时，内心早已经毫无波动。\n" +
+                        "也正因此，学院附近尽管交通便利，教育良好，也几乎没有任何贵族愿意在此定居。\n" +
+                        "毕竟，哪天说不准就丢掉小命的地方可太危险了。\n" +
+                        "更让人哭笑不得的是，相较于工农平民，那些养尊处优，被报以极大期待的贵族后代们，反倒是引发这些事件的最大元凶。\n" +
+                        "在他们的生活当中，管家和仆人包办了几乎一切琐事，这也让他们几乎失去了对一切事物的本质认知。\n" +
+                        "在实验中，手忙脚乱，不知所措，已经成为这个群体的特色了。\n" +
+                        "面对蜥蜴尾巴，各类矿石，要素的流动这些他们从未见识过的事物，他们往往是无助的。\n" +
+                        "要知道，炼金术士对自己所做的事情毫无了解可是大忌。\n" +
+                        "对这些人来说，更可怕的是炼金术的随机性。\n" +
+                        "每次把原料扔进炉子的时候，没有人知道迎接自己的是无尽的财富还是猛烈的爆炸。\n" +
+                        "而这个性质，甚至在使用完全一致的配方时也不会例外。\n" +
+                        "“轰隆！”当又一声爆炸传来时，办公室里的院长总是摇摇头，无可奈何。");
+                ChapterShowView.setText(CurrentStoryNumber + " / " +  TaleStoryLimit);
         }
     }
 
@@ -308,7 +349,6 @@ public class StoryActivity extends AppCompatActivity {
     private void SaveReadProgress(){
         SharedPreferences A = getSharedPreferences("StoryDatafile", MODE_PRIVATE);
         SharedPreferences.Editor editor= A.edit();
-        editor.remove("UserStoryProgress");
         editor.putInt("UserStoryProgress",CurrentStoryNumber);
         editor.apply();
     }

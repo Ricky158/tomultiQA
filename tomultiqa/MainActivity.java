@@ -7,12 +7,20 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -24,7 +32,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 //2021.2.4 experience:
@@ -33,12 +40,25 @@ import java.util.concurrent.ThreadLocalRandom;
 //3.if you want to use "A=B is true" in "if-else",please use "=="!
 //2021.3.14 : Android icon making: https://blog.csdn.net/zuo_er_lyf/article/details/82254316 !
 //2021.4.28 : if you want to add a timer to Activity, you need to implement OnChronometerTickListener() here by system, instead of add it in anywhere by yourself.
+//!XXX.equals(AAA) is same as XXX != AAA.
+//2021.5.10 : Chronometer class, only it`s widget is [VISIBLE], then the function will work!
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
+
         //get total number of id in database according records in SharedPreference., and initializing the database in variables form.
         ChangeQuestTotalNumber();
         //get total number of id in database according records in SharedPreference.
@@ -48,39 +68,49 @@ public class MainActivity extends AppCompatActivity {
         InitializingEXPInformation();
         InitializingResourceData();
         InitializingTalentData();
-        //calculate User`s battle data.
+        //import battle data.
+        //Warning: DO NOT move the position between ImportBossState(), ImportConflictBossData() and ImportUserBattleData(), it will make calculation wrong!
+        ImportBossState();
+        ImportConflictBossData(false);
         ImportUserBattleData();
-        BossState = getIntent().getIntExtra("BossState",0);
-        //BossState: 1 ConflictBoss, 2 DailyBoss, 3 TourneyBoss.
-        if(BossState > 0){
-            //don`t move ImportUserBattleData() to here,because not all Boss comes from Another Activities!
-            ImportConflictBossData(false);
-            if(BossState == 2){
-                DailyDifficulty = getIntent().getIntExtra("DailyDifficulty",1);
-            }else if(BossState == 3){
-                BossPtValue = getIntent().getLongExtra("BossPtValue",100);
-            }
-            //ModeChangeAppearance();
-        }
+        //according App Mode to change function module (parts of App UI).
         ModeChangeAppearance();
         InitializingTimer();
         InitializingRecordData();
         InitializingAnsweringData();
-
-        //timer support.thanks to:
-        //https://www.twle.cn/l/yufei/android/android-basic-chronometer.html !
-        //https://stackoverflow.com/questions/526524/android-get-time-of-chronometer-widget !
-        Chronometer QuestTimer = findViewById(R.id.QuestTimerView);
-        QuestTimer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            @Override
-            public void onChronometerTick(Chronometer chronometer) {
-                //......may be we need it future, the number will automatically update.
-            }
-        });
+        InitializingAssistFunction();
     }
 
-    //Basic values of whole system.
+    //add a button menu to ActionBar in MainActivity.
+    //thanks to: https://stackoverflow.com/questions/17425742/how-to-add-button-in-actionbarandroid !
+    // https://blog.csdn.net/oxiaoxio/article/details/48900763 !
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_button, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_setting) {//if setting icon in Menu be touched.
+            Intent i = new Intent(MainActivity.this, SettingActivity.class);
+            startActivity(i);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ChangeQuestTotalNumber();
+        InitializingAppMode();
+        InitializingEXPInformation();
+        InitializingResourceData();
+        InitializingTalentData();
+    }
+
+    //Quest system.
     //store the Quest title text for display.
     String QuestTitleContent = "";
     //store total number of Quests in database.Following the search method to define this variable.
@@ -94,13 +124,168 @@ public class MainActivity extends AppCompatActivity {
     String QuestType = "";
     //store Quest`s level number for display.
     int QuestLevel = 1;
+    //store Quest Answer Reward Point Number.
+    int QuestCorrectReward = 0;
     //store user`s right times.
     int UserRightTimes = 0;
     //store user`s wrong times.
     int UserWrongTimes = 0;
     //store whole App Mode.
-    String AppMode ="Normal";//the end of basic values.
+    String AppMode ="Normal";
 
+    //lv.4 method, main method of Quest system.
+    public void AnswerJudge(View view){
+        EditText QuestTitleView = findViewById(R.id.QuestTitle);
+        EditText QuestAnswerView =findViewById(R.id.QuestAnswer);
+        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
+        boolean BossIsHere = false;
+        if (BattleInfLayout.getVisibility() != View.GONE && AppMode.equals(ValueClass.GAME_MODE)){
+            BossIsHere = true;//if Battle interface is close, means that Boss isn`t here, so BossIsHere variable will keep false.
+        }
+
+        if (!QuestTitleView.getText().toString().equals("")){
+            //after Answering the Quest, stop the QuestTimer. And it will be Started in ReloadQuest() method.
+            StopChronometer();
+            //Quest System Answer finish loading in ReloadQuest method.
+            QuestUserAnswer = QuestAnswerView.getText().toString();
+            //1.Compare the answer.And show the counting to user.
+            if (QuestUserAnswer.equals(QuestSystemAnswer)){
+                //show User judge result.
+                JudgeReport(true);
+                //give resources to user as reward.
+                GetEXP(QuestLevel);
+                GetPoint(QuestCorrectReward);
+                ChangeQuestCombo(true);
+                //do battle calculation.
+                if(BattleInfLayout.getVisibility() != View.GONE){
+                    BattleCalculation(true,BossIsHere);
+                }
+            }else{
+                //show User judge result.
+                JudgeReport(false);
+                //lost EXP as justice.
+                LostEXP(QuestLevel);
+                ChangeQuestCombo(false);
+                //do battle calculation.
+                if(BattleInfLayout.getVisibility() != View.GONE){
+                    BattleCalculation(false,BossIsHere);
+                }
+                SupportClass.CreateOnlyTextDialog(this,
+                        getString(R.string.NoticeWordTran),
+                        getString(R.string.WrongHintTran) +"\n" + getString(R.string.AfterWrongAnswerHintTran) + "\n" + QuestSystemAnswer,
+                        getString(R.string.ConfirmWordTran),
+                        "Nothing",
+                        true);
+            }
+            //end of answer judgement,load a new Quest automatically.
+            ReloadQuest(null);
+        }else if(QuestTitleView.getText().toString().equals("")){
+            //if no Quest, system will reload a new Quest.
+            ReloadQuest(null);
+        }
+    }
+
+    //lv.3 method, main method of Quest system. and sub method of ReloadQuest() method.
+    @SuppressLint("SetTextI18n")
+    public void ReloadQuest(View view){
+        TextView QuestIDShow = findViewById(R.id.QuestIDShow);
+        EditText QuestTitleView = findViewById(R.id.QuestTitle);
+        TextView QuestLevelView = findViewById(R.id.QuestLevel);
+        TextView QuestTypeShowView = findViewById(R.id.QuestTypeShow);
+        TextView EXPValueView =findViewById(R.id.EXPValue);
+        TextView PointValueView = findViewById(R.id.PointValue);
+        TextView QuestComboShowView = findViewById(R.id.QuestComboShowView);
+        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
+        SQLiteDatabase db = QuestDataBase.getReadableDatabase();
+
+        //base logic of random number generator.
+        int min = 0;
+        int max;
+        //because the lines in table starting on 0, so we need to minus 1 based on the number that User can see.(this number is based on starting on 1)
+        if (QuestTotalNumber > 1){
+            max = QuestTotalNumber - 1;
+        }else{
+            max = 0;
+        }
+        // nextInt is normally exclusive of the top value,
+        // so add 1 to make it inclusive
+        int RandomNumber = ThreadLocalRandom.current().nextInt(min, max + 1);//The end of random number generator.
+        QuestIDShow.setText((RandomNumber + 1) + "");
+
+        //define rules used in searching data in database. Returning entire table in database. And the results will be sorted in the resulting Cursor.
+        //return whole table in "Cursor" form.
+        Cursor ResultCursor = db.query(
+                QuestDataBaseBasic.TABLE_NAME,   // The table to query
+                null,             // The array of columns to return (pass null to get all)
+                null,              // The columns for the WHERE clause
+                null,          // The values for the WHERE clause
+                null,                   // don't group the rows
+                null,                   // don't filter by row groups
+                null               // The sort order
+        );
+
+        //randomly choose a line in table "ResultCursor" , return all data we need in this line of table.
+        ResultCursor.moveToPosition(RandomNumber);
+        QuestTitleContent =ResultCursor.getString(ResultCursor.getColumnIndex("QuestTitle")) ;
+        QuestSystemAnswer =ResultCursor.getString(ResultCursor.getColumnIndex("QuestAnswer"));
+        QuestLevel = ResultCursor.getInt(ResultCursor.getColumnIndex("QuestLevel"));
+        QuestType = ResultCursor.getString(ResultCursor.getColumnIndex("QuestType"));
+        ResultCursor.close();
+
+        //show these content to user.
+        QuestTitleView.setText(QuestTitleContent);
+        QuestLevelView.setText(QuestLevel + "");
+        QuestTypeShowView.setText(QuestType);
+
+        //control Auto Keyboard function is enable or not.
+        AutoKeyboardControl();
+        AutoClearAnswerControl();
+
+        //set basic values of every Quest.
+        EXPValueView.setText(QuestLevel + "");
+        QuestCorrectReward = (int) ( QuestLevel * 2 + Math.pow(QuestCombo,1.6) );
+        PointValueView.setText(QuestCorrectReward + "");
+        QuestComboShowView.setText(QuestCombo + "");
+
+        //if you turn on "Game" Mode, you have 3% chance to meet Boss when you try to reload the Quest.
+        if(AppMode.equals(ValueClass.GAME_MODE) && SupportClass.CreateRandomNumber(1,100) <= 3 && BossState <= 0){
+            //calculate User`s battle data.
+            ImportUserBattleData();
+            //create a Normal Boss.
+            int BossHP = (int)( 23 * (BossDeadTime + 1) * ( 14 + (0.1 * (BossDeadTime + 1) ) ) );
+            ClearAllAbility();
+            SetBossValues("Experience",UserLevel,BossHP,0,10,10,0,0);
+            //Change the Appearance of App, according the String variable AppMode.
+            OpenBattleLayout();
+        }
+
+        //load Quest data completed.reset QuestTimer.
+        StartChronometer();
+    }
+
+    //lv.2 method, sub method of AnswerJudge() method.
+    @SuppressLint("SetTextI18n")
+    private void JudgeReport(boolean IsRightAnswer){
+        //default TextView color, thanks to: https://www.javaroad.cn/questions/37295 !
+        if(IsRightAnswer){
+            final TextView UserRightTimesView =findViewById(R.id.RightTimes);
+            UserRightTimes = UserRightTimes + 1 ;
+            UserRightTimesView.setText(UserRightTimes + "");
+            //record user right answering times.
+            SupportClass.saveIntData(this,"RecordDataFile","RightAnswering",UserRightTimes);
+            //show to user with Color effect.
+            ReportQuestForWhile(UserRightTimesView);
+        }else{
+            final TextView UserWrongTimesView = findViewById(R.id.WrongTimes);
+            UserWrongTimes = UserWrongTimes + 1 ;
+            UserWrongTimesView.setText(UserWrongTimes +"");
+            //record user wrong answering times.
+            SupportClass.saveIntData(this,"RecordDataFile","WrongAnswering",UserWrongTimes);
+            ReportQuestForWhile(UserWrongTimesView);
+        }
+    }
+
+    //lv.1 method, main import data method.
     @SuppressLint("SetTextI18n")
     private void InitializingAnsweringData(){
         TextView RightTimes = findViewById(R.id.RightTimes);
@@ -111,162 +296,26 @@ public class MainActivity extends AppCompatActivity {
         WrongTimes.setText(UserWrongTimes + "");
     }
 
-
-    //EXP system.
-    int UserLevel;
-    int UserHaveEXP;
-    int UserUpgradeEXP = 1;
-
-    //basic calculation of EXP, define them to use less manually coding or Error.
-    private void LostEXP(int MinusNumber){
-        UserHaveEXP = UserHaveEXP - MinusNumber;
-        CheckLevel();
-    }
-
-    private void GetEXP(int AddNumber){
-        UserHaveEXP = UserHaveEXP + AddNumber;
-        EXPRecord = EXPRecord + AddNumber;
-        SupportClass.saveIntData(this,"RecordDataFile","EXPGotten",EXPRecord);
-        CheckLevel();
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void CalculateUpgradeEXP(){
-        //EXPLimit stand for EXP which user need to collect to upgrade.
-        // it just use for double form number calculating, it is not used in actual EXP system code.
-        double EXPLimit;
-        //it means the number: level^1.6 + 15 - level^1.1.
-        EXPLimit = Math.pow(UserLevel,1.6) + 15 - Math.pow(UserLevel,1.1) ;
-        //lost the number under 0`s part,or "FLOOR".
-        UserUpgradeEXP = (int) EXPLimit;
-        TextView NextLevelEXPView = findViewById(R.id.NextLevelEXP);
-        NextLevelEXPView.setText(UserUpgradeEXP + "");
-    }
-
-    //Thanks to:https://www.jianshu.com/p/59b266c644f3!
-    //keep EXP data method.
-    private void StoreEXPInformation(){
-        SharedPreferences EXPInfo = getSharedPreferences("EXPInformationStoreProfile", MODE_PRIVATE);
-        //获取Editor
-        SharedPreferences.Editor editor= EXPInfo.edit();
-        //得到Editor后，写入需要保存的数据
-        editor.putInt("UserLevel", UserLevel);
-        editor.putInt("UserHaveEXP",UserHaveEXP);
-        editor.apply();//提交修改
-    }
-    //read EXP data method.
-    private void InitializingEXPInformation(){
-        UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
-        UserHaveEXP = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserHaveEXP",0);
-        CheckLevel();
-    }
-
-     //check the EXP number, and make level up or down calculation.
-   @SuppressLint("SetTextI18n")
-   private void CheckLevel(){
-        //show current level upgrade needs.
-        CalculateUpgradeEXP();
-       TextView EXPrateView = findViewById(R.id.EXPrate);
-       ProgressBar EXPBarView = findViewById(R.id.EXPBar);
-
-        if (UserHaveEXP >= UserUpgradeEXP && UserLevel < 300){
-            UserLevel = UserLevel + 1 ;
-            UserHaveEXP = UserHaveEXP -UserUpgradeEXP ;
-            //after upgrade, show higher needs to upgrade.
-            CalculateUpgradeEXP();
-        }else if (UserHaveEXP < 0 && UserLevel > 1 ){
-            UserLevel = UserLevel - 1 ;
-            UserHaveEXP = UserHaveEXP + UserUpgradeEXP;
-            //after downgrade,show lower needs to upgrade.
-            CalculateUpgradeEXP();
-        }
-
-        // And show the result to user.
-       EXPrateView.setText(SupportClass.CalculatePercent(UserHaveEXP,UserUpgradeEXP) + "%");
-       EXPBarView.setProgress(SupportClass.CalculatePercent(UserHaveEXP,UserUpgradeEXP));
-
-        //show the EXP data to user, including level, upgrade EXP, and User haveEXP.
-       TextView NowLevel = findViewById(R.id.NowLevel);
-        NowLevel.setText(UserLevel + "");
-
-       TextView NowHaveEXPView = findViewById(R.id.NowHaveEXP);
-        NowHaveEXPView.setText(UserHaveEXP +"");
-
-       TextView NextLevelEXPView = findViewById(R.id.NextLevelEXP);
-        NextLevelEXPView.setText(UserUpgradeEXP + "");
-
-        //keep the EXP data.
-        StoreEXPInformation();
-    }//the end of EXP system.
-
-
-    //Game Resource system. Including Point and Materials.
-    int UserPoint = 0;
-    int UserMaterial = 0;
-    int QuestCombo = 0;
-
-
-    //basic operation of resource, just do it automatically.
-    private void GetPoint(int addNumber){
-        UserPoint = UserPoint + addNumber;
-        PointRecord = PointRecord + addNumber;
-        SupportClass.saveLongData(this,"RecordDataFile","PointGotten",PointRecord);
-        SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-    }
-
-    private void GetMaterial(int addNumber){
-        UserMaterial = UserMaterial + addNumber;
-        MaterialRecord = MaterialRecord + addNumber;
-        SupportClass.saveIntData(this,"RecordDataFile","MaterialGotten",MaterialRecord);
-        SupportClass.saveIntData(this,"BattleDataProfile","UserMaterial",UserMaterial);
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void ChangeQuestCombo(boolean IsQuestRight){
-        TextView QuestComboShowView = findViewById(R.id.QuestComboShowView);
-
-        if(IsQuestRight){
-            QuestCombo = QuestCombo + 1;
-        }else{
-            QuestCombo = 0;
-        }
-
-        if(QuestCombo >= ComboRecord){
-            ComboRecord = QuestCombo;
-            SupportClass.saveIntData(this,"RecordDataFile","ComboGotten",ComboRecord);
-        }
-        QuestComboShowView.setText(QuestCombo + "");
-        SupportClass.saveIntData(this,"BattleDataProfile","QuestCombo",QuestCombo);
-    }
-
-    private void InitializingResourceData(){
-        QuestCombo = SupportClass.getIntData(this,"BattleDataProfile","QuestCombo",0);
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
-    }//end of Game Resource system.
-
-
-    //Record system.
-    int EXPRecord = 0;
-    long PointRecord = 0;
-    int MaterialRecord = 0;
-    int ComboRecord = 0;
-
-    private void InitializingRecordData(){
-        EXPRecord = SupportClass.getIntData(this,"RecordDataFile","EXPGotten",0);
-        PointRecord = SupportClass.getLongData(this,"RecordDataFile","PointGotten",0);
-        MaterialRecord = SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0);
-        ComboRecord = SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0);
-    }
-    //end of Record system.
+    //lv.1 method, sub method of JudgeReport() method.
+    private void ReportQuestForWhile(final TextView Target){
+        Handler handler = new Handler();
+        Target.setTextColor(Color.BLACK);
+        Target.setAlpha(1.0f);
+        handler.postDelayed(new Runnable() {//reset color in 0.5 sec later.
+            @Override
+            public void run() {
+                Target.setAlpha(0.54f);
+            }
+        }, 500);
+    }//end of Quest system.(not including sub parts of it.)
 
 
     //battle system.
     //value "SD" means Shield point, value "ModeNumber" means Multi Mode Boss`s Mode total number. BossState: 0 is normal boss, 1 is Conflict boss, 2 is Daily boss.
-
     //basic values of Battle.
     //boss data part.
     int BossState = 0;
+    int BossLevel = 0;
     int BossTotalHP;
     int BossNowHP;
     int BossTotalSD;
@@ -278,71 +327,74 @@ public class MainActivity extends AppCompatActivity {
     long BossPtValue;
     //user data part.
     int UserATK;
+    int CheatATK;
     int AlchemyATK = 0;
+    int LevelExcessATK = 0;
     double UserCriticalRate;
     int AlchemyCriticalRate = 0;
+    int LevelExcessCR = 0;
     double UserCriticalDamage;
     int AlchemyCriticalDamage = 0;
+    int LevelExcessCD = 0;
     //battle data part.
     int AlchemyTurn = 0;
     int BattleTurn;
     int BossDeadTime;
     //https://stackoverflow.com/questions/21696784/how-to-declare-an-arraylist-with-values
-    //BossAbility variable is only one used in battle calculation.
-    ArrayList<String> BossAbility = new ArrayList<>();
-
-    //using this method to prevent from NullPointException.
-    private void MakeAbilityNotNull(){
-        //try to catch NullPointerException on get ArrayList:BossAbility from SquareActivity Process.
-        //because User would not enter MainActivity from SquareActivity most of time, but this process will happen on every time that user enter MainActivity.
-        //And it will cause getStringArrayListExtra() method throw NullPointerException.
-
-        if(BossState > 0){
-            BossAbility = getIntent().getStringArrayListExtra("BossAbility");
-//            try{
-//
-//            }catch(NullPointerException e){
-//                BossAbility.add("Nothing");
-//            }
-        }
-    }
-
+    //https://stackoverflow.com/questions/10976212/arraylist-as-global-variable
+    //Ability data part.
+    ArrayList<String> BossAbility = new ArrayList<>();//this variable is only used in import data from another Activity.
+    String BossAbilityText = "Nothing";//the real value used in Ability calculation.
     //record multi mode boss`s DeadTime to figure out is it need to change the Mode or stop Reborn.You can think this is Boss`s HP Bar number.
     int BossRebornTime = 0;
     int BossModeNumber = 1;
     int UserConflictFloor;
     int CurrentShowFloor;
     int DailyDifficulty;
-
     //data in battle calculation.
-    int CurrentDamage = 0;
+    //LevelDamageChange means the index which control damage add or less by Level difference between Boss and User.
+    double LevelDamageChange = 0;
+    double CurrentDamage = 0;
     boolean IsCritical = false;
 
+    //import boss data part.
+    //lv.4 method. import method.
+    private void ImportBossState(){
+        BossState = getIntent().getIntExtra("BossState",0);
+        //BossState: 1 ConflictBoss, 2 DailyBoss, 3 TourneyBoss.
+        if(BossState > 0){
+            //don`t move ImportUserBattleData() to here,because not all Boss comes from Another Activities!
+            if(BossState == 2){
+                DailyDifficulty = getIntent().getIntExtra("DailyDifficulty",1);
+            }else if(BossState == 3){
+                BossPtValue = getIntent().getLongExtra("BossPtValue",100);
+            }
+        }
+    }
+
+    //lv.3 method, main method of import data.
     private void ImportConflictBossData(boolean IsRebornMode){
         //confirm is boss have multi mode, and confirm which Ability List should be imported in battle system.
         //this part is only works on Initializing Boss data, so it can`t used in Reborn.
-        if(!IsRebornMode){
+        if(!IsRebornMode && BossState > 0){
             BossModeNumber = getIntent().getIntExtra("ModeNumber",1);
+            BossRebornTime = BossModeNumber;//give this boss X time to reborn.
             switch (BossModeNumber){
                 case 3:
-                    //give this boss 3 time to reborn.
-                    BossRebornTime = 3;
                     BossAbility = getIntent().getStringArrayListExtra("BossAbilityThird");
                     break;
                 case 2 :
-                    BossRebornTime = 2;
                     BossAbility = getIntent().getStringArrayListExtra("BossAbilitySecond");
                     break;
                 case 1:
-                    BossRebornTime = 1;
                     BossAbility = getIntent().getStringArrayListExtra("BossAbility");
                     break;
             }
-            MakeAbilityNotNull();
-
+            BossAbilityText = BossAbility.toString();
+            //save data in String, because making ArrayList to be global variable is very hard.
         }
         //if boss have multi HP, the BossRebornTime variable should be minus 1 when boss is reborned.
-        if(BossRebornTime > 0){
+        if(BossRebornTime > 0 && BossState > 0){
             BossRebornTime = BossRebornTime - 1;
 
             //because of the limitation of ArrayList(can`t be a parameter into a method, because it is a class actually.)
@@ -358,11 +410,163 @@ public class MainActivity extends AppCompatActivity {
                     getIntent().getIntExtra("PointReward",350),
                     getIntent().getIntExtra("MaterialReward",0)
             );
+            ImportBossAbility();
             UserConflictFloor = SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0);
             CurrentShowFloor = SupportClass.getIntData(this,"BattleDataProfile","CurrentShowFloor",1);
         }
     }
 
+    //lv.3 method, main method of import data.
+    private void ImportUserBattleData(){
+        if(AppMode.equals(ValueClass.GAME_MODE)){
+            CheatATK = SupportClass.getIntData(this,"CheatFile","CheatATK",0);
+            LevelExcessATK= SupportClass.getIntData(this,"ExcessDataFile","LevelExcessATK",0);
+            LevelExcessCR = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCR",0);
+            LevelExcessCD = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCD",0);
+            //1.calculate basic value of user battle data.
+            UserATK = 10 + UserLevel *10 + ATKTalentLevel * 3 + CheatATK + LevelExcessATK;
+            UserCriticalRate = 5.00 + CRTalentLevel * 0.05 + LevelExcessCR;
+            UserCriticalDamage = 150.0 + CDTalentLevel * 0.2 + LevelExcessCD;
+            //2.import another way to up the value.
+            //put Alchemy data in user data.
+            CalculateAlchemyEffect();//we need re-calculate the Alchemy data when user basic data is changed.
+            if(AlchemyTurn > 0){
+                UserATK = UserATK + AlchemyATK;
+                UserCriticalRate = UserCriticalRate + AlchemyCriticalRate;
+                UserCriticalDamage = UserCriticalDamage + AlchemyCriticalDamage;
+            }
+            //2.1 Boss Ability, which useful in battle Start`s calculation.
+            MakeAbilityEffective("Start");
+            //3.finish all data, Ability, and value calculation, show them to user.
+            PrintUserBattleData();
+            ReloadBossBaseInf(BossNowHP,BossTotalHP,BossNowSD,BossTotalSD,BattleTurn);
+            ReloadBossBarData();
+            //4.load the BossDeadTime from record.
+            BossDeadTime = SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0);
+        }
+    }//end of import boss data part.
+
+    //lv.3 method. main method of battle system.
+    @SuppressLint("SetTextI18n")
+    private void BattleCalculation(boolean IsQuestRight, boolean IsBossHere){
+        final TextView DamageShowView = findViewById(R.id.DamageShowView);
+        Handler handler = new Handler();
+        //if Random Number less than CriticalRate *100, system will think NO Critical, so IsCritical variable will keep false.
+        IsCritical = SupportClass.CreateRandomNumber(0, 10000) <= (UserCriticalRate * 100);
+        //calculate the basic damage to Boss.
+        if (IsQuestRight && IsBossHere && BattleTurn >= 1 && BossNowHP > 0){
+            if (UserATK <= BossNowSD){
+                //CurrentDamage still 0.
+                BossNowSD = BossNowSD - UserATK;
+            }else {
+                CurrentDamage = UserATK - BossNowSD;
+                BossNowSD = 0;
+            }
+            //if critical, then add additional damage to damage counting.
+            if(IsCritical) {
+                CurrentDamage = (CurrentDamage * UserCriticalDamage / 100 );
+            }
+            //check Boss and User Level, and change the Damage.
+            CurrentDamage = (CurrentDamage * (1 + LevelDamageChange) );
+            //Boss Ability, which useful in battle progression`s calculation.
+            MakeAbilityEffective("Calculate");
+            //finally, cost Boss`s HP based on damage counting.
+            BossNowHP = BossNowHP - (int)CurrentDamage;
+            boolean IsShowDamage = SupportClass.getBooleanData(this, "TimerSettingProfile", "StopDamageDialog", true);
+            if(!IsCritical && IsShowDamage){
+                DamageShowView.setText("-" + (int)CurrentDamage);
+            }else if(IsCritical && IsShowDamage){
+                DamageShowView.setText("Critical!  -" + (int)CurrentDamage);
+            }
+            //after one time`s damage calculation, should cost 1 Turn.
+            BattleTurn = BattleTurn - 1;
+            MakeAbilityEffective("Middle");
+            //after calculation, show User the detail.
+            ReloadBossBaseInf(BossNowHP,BossTotalHP,BossNowSD,BossTotalSD,BattleTurn);
+            ReloadBossBarData();
+            //report damage data to user, and close showing after a while.
+            //delay executed, thanks to: https://blog.csdn.net/mq2856992713/article/details/52005253 !
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    DamageShowView.setText("--");
+                }
+            }, 500);
+            //if boss lost all its HP, still in calculation, then User Win. And close the battle immediately.
+            if (BossNowHP <=0){
+                CloseBattle(true);
+                BossDeadTime = BossDeadTime + 1;
+                RecordBattleData(true);
+            }
+            //judging whether boss is die.
+        }else if(IsBossHere || BattleTurn < 1){
+            //cost all Turns, but boss still have HP, LOST.
+            CloseBattle(false);
+            RecordBattleData(false);
+        }else if(BossNowHP <= 0){
+            //Turns still remain, and boss lost all HP,WIN.
+            CloseBattle(true);
+            BossDeadTime = BossDeadTime + 1;
+            RecordBattleData(true);
+        }
+        //store the BossDeadTime data.
+        SupportClass.saveIntData(this,"BattleDataProfile","BossDeadTime",BossDeadTime);
+    }
+
+    //lv.2 method, sub method of BattleCalculation() method, used in confirm whether User win the battle.
+    private void CloseBattle(boolean IsWin){
+        //close the battle layout,to make App become normal.
+        ConstraintLayout EXPLayout = findViewById(R.id.EXPLayout);
+        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
+        ConstraintLayout BossShieldLayout = findViewById(R.id.BossShieldLayout);
+        //make EXP counter visible for user after battle.
+        EXPLayout.setVisibility(View.VISIBLE);
+        BattleInfLayout.setVisibility(View.GONE);
+        BossShieldLayout.setVisibility(View.GONE);
+        //reset the value of HP and SD bar.
+        ReloadBossBarData();
+        //decide whether user can get EXP, Point and Material as reward.
+        if (IsWin && BossState == 1) {//in Conflict battle.
+            //give user their reward which they should get in battle of Conflict.
+            int RewardTimes = 1;
+            //according the Ability decide Reward Times (Multiple number).
+            if(BossAbility.toString().contains(getString(R.string.TreasureAbilityTran))){
+                //Ability: "宝藏"， User will have double reward after Boss which has this Ability had beaten.
+                RewardTimes = 2;
+            }
+            if(UserConflictFloor < CurrentShowFloor){//every floor could only get reward for 1 time.
+                GetEXP(BossEXPValue * RewardTimes);
+                GetPoint(BossPointValue * RewardTimes);
+                GetMaterial(BossMaterialValue * RewardTimes);
+            }
+            //if boss can Reborn, Reborn it.
+            ImportConflictBossData(true);
+            if(BossRebornTime <= 0){
+                //cancel Conflict Battle state.
+                BossState = 0;
+                //if this battle is happen in Conflict, this part will ripe off any data which not belongs to normal Boss.
+                ClearAllAbility();
+            }
+        }else if(IsWin && BossState == 2){
+                GetEXP(BossEXPValue);
+                GetPoint(BossPointValue);
+                GetMaterial(BossMaterialValue);
+                //return to normal boss mode.
+                BossState = 0;
+        }else if(IsWin && BossState == 3){
+                SupportClass.saveLongData(this,"TourneyDataFile","MaxPtRecord",BossPtValue);
+                //return to normal boss mode.
+                BossState = 0;
+        }
+        //show final result to user.
+        if (IsWin && AppMode.equals(ValueClass.GAME_MODE)) {
+            Toast.makeText(getApplicationContext(), getString(R.string.BattleWinTran), Toast.LENGTH_SHORT).show();
+        }else if(!IsWin && AppMode.equals(ValueClass.GAME_MODE)) {
+            Toast.makeText(getApplicationContext(), getString(R.string.BattleLostTran), Toast.LENGTH_SHORT).show();
+        }
+    }//save battle data is belongs to RecordBattleData() method.
+
+    //lv.2 method, sub method of battle system.
     //Reward means the present that User will have when it defeat the Boss.
     //Turn means User will have this number`s chance to attack Boss.
     //actually we plan "ability" of boss, but we don`t finish it in code, so this method will be upgraded in future.
@@ -370,17 +574,15 @@ public class MainActivity extends AppCompatActivity {
     private void SetBossValues(String name, int Level, int HP, int SD, int Turn, int EXPReward, int MaterialReward, int PointReward){
         TextView BossNameView = findViewById(R.id.BossNameView);
         TextView BossLevelView = findViewById(R.id.RecommendLevelView);
-        TextView BossHPShowView = findViewById(R.id.BossHPShowView);
-        TextView BossShieldShowView = findViewById(R.id.BossShieldShowView);
         TextView BossModeShowView = findViewById(R.id.BossModeShowView);
-        TextView BattleTurnView = findViewById(R.id.BattleTurnView);
         TextView BossAbilityShowView = findViewById(R.id.BossAbilityShowView);
 
         BossNameView.setText(name);
-        BossLevelView.setText("Lv." + Level);
-        BossHPShowView.setText(HP + "/" + HP);
-        BossShieldShowView.setText(SD + "/" + SD);
-        BattleTurnView.setText(Turn + "");
+        BossLevel = Level;
+        LevelDamageChange = (UserLevel - BossLevel) * 0.03;
+        BossLevelView.setText("Lv." + BossLevel);
+        //in Initialization, NowData is equals to MaxData.
+        ReloadBossBaseInf(HP,HP,SD,SD,Turn);
 
         //which used in judging how to make Ability effective.
         String BossAbilityText = BossAbility.toString();
@@ -412,6 +614,7 @@ public class MainActivity extends AppCompatActivity {
         BossMaterialValue = MaterialReward;
         //set Boss shield Layout state. And reset the HP/SD Bar value.
         ConstraintLayout BossShieldLayout = findViewById(R.id.BossShieldLayout);
+        //this code can`t be replaced with ReloadBossBarData() method.
         ProgressBar BossHPBar = findViewById(R.id.BossHPBar);
         ProgressBar BossShieldBar = findViewById(R.id.BossShieldBar);
         BossHPBar.setProgress(100);
@@ -423,36 +626,172 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //sub method of Print Battle Data to user.
+    //lv.1 method, sub method of Print Battle Data to user.
     @SuppressLint("SetTextI18n")
-    private void PrintBattleData(){
-        //0.preparation.
+    private void PrintUserBattleData(){
         TextView UserATKView = findViewById(R.id.UserATKView);
         TextView UserCriticalRateView = findViewById(R.id.UserCriticalRateView);
         TextView UserCriticalDamageView = findViewById(R.id.UserCriticalDamageView);
         UserATKView.setText(UserATK + "");
-        UserCriticalDamageView.setText(UserCriticalDamage + "");
-        UserCriticalRateView.setText(UserCriticalRate + "");
+        UserCriticalDamageView.setText(SupportClass.ReturnTwoBitText(UserCriticalDamage));
+        UserCriticalRateView.setText(SupportClass.ReturnTwoBitText(UserCriticalRate));
     }
 
-    //initializing Battle data. Also being a sub method of onCreate.
-    private void ImportUserBattleData(){
-        if(AppMode.equals("Game")){
-            //1.calculate basic value of user battle data.
-            UserATK = 10 + UserLevel *10 + ATKTalentLevel * 3 ;
-            UserCriticalRate = 5.00 + CRTalentLevel * 0.05 ;
-            UserCriticalDamage = 150.0 + CDTalentLevel * 0.2 ;
-            //2.import another way to up the value.
-            //notice: the add to basic Data part are put in MakeAbilityEffective method---Certain part.
-            CalculateAlchemyEffect();
-            //3.show the value to user.
-            PrintBattleData();
-            //4.load the BossDeadTime from record.
-            BossDeadTime = SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0);
+    //lv.1 method, sub method of BattleCalculation() method.
+    private void RecordBattleData(boolean IsBattleWin){
+        //record the max Difficulty user have ever finished.
+        if(IsBattleWin && SupportClass.getIntData(this,"RecordDataFile","MaxDailyDifficulty",0) < DailyDifficulty){
+            SupportClass.saveIntData(this,"RecordDataFile","MaxDailyDifficulty", DailyDifficulty);
+        }
+        //if user win on higher floor, record that data.
+        if(IsBattleWin && CurrentShowFloor >= UserConflictFloor){
+            UserConflictFloor = CurrentShowFloor;
+            SupportClass.saveIntData(this,"BattleDataProfile","UserConflictFloor",UserConflictFloor);
         }
     }
 
-    //sub method of ImportUserBattleData() and MakeAbilityEffective() method.
+    //lv.1 method, sub method of BattleCalculation() and SetBossValues() method.
+    @SuppressLint("SetTextI18n")
+    private void ReloadBossBaseInf(int NowHP, int MaxHP, int NowSD, int MaxSD, int Turn){
+        TextView BossHPShowView = findViewById(R.id.BossHPShowView);
+        TextView BossShieldShowView = findViewById(R.id.BossShieldShowView);
+        TextView BattleTurnView = findViewById(R.id.BattleTurnView);
+
+        BossHPShowView.setText(NowHP + "/" + MaxHP);
+        BossShieldShowView.setText(NowSD + "/" + MaxSD);
+        BattleTurnView.setText(Turn + "");
+    }
+
+    //lv.1 method,sub method of BattleCalculation() and CloseBattle() method.
+    private void ReloadBossBarData(){
+        ProgressBar BossHPBar =findViewById(R.id.BossHPBar);
+        ProgressBar BossShieldBar = findViewById(R.id.BossShieldBar);
+        BossHPBar.setProgress(SupportClass.CalculatePercent(BossNowHP,BossTotalHP));
+        BossShieldBar.setProgress(SupportClass.CalculatePercent(BossNowSD,BossTotalSD));
+    }//end of main part.
+
+
+    //talent part.
+    int ATKTalentLevel;
+    int CRTalentLevel;
+    int CDTalentLevel;
+
+    //lv.1 method, import method.
+    private void InitializingTalentData(){
+        ATKTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","ATKTalentLevel",0);
+        CRTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CRTalentLevel",0);
+        CDTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CDTalentLevel",0);
+    }//end of talent part.
+
+
+    //Boss Ability part.
+    //lv.2 method, sub method of BattleCalculation() method. And this method, making all of Boss Abilities effective.
+    @SuppressLint("SetTextI18n")
+    private void MakeAbilityEffective(String Position){
+        //which used in judging how to make Ability effective.
+        if(!BossAbilityText.contains("Nothing")){
+            switch (Position) {
+                case "Start":
+                    //Start Position means that Abilities which should effective on the Start of Battle. Most of these Abilities are about User or Boss Data.
+                    if (BossAbilityText.contains(getString(R.string.FragileAbilityTran))) {
+                        TextView UserCriticalRateView = findViewById(R.id.UserCriticalRateView);
+                        //Ability:"脆弱", User`s Critical Rate will be added to 100%.
+                        UserCriticalRate = 100.00;
+                        UserCriticalRateView.setText(UserCriticalRate + "");
+                    }
+                    if(BossAbilityText.contains(getString(R.string.CurseAbilityTran))){
+                        UserCriticalRate = 0.0;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.WeakSpotAbilityTran))) {
+                        //Ability:"弱点", User`s Critical Damage will be added extra 50%.
+                        UserCriticalDamage = UserCriticalDamage + 50.0;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.DiversionAbilityTran))){
+                        UserCriticalDamage = 130.0;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.CorrosionAbilityTran))){
+                        //Ability:"腐蚀", User`s Critical Rate will lost 25%.
+                        UserATK = (int) (UserATK * 0.75);
+                    }
+                    if(BossAbilityText.contains(getString(R.string.RushAbilityTran))){
+                        BattleTurn = BattleTurn - 1;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.SlowAbilityTran))){
+                        BattleTurn = BattleTurn + 1;
+                    }
+//                if(BossAbilityText.contains(getString(R.string.DuelAbilityTran))){
+//                    BattleTurn = 1;
+//                }//not necessary, we can edit Turn number in boss design.
+                    if(BossAbilityText.contains(getString(R.string.TrialAbilityTran))){
+                        BossTotalHP = (int)(BossTotalHP * 1.3);
+                        BossNowHP = BossTotalHP;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.ShieldAbilityTran))){
+                        BossNowSD = (int)(BossTotalHP * 0.35);
+                        BossTotalSD = BossNowSD;
+                    }
+                    break;
+                case "Middle":
+                    //Middle Position means that Abilities which should effective on the every turn`s end of Battle.
+                    //Actually, Alchemy is not one of Ability part,but we put it here to calculate effect per Turn more conveniently.
+                    //in every turn, we will check the Alchemy has enough Turn to Effective or not, if not, user will lost this effect.
+                    //And the data in AlchemyDataFile will be riped off.
+                    if(AlchemyTurn > 0){
+                        AlchemyTurn = AlchemyTurn - 1;
+                    }else{
+                        AlchemyTurn = 0;
+                        UserATK = UserATK - AlchemyATK;
+                        UserCriticalRate = UserCriticalRate - AlchemyCriticalRate;
+                        UserCriticalDamage = UserCriticalDamage - AlchemyCriticalDamage;
+                    }
+                    SharedPreferences A = getSharedPreferences("AlchemyDataFile", MODE_PRIVATE);
+                    SharedPreferences.Editor editor= A.edit();
+                    editor.clear();
+                    editor.apply();
+
+                    if(BossAbilityText.contains(getString(R.string.RecoverAbilityTran)) && BossNowHP > 0){
+                        BossNowHP = BossNowHP * (1 + SupportClass.CreateRandomNumber(0,25) / 100);
+                        if(BossNowHP > BossTotalHP){
+                            BossNowHP = BossTotalHP;
+                        }
+                    }
+                    if(BossAbilityText.contains(getString(R.string.LastHurtAbilityTran)) && BossNowHP > 0){
+                        BossNowHP = BossNowHP * (1 - SupportClass.CreateRandomNumber(0,17) / 100);
+                        if(BossNowHP < 0){
+                            BossNowHP = 0;
+                        }
+                    }
+                    if(BossAbilityText.contains(getString(R.string.FastStepAbilityTran))){
+                        //provide additional BattleTurn minus 1, and it equals to -2 per Turn.
+                        BattleTurn = BattleTurn - 1;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.ReTimeAbilityTran)) && SupportClass.CreateRandomNumber(0,100) < 33){
+                        BattleTurn = BattleTurn + 1;
+                    }
+                    break;
+                case "Certain":
+                    //Certain Position means that Abilities which should effective on the specific Turn(s) of Battle.
+                    //......
+                    break;
+                case "Calculate":
+                    //Calculate Position means that Abilities which should effective on the every time of damage calculation in Battle.
+                    if (BossAbilityText.contains(getString(R.string.ProudAbilityTran)) && (float) CurrentDamage / BossTotalHP < 0.11) {
+                        //Ability:"傲立", Boss will not take any damage which damage number is lower than Boss`s 11% HP.
+                        CurrentDamage = 0;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.HopelessAbilityTran))){
+                        CurrentDamage = 0;
+                    }
+                    if(BossAbilityText.contains(getString(R.string.FearAbilityTran)) && (float) CurrentDamage / BossTotalHP > 0.25){
+                        CurrentDamage = 0;
+                    }
+                    break;
+            }//Some Abilities like "宝藏" will effective by using independent code.
+            PrintUserBattleData();
+        }
+    }
+
+    //lv.1 method, sub method of ImportUserBattleData() and MakeAbilityEffective() method.
     private void CalculateAlchemyEffect(){
         AlchemyATK =(int) (SupportClass.getIntData(this,"AlchemyDataFile","ATKup",0) * 0.01 * UserATK);// *0.01 is aim to make it to be Percent form.
         AlchemyCriticalRate = SupportClass.getIntData(this,"AlchemyDataFile","CRup",0);
@@ -460,281 +799,23 @@ public class MainActivity extends AppCompatActivity {
         AlchemyTurn = SupportClass.getIntData(this,"AlchemyDataFile","AlchemyTurn",0);
     }
 
-    //sub method of BattleCalculation method. And this method, making all of Boss Abilities effective.
-    @SuppressLint("SetTextI18n")
-    private void MakeAbilityEffective(String Position){
-        //which used in judging how to make Ability effective.
-        String BossAbilityText = BossAbility.toString();
-        switch (Position) {
-            case "Start":
-                //Start Position means that Abilities which should effective on the Start of Battle. Most of these Abilities are about User or Boss Data.
-                if(BossAbilityText.contains(getString(R.string.CurseAbilityTran))){
-                    UserCriticalRate = 0.0;
-                }
-                if (BossAbilityText.contains(getString(R.string.FragileAbilityTran))) {
-                    TextView UserCriticalRateView = findViewById(R.id.UserCriticalRateView);
-                    //Ability:"脆弱", User`s Critical Rate will be added to 100%.
-                    UserCriticalRate = 100.00;
-                    UserCriticalRateView.setText(UserCriticalRate + "");
-                }
-                if(BossAbilityText.contains(getString(R.string.WeakSpotAbilityTran))) {
-                    //Ability:"弱点", User`s Critical Damage will be added extra 50%.
-                    UserCriticalDamage = UserCriticalDamage + 50.0;
-                }
-                if(BossAbilityText.contains(getString(R.string.DiversionAbilityTran))){
-                    UserCriticalDamage = 130.0;
-                }
-                if(BossAbilityText.contains(getString(R.string.CorrosionAbilityTran))){
-                    //Ability:"腐蚀", User`s Critical Rate will lost 25%.
-                    UserATK = (int) (UserATK * 0.75);
-                }
-                if(BossAbilityText.contains(getString(R.string.RushAbilityTran))){
-                    BattleTurn = BattleTurn - 1;
-                }
-                if(BossAbilityText.contains(getString(R.string.SlowAbilityTran))){
-                    BattleTurn = BattleTurn + 1;
-                }
-//                if(BossAbilityText.contains(getString(R.string.DuelAbilityTran))){
-//                    BattleTurn = 1;
-//                }//not necessary, we can edit Turn number in boss design.
-                if(BossAbilityText.contains(getString(R.string.TrialAbilityTran))){
-                    BossTotalHP = (int)(BossTotalHP * 1.3);
-                    BossNowHP = BossTotalHP;
-                }
-                if(BossAbilityText.contains(getString(R.string.ShieldAbilityTran))){
-                    BossNowSD = (int)(BossTotalHP * 0.35);
-                    BossTotalSD = BossNowSD;
-                }
-                //put Alchemy data in user data.
-                CalculateAlchemyEffect();//we need re-calculate the Alchemy data when user basic data is changed.
-                if(AlchemyTurn > 0){
-                    UserATK = UserATK + AlchemyATK;
-                    UserCriticalRate = UserCriticalRate + AlchemyCriticalRate;
-                    UserCriticalDamage = UserCriticalDamage + AlchemyCriticalDamage;
-                }
-                break;
-            case "Middle":
-                //Middle Position means that Abilities which should effective on the every turn`s end of Battle.
-                //in every turn, we will check the Alchemy has enough Turn to Effective or not, if not, user will lost this effect.
-                //And the data in AlchemyDataFile will be riped off.
-                if(AlchemyTurn > 0){
-                    AlchemyTurn = AlchemyTurn - 1;
-                }else{
-                    AlchemyTurn = 0;
-                    UserATK = UserATK - AlchemyATK;
-                    UserCriticalRate = UserCriticalRate - AlchemyCriticalRate;
-                    UserCriticalDamage = UserCriticalDamage - AlchemyCriticalDamage;
-                }
-                SharedPreferences A = getSharedPreferences("AlchemyDataFile", MODE_PRIVATE);
-                SharedPreferences.Editor editor= A.edit();
-                editor.clear();
-                editor.apply();
-
-                if(BossAbilityText.contains(getString(R.string.RecoverAbilityTran)) && BossNowHP > 0){
-                    BossNowHP = BossNowHP * (1 + SupportClass.CreateRandomNumber(0,25) / 100);
-                    if(BossNowHP > BossTotalHP){
-                        BossNowHP = BossTotalHP;
-                    }
-                }
-                if(BossAbilityText.contains(getString(R.string.LastHurtAbilityTran)) && BossNowHP > 0){
-                    BossNowHP = BossNowHP * (1 - SupportClass.CreateRandomNumber(0,17) / 100);
-                    if(BossNowHP < 0){
-                        BossNowHP = 0;
-                    }
-                }
-                if(BossAbilityText.contains(getString(R.string.FastStepAbilityTran))){
-                    //provide additional BattleTurn minus 1, and it equals to -2 per Turn.
-                    BattleTurn = BattleTurn - 1;
-                }
-                if(BossAbilityText.contains(getString(R.string.ReTimeAbilityTran)) && SupportClass.CreateRandomNumber(0,100) < 33){
-                    BattleTurn = BattleTurn + 1;
-                }
-                break;
-            case "Certain":
-                //Certain Position means that Abilities which should effective on the specific Turn(s) of Battle.
-                //......
-                break;
-            case "Calculate":
-                //Calculate Position means that Abilities which should effective on the every time of damage calculation in Battle.
-                if (BossAbilityText.contains(getString(R.string.ProudAbilityTran)) && (float) CurrentDamage / BossTotalHP < 0.11) {
-                    //Ability:"傲立", Boss will not take any damage which damage number is lower than Boss`s 11% HP.
-                    CurrentDamage = 0;
-                }
-                if(BossAbilityText.contains(getString(R.string.HopelessAbilityTran))){
-                    CurrentDamage = 0;
-                }
-                if(BossAbilityText.contains(getString(R.string.FearAbilityTran)) && (float) CurrentDamage / BossTotalHP > 0.25){
-                    CurrentDamage = 0;
-                }
-
-                break;
-        }//Some Abilities like "宝藏" will effective by using independent code.
-        PrintBattleData();
-    }
-
-    //sub method, used in clear all boss Ability quickly.
+    //lv.1 method, method to clear all boss Ability quickly.
     private void ClearAllAbility(){
-        MakeAbilityNotNull();//To prevent from Clear() method causing NullPointerException.
+        ImportBossAbility();//To prevent from Clear() method causing NullPointerException.
         if(!BossAbility.isEmpty()){
             BossAbility.clear();
-        }
-
-}
-
-    private void RecordBattleData(boolean IsBattleWin){
-        SharedPreferences RecordInfo = getSharedPreferences("RecordDataFile", MODE_PRIVATE);
-        //record the max Difficulty user have ever finished.
-        if(IsBattleWin && RecordInfo.getInt("MaxDailyDifficulty",0) < DailyDifficulty){
-            SharedPreferences.Editor editor= RecordInfo.edit();
-            editor.putInt("MaxDailyDifficulty", DailyDifficulty);
-            editor.apply();
-        }
-        //if user win on higher floor, record that data.
-        if(CurrentShowFloor >= UserConflictFloor){
-            UserConflictFloor = CurrentShowFloor;
-            SupportClass.saveIntData(this,"BattleDataProfile","UserConflictFloor",UserConflictFloor);
+            BossAbility.add("Nothing");//prevent from NullPointerException.
+            BossAbilityText = BossAbility.toString();
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private void BattleCalculation(boolean IsQuestRight, boolean IsBossHere){
-        TextView BossHPShowView = findViewById(R.id.BossHPShowView);
-        TextView BossShieldShowView = findViewById(R.id.BossShieldShowView);
-        TextView BattleTurnView = findViewById(R.id.BattleTurnView);
-        ProgressBar BossHPBar =findViewById(R.id.BossHPBar);
-        ProgressBar BossShieldBar = findViewById(R.id.BossShieldBar);
-
-        //Boss Ability, which useful in battle Start`s calculation.
-        MakeAbilityEffective("Start");
-
-        if(SupportClass.CreateRandomNumber(0,10000) <= (int) ( UserCriticalRate * 100)){
-            IsCritical = true;
-            //if Random Number less than CriticalRate *100, system will think NO Critical, so IsCritical variable will keep false.
+    //lv.1 method, import method.
+    private void ImportBossAbility(){
+        if(BossState > 0){
+            BossAbility = getIntent().getStringArrayListExtra("BossAbility");
         }
-
-        //calculate the basic damage to Boss.
-        if (IsQuestRight && IsBossHere && BattleTurn >= 1 && BossNowHP > 0){
-            if (UserATK <= BossNowSD){
-                //CurrentDamage still 0.
-                BossNowSD = BossNowSD - UserATK;
-            }else {
-                CurrentDamage = UserATK - BossNowSD;
-                BossNowSD = 0;
-            }
-
-            //if critical, then add additional damage to damage counting.
-            if(IsCritical) {
-                CurrentDamage = (int) (CurrentDamage * UserCriticalDamage / 100 );
-            }
-
-            //Boss Ability, which useful in battle progression`s calculation.
-            MakeAbilityEffective("Calculate");
-
-            //finally, cost Boss`s HP based on damage counting.
-            BossNowHP = BossNowHP - CurrentDamage;
-
-            //after one time`s damage calculation, should cost 1 Turn.
-            BattleTurn = BattleTurn - 1;
-            MakeAbilityEffective("Middle");
-
-            //after calculation, show User the detail.
-            BossHPShowView.setText(BossNowHP + "/" + BossTotalHP);
-            BossShieldShowView.setText(BossNowSD + "/" + BossTotalSD);
-            BattleTurnView.setText(BattleTurn + "");
-            BossHPBar.setProgress(SupportClass.CalculatePercent(BossNowHP,BossTotalHP));
-            BossShieldBar.setProgress(SupportClass.CalculatePercent(BossNowSD,BossTotalSD));
-
-            //if boss lost all its HP, still in calculation, then User Win. And close the battle immediately.
-            if (BossNowHP <=0){
-                CloseBattle(true);
-                BossDeadTime = BossDeadTime + 1;
-                RecordBattleData(true);
-            }
-
-            //judging whether boss is die.
-        }else if(IsBossHere || BattleTurn < 1){
-            //cost all Turns, but boss still have HP, LOST.
-            CloseBattle(false);
-            RecordBattleData(false);
-        }else if(BossNowHP <= 0){
-            //Turns still remain, and boss lost all HP,WIN.
-            CloseBattle(true);
-            BossDeadTime = BossDeadTime + 1;
-            RecordBattleData(true);
-        }
-        //store the BossDeadTime data.
-        SupportClass.saveIntData(this,"BattleDataProfile","BossDeadTime",BossDeadTime);
-    }
-
-    //sub method of BattleCalculation, used in confirm whether User win the battle.
-    private void CloseBattle(boolean IsWin){
-        //close the battle layout,to make App become normal.
-        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
-        ConstraintLayout BossShieldLayout = findViewById(R.id.BossShieldLayout);
-        BattleInfLayout.setVisibility(View.GONE);
-        BossShieldLayout.setVisibility(View.GONE);
-        //reset the value of HP and SD bar.
-        ProgressBar BossHPBar =findViewById(R.id.BossHPBar);
-        ProgressBar BossShieldBar = findViewById(R.id.BossShieldBar);
-        BossHPBar.setProgress(SupportClass.CalculatePercent(BossNowHP,BossTotalHP));
-        BossShieldBar.setProgress(SupportClass.CalculatePercent(BossNowSD,BossTotalSD));
-        //decide whether user can get EXP, Point and Material as reward.
-            if (IsWin && BossState == 1) {//in Conflict battle.
-                //give user their reward which they should get in battle of Conflict.
-                int RewardTimes = 1;
-                //according the Ability decide Reward Times (Multiple number).
-                if(BossAbility.toString().contains(getString(R.string.TreasureAbilityTran))){
-                    //Ability: "宝藏"， User will have double reward after Boss which has this Ability had beaten.
-                    RewardTimes = 2;
-                }
-
-                if(UserConflictFloor < CurrentShowFloor){//every floor could only get reward for 1 time.
-                    GetEXP(BossEXPValue * RewardTimes);
-                    GetPoint(BossPointValue * RewardTimes);
-                    GetMaterial(BossMaterialValue * RewardTimes);
-                }
-
-                //if this battle is happen in Conflict, this part will ripe off any data which not belongs to normal Boss.
-                ClearAllAbility();
-                BossAbility.add("Nothing");
-
-                //cancel Conflict Battle state.
-                BossState = 0;
-                //if boss can Reborn, Reborn it.
-                ImportConflictBossData(true);
-
-            }else if(IsWin && BossState == 2){
-                GetEXP(BossEXPValue);
-                GetPoint(BossPointValue);
-                GetMaterial(BossMaterialValue);
-                //return to normal boss mode.
-                BossState = 0;
-            } else if(IsWin && BossState == 3){
-                SupportClass.saveLongData(this,"TourneyDataFile","MaxPtRecord",BossPtValue);
-                //return to normal boss mode.
-                BossState = 0;
-            }
-
-            //show final result to user.
-            if (IsWin && AppMode.equals("Game")) {
-                Toast.makeText(getApplicationContext(), getString(R.string.BattleWinTran), Toast.LENGTH_SHORT).show();
-            } else if(!IsWin && AppMode.equals("Game")) {
-                Toast.makeText(getApplicationContext(), getString(R.string.BattleLostTran), Toast.LENGTH_SHORT).show();
-            }
-            //save battle data is belongs to RecordBattleData() method.
-        }//end of battle system.
-
-
-    //talent system.
-    int ATKTalentLevel;
-    int CRTalentLevel;
-    int CDTalentLevel;
-
-    private void InitializingTalentData(){
-        ATKTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","ATKTalentLevel",0);
-        CRTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CRTalentLevel",0);
-        CDTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CDTalentLevel",0);
-    }//end of talent system.
+    }//end of Boss Ability part.
+    //end of battle system.
 
 
     //Note Folder system.
@@ -778,222 +859,7 @@ public class MainActivity extends AppCompatActivity {
             CurrentShowingTitle = "";
             CurrentUserAnswer = "";
         }
-    }//end of Folder system.
-
-
-    //One of the basic logic in the Quest System.This part is working for reload the Quest.
-    //to store keyboard state.
-    //when MainActivity is initialized, the keyboard is hided(false).
-    //if AutoKeyboard function is on, when user try to reload the Quest, the keyboard will appear.(turn the state to true)
-    //using this variable to detect if keyboard is opened, and be the base of AutoKeyboard function.
-    boolean IsKeyboardOpened = false;
-
-    @SuppressLint("SetTextI18n")
-    public void ReloadQuest(View view){
-        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
-        TextView QuestIDShow = findViewById(R.id.QuestIDShow);
-        EditText QuestTitleView = findViewById(R.id.QuestTitle);
-        TextView QuestLevelView = findViewById(R.id.QuestLevel);
-        TextView QuestTypeShowView = findViewById(R.id.QuestTypeShow);
-        TextView EXPValueView =findViewById(R.id.EXPValue);
-        TextView PointValueView = findViewById(R.id.PointValue);
-        TextView QuestComboShowView = findViewById(R.id.QuestComboShowView);
-        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
-        SQLiteDatabase db = QuestDataBase.getReadableDatabase();
-
-        //base logic of random number generator.
-        int min = 0;
-        int max;
-        //because the lines in table starting on 0, so we need to minus 1 based on the number that User can see.(this number is based on starting on 1)
-        if (QuestTotalNumber > 1){
-            max = QuestTotalNumber - 1;
-            }else{
-            max = 0;
-        }
-        // nextInt is normally exclusive of the top value,
-        // so add 1 to make it inclusive
-        int RandomNumber = ThreadLocalRandom.current().nextInt(min, max + 1);//The end of random number generator.
-        QuestIDShow.setText((RandomNumber + 1) + "");
-
-        //define rules used in searching data in database. Returning entire table in database. And the results will be sorted in the resulting Cursor.
-        //return whole table in "Cursor" form.
-        Cursor ResultCursor = db.query(
-                QuestDataBaseBasic.TABLE_NAME,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                null,              // The columns for the WHERE clause
-                null,          // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                null               // The sort order
-        );
-
-        //randomly choose a line in table "ResultCursor" , return all data we need in this line of table.
-        ResultCursor.moveToPosition(RandomNumber);
-        QuestTitleContent =ResultCursor.getString(ResultCursor.getColumnIndex("QuestTitle")) ;
-        QuestSystemAnswer =ResultCursor.getString(ResultCursor.getColumnIndex("QuestAnswer"));
-        QuestLevel = ResultCursor.getInt(ResultCursor.getColumnIndex("QuestLevel"));
-        QuestType = ResultCursor.getString(ResultCursor.getColumnIndex("QuestType"));
-        ResultCursor.close();
-
-        //show these content to user.
-        QuestTitleView.setText(QuestTitleContent);
-        QuestLevelView.setText(QuestLevel + "");
-        QuestTypeShowView.setText(QuestType);
-        //help user focus on typing. Auto pop the virtual keyboard.Thanks to:
-        // https://www.jianshu.com/p/6f09de9e903b !
-        // https://blog.csdn.net/fenglolo/article/details/108893330 !
-        EditText QuestAnswer = findViewById(R.id.QuestAnswer);
-        if(SupportClass.getBooleanData(this,"TimerSettingProfile", "AutoKeyboard", false)){
-            QuestAnswer.requestFocus();
-            InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (null != imm && !IsKeyboardOpened) {
-                imm.toggleSoftInput(0, InputMethodManager.SHOW_FORCED);
-                IsKeyboardOpened = !IsKeyboardOpened;
-            }
-        }
-
-        //set basic values of every Quest.
-        EXPValueView.setText(QuestLevel + "");
-        PointValueView.setText((int) ( QuestLevel * 2 + Math.pow(QuestCombo,1.6) ) + "");
-        QuestComboShowView.setText(QuestCombo + "");
-
-        //if you turn on "Game" Mode, you have 3% chance to meet Boss when you try to reload the Quest.
-        if(AppMode.equals("Game") && SupportClass.CreateRandomNumber(1,100) <= 3 && BattleInfLayout.getVisibility() == View.GONE){
-            //calculate User`s battle data.
-            ImportUserBattleData();
-            //create a Normal Boss.
-            int BossHP = (int)( 23 * (BossDeadTime + 1) * ( 14 + (0.1 * (BossDeadTime + 1) ) ) );
-            ClearAllAbility();
-            BossAbility.add("Nothing");
-            SetBossValues("Experience",UserLevel,BossHP,0,1,10,0,0);
-            //Change the Appearance of App, according the String variable AppMode.
-            BattleInfLayout.setVisibility(View.VISIBLE);
-        }
-
-        //load Quest data completed.reset QuestTimer number.
-        Chronometer QuestTimer = findViewById(R.id.QuestTimerView);
-        QuestTimer.setBase(SystemClock.elapsedRealtime());
-        QuestTimer.start();
-    }
-
-    //One of the basic logic in the Quest System. This part is written for decide the correct or not in user`s answer. And it will give feedback to user.
-    @SuppressLint("SetTextI18n")
-    public void AnswerJudge(View view){
-        EditText QuestTitleView = findViewById(R.id.QuestTitle);
-        EditText QuestAnswerView =findViewById(R.id.QuestAnswer);
-        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
-        boolean BossIsHere = false;
-        if (BattleInfLayout.getVisibility() != View.GONE && AppMode.equals("Game")){
-            BossIsHere = true;
-        }//if Battle interface is close, means that Boss isn`t here, so BossIsHere variable will keep false.
-
-        //!XXX.equals(AAA) is same as XXX != AAA. And this "if" is prevent from empty Quest crash.
-        if (!QuestTitleView.getText().toString().equals("")){
-            //after Answering the Quest, stop the QuestTimer. And it will be Started in ReloadQuest() method.
-            Chronometer QuestTimer = findViewById(R.id.QuestTimerView);
-            QuestTimer.stop();
-            //Quest System Answer finish loading in ReloadQuest method.
-            QuestUserAnswer = QuestAnswerView.getText().toString();
-            //1.Compare the answer.And show the counting to user.
-            if (QuestUserAnswer.equals(QuestSystemAnswer)){
-                //show User judge result.
-                UserRightTimes = UserRightTimes + 1 ;
-                TextView UserRightTimesView =findViewById(R.id.RightTimes);
-                UserRightTimesView.setText(UserRightTimes + "");
-                //record user right answering times.
-                SupportClass.saveIntData(this,"RecordDataFile","RightAnswering",UserRightTimes);
-
-                //give resources to user as reward.
-                GetEXP(QuestLevel);
-                ChangeQuestCombo(true);
-                GetPoint((int) ( QuestLevel * 2 + Math.pow(QuestCombo,1.6) ));
-                if(BattleInfLayout.getVisibility() != View.GONE){
-                    BattleCalculation(true,BossIsHere);
-                }
-                Toast.makeText(getApplicationContext(), getString(R.string.RightHintTran),Toast.LENGTH_SHORT).show();
-            }else{
-                //show User judge result.
-                UserWrongTimes = UserWrongTimes + 1 ;
-                TextView UserWrongTimesView = findViewById(R.id.WrongTimes);
-                UserWrongTimesView.setText(UserWrongTimes +"");
-                //record user wrong answering times.
-                SupportClass.saveIntData(this,"RecordDataFile","WrongAnswering",UserWrongTimes);
-
-                //lost EXP as justice.
-                if (UserHaveEXP > 0){
-                   LostEXP(1);
-                }
-                ChangeQuestCombo(false);
-                if(BattleInfLayout.getVisibility() != View.GONE){
-                    BattleCalculation(false,BossIsHere);
-                }
-                SupportClass.CreateOnlyTextDialog(this,
-                        getString(R.string.NoticeWordTran),
-                        getString(R.string.WrongHintTran) +"\n" + getString(R.string.AfterWrongAnswerHintTran) + "\n" + QuestSystemAnswer,
-                        getString(R.string.ConfirmWordTran),
-                "Nothing",
-                true);
-            }
-            //end of answer judgement,load a new Quest automatically.
-            ReloadQuest(QuestTitleView);
-        }else if(QuestTitleView.getText().toString().equals("")){
-            //if no Quest, system will reload a new Quest.
-            ReloadQuest(QuestTitleView);
-        }
-    }
-
-    private void InitializingAppMode(){
-        SharedPreferences ChooseAppMode = getSharedPreferences("ChooseAppModeProfile", MODE_PRIVATE);
-        if(Objects.equals(ChooseAppMode.getString("AppMode", "Normal"), "Normal")){
-            AppMode = "Normal";
-        }else if(Objects.equals(ChooseAppMode.getString("AppMode", "Normal"), "Game")){
-            AppMode = "Game";
-        }else if(Objects.equals(ChooseAppMode.getString("AppMode", "Normal"), "Focus")){
-            AppMode = "Focus";
-        }else{
-            //do it just for more reliable.
-            AppMode = "Normal";
-        }
-    }
-
-    //provide support for get id total number in database, sub method of onCreate.
-    private void getIdNumberInfo(){
-        QuestTotalNumber = SupportClass.getIntData(this,"IdNumberStoreProfile","IdNumber",0);
-    }
-
-    //search the exact number of Quests method. Also being a sub method of onCreate.
-    private void ChangeQuestTotalNumber(){
-        getIdNumberInfo();
-        //show hint to user to set some Quest when no Quest available.
-        if (QuestTotalNumber <= 0){
-            EditText QuestTitleView =findViewById(R.id.QuestTitle);
-            QuestTitleView.setHint(R.string.NoQuestAvailableHintTran);
-        }
-    }
-
-    //change App appearance according AppMode String variable. Also being a sub method of onCreate.
-    private void ModeChangeAppearance(){
-        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
-        ConstraintLayout QuestValueLayout = findViewById(R.id.QuestValueLayout);
-        ConstraintLayout EXPLayout = findViewById(R.id.EXPLayout);
-
-        switch (AppMode) {
-            case "Normal":
-                BattleInfLayout.setVisibility(View.GONE);
-                break;
-            case "Game":
-                if(BossState > 0){
-                    BattleInfLayout.setVisibility(View.VISIBLE);
-                }
-                //BossShieldLayout`s visibility will be set in SetBossValue method.
-                break;
-            case "Focus":
-                BattleInfLayout.setVisibility(View.GONE);
-                QuestValueLayout.setVisibility(View.GONE);
-                EXPLayout.setVisibility(View.GONE);
-                break;
-        }
-    }//end of Layout Management system.
+    }//end of Note Folder system.
 
 
     //timer system.
@@ -1002,13 +868,11 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     private void InitializingTimer(){
-        SharedPreferences TimerInfo = getSharedPreferences("TimerSettingProfile", MODE_PRIVATE);
-        boolean TimerState = TimerInfo.getBoolean("TimerEnabled",false);
-        boolean TimerFortuneState = TimerInfo.getBoolean("TimerFortune",false);
-        TimerProgress = TimerInfo.getInt("TimerProgress", 0);
-        TimerTargetDay = TimerInfo.getInt("TimerTargetDay",30);
-
-        String TimerUnitText = TimerInfo.getString("TimerUnit","Sol.");
+        boolean TimerState = SupportClass.getBooleanData(this,"TimerSettingProfile","TimerEnabled",false);
+        boolean TimerFortuneState = SupportClass.getBooleanData(this,"TimerSettingProfile","TimerFortune",false);
+        TimerProgress = SupportClass.getIntData(this,"TimerSettingProfile","TimerProgress", 0);
+        TimerTargetDay = SupportClass.getIntData(this,"TimerSettingProfile","TimerTargetDay", 30);
+        String TimerUnitText = SupportClass.getStringData(this,"TimerSettingProfile","TimerUnit","Sol.");
         String TimerFortuneText;
 
         if(TimerFortuneState){
@@ -1063,20 +927,288 @@ public class MainActivity extends AppCompatActivity {
     }//end of timer system.
 
 
-    //Activity support system.
-    //Setting button`s function--jump to SettingActivity.
-    public void GoToSetting(View view){
-        Intent i = new Intent(MainActivity.this, SettingActivity.class);
-        startActivity(i);
-        //finish();
+    //Record system.
+    int EXPRecord = 0;
+    long PointRecord = 0;
+    int MaterialRecord = 0;
+    int ComboRecord = 0;
+
+    private void InitializingRecordData(){
+        EXPRecord = SupportClass.getIntData(this,"RecordDataFile","EXPGotten",0);
+        PointRecord = SupportClass.getLongData(this,"RecordDataFile","PointGotten",0);
+        MaterialRecord = SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0);
+        ComboRecord = SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0);
+    }//end of Record system.
+
+
+    //Game Resource system. Including Point and Materials.
+    int UserPoint = 0;
+    int UserMaterial = 0;
+    int QuestCombo = 0;
+
+    //basic operation of resource, just do it automatically.
+    private void GetPoint(int addNumber){
+        UserPoint = UserPoint + addNumber;
+        PointRecord = PointRecord + addNumber;
+        SupportClass.saveLongData(this,"RecordDataFile","PointGotten",PointRecord);
+        SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
     }
+
+    private void GetMaterial(int addNumber){
+        UserMaterial = UserMaterial + addNumber;
+        MaterialRecord = MaterialRecord + addNumber;
+        SupportClass.saveIntData(this,"RecordDataFile","MaterialGotten",MaterialRecord);
+        SupportClass.saveIntData(this,"BattleDataProfile","UserMaterial",UserMaterial);
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void ChangeQuestCombo(boolean IsQuestRight){
+        TextView QuestComboShowView = findViewById(R.id.QuestComboShowView);
+        //change Quest Combo.
+        if(IsQuestRight){
+            QuestCombo = QuestCombo + 1;
+        }else{
+            QuestCombo = 0;
+        }
+        //save Combo Record.
+        if(QuestCombo >= ComboRecord){
+            ComboRecord = QuestCombo;
+            SupportClass.saveIntData(this,"RecordDataFile","ComboGotten",ComboRecord);
+        }
+        QuestComboShowView.setText(QuestCombo + "");
+        SupportClass.saveIntData(this,"BattleDataProfile","QuestCombo",QuestCombo);
+    }
+
+    private void InitializingResourceData(){
+        QuestCombo = SupportClass.getIntData(this,"BattleDataProfile","QuestCombo",0);
+        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
+        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
+    }//end of Game Resource system.
+
+
+    //EXP system.
+    int UserLevel;
+    int LevelLimit = 50;
+    int UserHaveEXP;
+    int UserUpgradeEXP = 1;
+
+    //basic calculation of EXP, define them to use less manually coding or Error.
+    private void LostEXP(int MinusNumber){
+        UserHaveEXP = UserHaveEXP - MinusNumber;
+        CheckLevel();
+    }
+
+    private void GetEXP(int AddNumber){
+        UserHaveEXP = UserHaveEXP + AddNumber;
+        EXPRecord = EXPRecord + AddNumber;
+        SupportClass.saveIntData(this,"RecordDataFile","EXPGotten",EXPRecord);
+        CheckLevel();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void CalculateUpgradeEXP(){
+        //EXPLimit stand for EXP which user need to collect to upgrade.
+        // it just use for double form number calculating, it is not used in actual EXP system code.
+        double EXPLimit;
+        //it means the number: level^1.6 + 15 - level^1.1.
+        EXPLimit = Math.pow(UserLevel,1.6) + 15 - Math.pow(UserLevel,1.1) ;
+        //lost the number under 0`s part,or "FLOOR".
+        UserUpgradeEXP = (int) EXPLimit;
+        TextView NextLevelEXPView = findViewById(R.id.NextLevelEXP);
+        NextLevelEXPView.setText(UserUpgradeEXP + "");
+    }
+
+    //Thanks to:https://www.jianshu.com/p/59b266c644f3!
+    //keep EXP data method.
+    private void StoreEXPInformation(){
+        SharedPreferences EXPInfo = getSharedPreferences("EXPInformationStoreProfile", MODE_PRIVATE);
+        //获取Editor
+        SharedPreferences.Editor editor= EXPInfo.edit();
+        //得到Editor后，写入需要保存的数据
+        editor.putInt("UserLevel", UserLevel);
+        editor.putInt("UserHaveEXP",UserHaveEXP);
+        editor.apply();//提交修改
+    }
+
+    //read EXP data method.
+    private void InitializingEXPInformation(){
+        UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
+        UserHaveEXP = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserHaveEXP",0);
+        LevelLimit = SupportClass.getIntData(this,"ExcessDataFile","LevelLimit",50);
+        CheckLevel();
+    }
+
+    //check the EXP number, and make level up or down calculation.
+    @SuppressLint("SetTextI18n")
+    private void CheckLevel(){
+        //show current level upgrade needs.
+        CalculateUpgradeEXP();
+        TextView EXPrateView = findViewById(R.id.EXPrate);
+        ProgressBar EXPBarView = findViewById(R.id.EXPBar);
+        TextView NowLevel = findViewById(R.id.NowLevel);
+        TextView NowHaveEXPView = findViewById(R.id.NowHaveEXP);
+        TextView NextLevelEXPView = findViewById(R.id.NextLevelEXP);
+        //1.upgrade.
+        if (UserHaveEXP >= UserUpgradeEXP && UserLevel < LevelLimit){
+            UserLevel = UserLevel + 1 ;
+            UserHaveEXP = UserHaveEXP -UserUpgradeEXP;
+        }else if (UserHaveEXP < 0 && UserLevel > 1 ){
+            UserLevel = UserLevel - 1 ;
+            UserHaveEXP = UserHaveEXP + UserUpgradeEXP;
+        }
+        //1.1 after upgrade / downgrade,show lower needs to upgrade and show the EXP data to user, including level, upgrade EXP, and User haveEXP.
+        CalculateUpgradeEXP();
+        NowHaveEXPView.setText(UserHaveEXP +"");
+        NowLevel.setText(UserLevel + "");
+        //2.check if user touched LevelLimit, and change the appearance based on this.
+        if(UserLevel >= LevelLimit){
+            NowLevel.setTextColor(Color.RED);
+            NextLevelEXPView.setText("-");
+        }else{
+            NextLevelEXPView.setText(UserUpgradeEXP + "");
+        }
+        //3.And show the result to user.
+        EXPrateView.setText(SupportClass.CalculatePercent(UserHaveEXP,UserUpgradeEXP) + "%");
+        EXPBarView.setProgress(SupportClass.CalculatePercent(UserHaveEXP,UserUpgradeEXP));
+        //4.keep the EXP data.
+        StoreEXPInformation();
+    }//the end of EXP system.
+
+
+    //Assist Function system.
+    //store function state (ON or OFF).
+    boolean IsAutoKeyboard = false;
+    boolean IsAutoClearAnswer =false;
+
+    //main method.
+    private void InitializingAssistFunction(){
+        IsAutoKeyboard = SupportClass.getBooleanData(this,"TimerSettingProfile", "AutoKeyboard", false);
+        IsAutoClearAnswer = SupportClass.getBooleanData(this,"TimerSettingProfile","AutoClearAnswer",false);
+    }
+
+    //Auto keyboard function.
+    //to store keyboard state.
+    boolean IsKeyboardOpened = false;
+    //when MainActivity is initialized, the keyboard is hided(false).
+    //if AutoKeyboard function is on, when user try to reload the Quest, the keyboard will appear.(turn the state to true)
+    //using this variable to detect if keyboard is opened, and be the base of AutoKeyboard function.
+
+    private void AutoKeyboardControl(){
+        //help user focus on typing. Auto pop the virtual keyboard.Thanks to:
+        // https://www.jianshu.com/p/6f09de9e903b !
+        // https://blog.csdn.net/fenglolo/article/details/108893330 !
+        EditText QuestAnswer = findViewById(R.id.QuestAnswer);
+        if(IsAutoKeyboard){
+            QuestAnswer.requestFocus();
+            InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (null != imm && !IsKeyboardOpened) {
+                imm.toggleSoftInput(0, InputMethodManager.SHOW_FORCED);
+                IsKeyboardOpened = !IsKeyboardOpened;
+            }
+        }
+    }//end of Auto keyboard function.
+
+    //Auto Clear Answer Function.
+    private void AutoClearAnswerControl(){
+        EditText QuestAnswer = findViewById(R.id.QuestAnswer);
+        if(IsAutoClearAnswer){
+            QuestAnswer.setText("");
+        }
+    }//end of Auto Clear Answer Function.
+    // end of Assist Function system.
+
+
+    //Chronometer function, sub part of Quest system.
+    private void StopChronometer(){
+        Chronometer QuestTimer = findViewById(R.id.QuestTimerView);
+        QuestTimer.stop();
+    }
+
+    private void StartChronometer(){
+        Chronometer QuestTimer = findViewById(R.id.QuestTimerView);
+        QuestTimer.setBase(SystemClock.elapsedRealtime());
+        QuestTimer.start();
+    }//end of Chronometer function.
+
+
+    //Quest number function, sub part of Quest system.
+    //provide support for get id total number in database, sub method of onCreate.
+    private void getIdNumberInfo(){
+        QuestTotalNumber = SupportClass.getIntData(this,"IdNumberStoreProfile","IdNumber",0);
+    }
+
+    //search the exact number of Quests method. Also being a sub method of onCreate.
+    private void ChangeQuestTotalNumber(){
+        getIdNumberInfo();
+        //show hint to user to set some Quest when no Quest available.
+        if (QuestTotalNumber <= 0){
+            EditText QuestTitleView =findViewById(R.id.QuestTitle);
+            Button ConfirmAnswerButton = findViewById(R.id.ConfirmAnswerButton);
+            FloatingActionButton FloatingReloadButton = findViewById(R.id.FloatingReloadButton);
+            QuestTitleView.setHint(R.string.NoQuestAvailableHintTran);
+            ConfirmAnswerButton.setEnabled(false);
+            FloatingReloadButton.setEnabled(false);
+        }
+    }//end of Quest number function.
+
+
+    //Mode and Appearance system.
+    private void InitializingAppMode(){
+        AppMode = SupportClass.getStringData(this,"ChooseAppModeProfile","AppMode",ValueClass.NORMAL_MODE);
+    }
+
+    //change App appearance according AppMode String variable. Also being a sub method of onCreate.
+    private void ModeChangeAppearance(){
+        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
+        switch (AppMode) {
+            case ValueClass.NORMAL_MODE:
+                BattleInfLayout.setVisibility(View.GONE);
+                break;
+            case ValueClass.GAME_MODE:
+                if(BossState > 0){
+                    OpenBattleLayout();
+                }
+                //BossShieldLayout`s visibility will be set in SetBossValue() method.
+                break;
+            case ValueClass.FOCUS_MODE:
+                ConstraintLayout QuestValueLayout = findViewById(R.id.QuestValueLayout);
+                ConstraintLayout EXPLayout = findViewById(R.id.EXPLayout);
+                BattleInfLayout.setVisibility(View.GONE);
+                QuestValueLayout.setVisibility(View.GONE);
+                EXPLayout.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    //sub method of ModeChangeAppearance() and ReloadQuest() method.
+    private void OpenBattleLayout(){
+        ConstraintLayout BattleInfLayout = findViewById(R.id.BattleInfLayout);
+        ConstraintLayout EXPLayout = findViewById(R.id.EXPLayout);
+        BattleInfLayout.setVisibility(View.VISIBLE);
+        EXPLayout.setVisibility(View.GONE);
+    }//end of Mode and Appearance system.
+
+
+    //support method collection.
     //Square button`s function--jump to SquareActivity.
     public void GoToSquare(View view){
-        Intent i = new Intent(MainActivity.this, SquareActivity.class);
-        if(AppMode.equals("Game")){
-           i.putExtra("AppModeImport",100);
+        //if in [Focus] mode, then user press [Square] button will be sent to Chronometer.
+        Intent i;
+        if(!AppMode.equals(ValueClass.FOCUS_MODE)){
+            i = new Intent(MainActivity.this, SquareActivity.class);
+            i.putExtra("AppModeImport",100);//I don`t know why I put this value here, but for stable purpose, I suggest do not remove it.
+        }else{
+            i = new Intent(MainActivity.this, TimerActivity.class);
         }
         startActivity(i);
+    }
+
+    //Adventure button`s function--jump to AdventureActivity.
+    public void GoToAdventure(View view){
+        if(AppMode.equals(ValueClass.GAME_MODE)){
+            Intent i = new Intent(MainActivity.this, AdventureActivity.class);
+            startActivity(i);
+        }
     }
 
     //Folder button`s function--jump to FolderActivity.
@@ -1090,10 +1222,4 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(MainActivity.this, MemoryActivity.class);
         startActivity(i);
     }
-
-    //Return button`s function--to close the app.
-//    public void closeApp(View view){
-//        finish();
-//    }
-    //end of Activity support system.
-}
+}//end of support method collection.

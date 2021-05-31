@@ -3,15 +3,17 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -21,12 +23,21 @@ public class ConflictActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conflict);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         InitializingConflictData();
     }
 
     //Conflict Function system.
     //decide the max floor number of whole system.
-    int MaxConflictFloor = 20;
+    //MaxConflictFloor is defined in ValueClass.
     //User cleared floor number.
     int UserConflictFloor = 0;
     //the floor show on UI.
@@ -51,11 +62,12 @@ public class ConflictActivity extends AppCompatActivity {
     private void InitializingConflictData(){
         TextView CurrentFloorShowView = findViewById(R.id.CurrentFloorShowView);
         UserConflictFloor = SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0);
-        if(SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0) > 1){
-            CurrentShowFloor = UserConflictFloor;
-        }else{
-            CurrentShowFloor = 1;
-        }
+        CurrentShowFloor = Math.max(UserConflictFloor, 1);
+//       equals to: if(UserConflictFloor > 1){
+//                    CurrentShowFloor = UserConflictFloor;
+//                  }else{
+//                    CurrentShowFloor = 1;
+//                  }
         CurrentFloorShowView.setText(CurrentShowFloor + "");
         ShowConflictBossInformation();
     }
@@ -70,7 +82,7 @@ public class ConflictActivity extends AppCompatActivity {
 
     public void ShowConflictHelpText(View view){
         SupportClass.CreateOnlyTextDialog(this,
-                "Help",
+                getString(R.string.HelpWordTran),
                 "·This is a Tower, called [Conflict].\n" +
                         "·There are so many dangerous monsters in it, and whole tower is full-filled with negative emotions.\n" +
                         "·These Creations are making strong power to affect this world in a mystery form. \n" +
@@ -109,19 +121,19 @@ public class ConflictActivity extends AppCompatActivity {
             int JumpFloor = Integer.parseInt(FloorJumpNumberView.getText().toString());//store the exact Number in Code in int form.
             try {
                 //2. get the first number in String, and transform it to int form.
-                if(JumpFloor <= UserConflictFloor && JumpFloor > 0 && JumpFloor <= MaxConflictFloor && !InputText.isEmpty()){
+                if(JumpFloor <= UserConflictFloor && JumpFloor > 0 && JumpFloor <=ValueClass.CONFLICT_MAX_FLOOR && !InputText.isEmpty()){
                     TextView CurrentFloorShowView = findViewById(R.id.CurrentFloorShowView);
                     CurrentShowFloor = JumpFloor;
                     CurrentFloorShowView.setText(CurrentShowFloor + "");
                     ShowConflictBossInformation();
-                }else if(JumpFloor > UserConflictFloor && JumpFloor <= MaxConflictFloor){
+                }else if(JumpFloor > UserConflictFloor && JumpFloor <= ValueClass.CONFLICT_MAX_FLOOR){
                     SupportClass.CreateOnlyTextDialog(ConflictActivity.this,
                             getString(R.string.NoticeWordTran),
                             "You need to clear more Floor to unlock higher available.",
                             getString(R.string.ConfirmWordTran),
                             "Nothing",
                             true);
-                }else if(JumpFloor > MaxConflictFloor){
+                }else if(JumpFloor > ValueClass.CONFLICT_MAX_FLOOR){
                     SupportClass.CreateOnlyTextDialog(ConflictActivity.this,
                             getString(R.string.NoticeWordTran),
                             "No higher Floor available to Jump.We can only send you to [Highest Point].",
@@ -146,9 +158,9 @@ public class ConflictActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     public void ShowUpperFloor(View view){
         TextView CurrentFloorShowView = findViewById(R.id.CurrentFloorShowView);
-        if(CurrentShowFloor < MaxConflictFloor && CurrentShowFloor < UserConflictFloor + 1){
+        if(CurrentShowFloor < ValueClass.CONFLICT_MAX_FLOOR && CurrentShowFloor < UserConflictFloor + 1){
             CurrentShowFloor = CurrentShowFloor + 1;
-        }else if(CurrentShowFloor >= MaxConflictFloor){
+        }else if(CurrentShowFloor >= ValueClass.CONFLICT_MAX_FLOOR){
             SupportClass.CreateOnlyTextDialog(this,
                     getString(R.string.NoticeWordTran),
                     "No higher floor available .",
@@ -226,6 +238,12 @@ public class ConflictActivity extends AppCompatActivity {
         SetConflictBoss(18,"孤单",56,56,8360,0,1,9,130,10130,1,ImportMethodMode);
         SetConflictBoss(19,"苦恼",58,58,8970,0,1,9,140,11000,1,ImportMethodMode);
         SetConflictBoss(20,"失落",60,60,9500,0,1,8,150,12500,2,ImportMethodMode);
+        SetConflictBoss(21,"淡漠",62,62,9900,0,1,8,165,13750,2,ImportMethodMode);
+        SetConflictBoss(22,"冷漠",64,64,10800,0,1,8,180,15200,2,ImportMethodMode);
+        SetConflictBoss(23,"生气",66,66,11570,0,1,8,195,16350,2,ImportMethodMode);
+        SetConflictBoss(24,"气恼",68,68,12200,0,1,8,210,18300,2,ImportMethodMode);
+        SetConflictBoss(25,"惶惶",70,70,13900,0,1,8,225,20000,2,ImportMethodMode);
+
     }
 
     //lv.2 method, which belongs to BossDataSet method. this method define each floor`s battle data. and combine them as a collection. so if we want to add more floor to Conflict Function, we can do it by insert new numbers , how easily!
@@ -310,12 +328,4 @@ public class ConflictActivity extends AppCompatActivity {
             BossAbilityThird =  new ArrayList<>(Arrays.asList(AbilityThird));
         }
     }//end of conflict system.
-
-
-    //basic support system.
-    public void GoToMainPage(View view){
-        Intent i = new Intent(this, MainActivity.class);
-        //if this state is 1, it means Boss have information transporting from ConflictActivity.
-        startActivity(i);
-    }//end of basic support system.
 }

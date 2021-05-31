@@ -3,10 +3,12 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.util.Locale;
@@ -17,6 +19,15 @@ public class AchievementActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_achievement);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         InitializingAchievement();
         SetLanguageHint();
     }
@@ -203,7 +214,7 @@ public class AchievementActivity extends AppCompatActivity {
         TextView LevelAchievementView = findViewById(R.id.LevelAchievementView);
         TextView LevelConditionView = findViewById(R.id.LevelConditionView);
         if(UserLevel >= RequireLevel){
-            LevelAchievementView.setText(Achievement + " (" + AchievementID + "/" + LevelMaxAchievement + ")");
+            LevelAchievementView.setText(Achievement + " (" + AchievementID + " / " + LevelMaxAchievement + ")");
             LevelConditionView.setText(Condition);
         }
     }

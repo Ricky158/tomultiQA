@@ -1,11 +1,12 @@
 package com.example.android.tomultiqa;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -19,6 +20,15 @@ public class AlchemyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alchemy);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         InitializingMaterial();
         InitializingElementText();
         InitializingMasteryData();
@@ -35,18 +45,31 @@ public class AlchemyActivity extends AppCompatActivity {
     //Alchemy system.
     //Mastery part.
     int MasteryLevel = 0;
-    int MasteryMaxLevel = 5;
+    int MasteryMaxLevel = 15;
     int MasteryEXP = 0;
-    int MasteryUpgradeEXP = 100;
+    int MasteryUpgradeEXP = 300;
 
     //main method.
     private void GetMastery(int MasteryNumber){
+        //0.preparation.
+        boolean IsUpgradeAble = true;
+        //1.add Mastery EXP.
         MasteryEXP = MasteryEXP + MasteryNumber;
-        if(MasteryEXP >= MasteryUpgradeEXP && MasteryLevel < MasteryMaxLevel){
-            MasteryLevel = MasteryLevel + 1;
-            MasteryEXP = MasteryEXP - MasteryUpgradeEXP;
-            MasteryDataSet();
+        //2.check if user have enough EXP to upgrade.
+        while(IsUpgradeAble){
+            //2.1 try to cost EXP to upgrade, and load new level data.
+            if(MasteryEXP >= MasteryUpgradeEXP && MasteryLevel < MasteryMaxLevel){
+                MasteryLevel = MasteryLevel + 1;
+                MasteryEXP = MasteryEXP - MasteryUpgradeEXP;
+                MasteryDataSet();
+            }
+            //2.2 after loaded next level EXP requirement, check if user have enough EXP to upgrade again.if not, stop the circulation.
+            if(MasteryEXP < MasteryUpgradeEXP){
+                IsUpgradeAble = false;
+            }
         }
+        //3.after upgrade, save data.
+        SaveMasteryData();
     }
 
     //main method.
@@ -55,6 +78,12 @@ public class AlchemyActivity extends AppCompatActivity {
         MasteryEXP = SupportClass.getIntData(this,"AlchemyMasteryFile","MasteryEXP",0);
         //define the benefit which upgrade Mastery can get.
         MasteryDataSet();
+    }
+
+    //sub method of GetMastery() method.
+    private void SaveMasteryData(){
+        SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryLevel",MasteryLevel);
+        SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryEXP",MasteryEXP);
     }
 
     //lv.2 sub method, full collection of Mastery Level.
@@ -91,14 +120,12 @@ public class AlchemyActivity extends AppCompatActivity {
         ClearRecipe(SustainTurnView);
 
         if(MasteryLevel == Level){
-            SuccessRate = 100 + SuccessAdd;
-            MaxRecipeElementNumber = 6 + RecipeMaxAdd;
+            SuccessExtra = SuccessAdd;
+            RecipeExtra = RecipeMaxAdd;
+            MaxRecipeElementNumber = 6 + RecipeExtra;
             MasteryUpgradeEXP = UpgradeEXP;
         }
-    }
-
-
-    //......
+    }//end of Mastery part.
 
 
     //Material part.
@@ -108,7 +135,7 @@ public class AlchemyActivity extends AppCompatActivity {
     private void InitializingMaterial(){
         TextView MaterialNumberView = findViewById(R.id.MaterialNumberView);
         UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",UserMaterial);
-        MaterialNumberView.setText(UserMaterial + " " + getString(R.string.MaterialWordTran));
+        MaterialNumberView.setText(SupportClass.ReturnKiloIntString(UserMaterial) + " " + getString(R.string.MaterialWordTran));
     }//end of Material part.
 
 
@@ -164,7 +191,10 @@ public class AlchemyActivity extends AppCompatActivity {
     //Recipe calculation part.
     int RecipeCost = 0;
     int RecipeTurn = 6;
+    int RecipeExtra = 0;
+
     int SuccessRate = 100;
+    int SuccessExtra = 0;
     //the Element`s Name which be showed right now.
     String CurrentElementName = "";
     //the Element`s Effect description which be showed right now.
@@ -204,8 +234,8 @@ public class AlchemyActivity extends AppCompatActivity {
         RecipeDetailView.setText("--");
         RecipeEffectView.setText("--");
         MaterialCostView.setText(0 + "");
-        SustainTurnView.setText(6 + "");
-        SuccessRateView.setText(100 + "%");
+        SustainTurnView.setText((MaxRecipeElementNumber + RecipeExtra) + "");
+        SuccessRateView.setText((SuccessRate + SuccessExtra) + "%");
     }
 
     //lv.2 method. main method of Alchemy function.
@@ -256,13 +286,14 @@ public class AlchemyActivity extends AppCompatActivity {
                 SupportClass.saveIntData(this,"AlchemyDataFile","CDup",CDElementNumber * 15);
             }
             if(AddTurnElementNumber > 0){
-                SupportClass.saveIntData(this,"AlchemyDataFile","AlchemyTurn",AddTurnElementNumber * 3);
+                SupportClass.saveIntData(this,"AlchemyDataFile","AlchemyTurn",AddTurnElementNumber * 5);
             }
 
             int MasteryWillGet = RecipeCost * RecipeElementNumber * SupportClass.CreateRandomNumber(0,10);
             SupportClass.CreateOnlyTextDialog(this,
                     getString(R.string.NoticeWordTran),
-                    "Alchemy Create Success.\nYou get" + MasteryWillGet + "Mastery EXP!",
+                    "Alchemy Create Success.\n" +
+                            "You get " + MasteryWillGet + " Mastery EXP!",
                     getString(R.string.ConfirmWordTran),
                     "Nothing",
                     true);
@@ -313,7 +344,7 @@ public class AlchemyActivity extends AppCompatActivity {
         int ATKEffect = 10 * ATKElementNumber;
         int CREffect = 5 * CRElementNumber;
         int CDEffect = 15 * CDElementNumber;
-        int AddTurnEffect = 3 * AddTurnElementNumber;
+        int AddTurnEffect = 5 * AddTurnElementNumber;
         int AddSuccessEffect = 5 * AddSuccessRateElementNumber;
         //3. add text according to Element Number and Effect value.
         CurrentRecipeText =
@@ -341,8 +372,8 @@ public class AlchemyActivity extends AppCompatActivity {
         TextView SuccessRateView = findViewById(R.id.SuccessRateView);
         if (RecipeElementNumber > 0) {
             RecipeCost = RecipeElementNumber * 3;
-            RecipeTurn = 6 - RecipeElementNumber + 3 * AddTurnElementNumber;
-            SuccessRate = 100 - RecipeElementNumber * 3 + 5 * AddSuccessRateElementNumber;
+            RecipeTurn = 6 - RecipeElementNumber + 5 * AddTurnElementNumber;
+            SuccessRate = 100 - RecipeElementNumber * 3 + 5 * AddSuccessRateElementNumber + SuccessExtra;
             MaterialCostView.setText(RecipeCost + "");
             SustainTurnView.setText(RecipeTurn + "");
             SuccessRateView.setText(SuccessRate + "%");
