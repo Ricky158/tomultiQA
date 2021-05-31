@@ -1,19 +1,16 @@
 package com.example.android.tomultiqa;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.os.RecoverySystem;
-import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.security.interfaces.RSAKey;
 
 public class TalentActivity extends AppCompatActivity {
 
@@ -22,6 +19,15 @@ public class TalentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talent);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         InitializingResourceData();
         InitializingTalentData();
 
@@ -68,18 +74,18 @@ public class TalentActivity extends AppCompatActivity {
     private void CostPoints(int CostNumber){
         UserPoint = UserPoint - CostNumber;
         SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-        TextView PointCountingView = findViewById(R.id.PointCountingView);
-        PointCountingView.setText(UserPoint + "");
+        TextView PointCountingView = findViewById(R.id.PointCountInExcess);
+        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
     }
 
     @SuppressLint("SetTextI18n")
     private void InitializingResourceData(){
-        TextView PointCountingView = findViewById(R.id.PointCountingView);
-        TextView MaterialCountingView = findViewById(R.id.MaterialCountingView);
+        TextView PointCountingView = findViewById(R.id.PointCountInExcess);
+        TextView MaterialCountingView = findViewById(R.id.MaterialCountInExcess);
         UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
         UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
-        PointCountingView.setText( UserPoint + "");
-        MaterialCountingView.setText( UserMaterial + "");
+        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
+        MaterialCountingView.setText(SupportClass.ReturnKiloIntString(UserMaterial));
     }//end of basic value.
 
 
@@ -120,8 +126,8 @@ public class TalentActivity extends AppCompatActivity {
         TextView CDTalentLevelView = findViewById(R.id.CDTalentLevelView);
 
         AttackTalentEffectView.setText("+" + ATKTalentLevel * 3);
-        CRTalentEffectView.setText("+" + CRTalentLevel * 0.05 + "%");
-        CDTalentEffectView.setText("+" + CDTalentLevel * 0.2 + "%");
+        CRTalentEffectView.setText("+" + SupportClass.ReturnTwoBitText(CRTalentLevel * 0.05) + "%");
+        CDTalentEffectView.setText("+" + SupportClass.ReturnTwoBitText(CDTalentLevel * 0.2) + "%");
         AttackTalentLevelView.setText(ATKTalentLevel + "");
         CRTalentLevelView.setText(CRTalentLevel + "");
         CDTalentLevelView.setText(CDTalentLevel + "");

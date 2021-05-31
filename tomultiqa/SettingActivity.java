@@ -4,12 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -26,8 +28,16 @@ public class SettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
-        //get total number of id in database according records in SharedPreference.
-        CloseAllLayout();
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
+        CloseAllLayout();//get total number of id in database according records in SharedPreference.
         getIdNumberInfo();
 
         //provide visualize support for seekBar moving report.
@@ -37,15 +47,18 @@ public class SettingActivity extends AppCompatActivity {
         ChooseQuestLevelBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                ShowQuestLevelView.setText(ChooseQuestLevelBar.getProgress() + 1 + "");
+                QuestLevel = ChooseQuestLevelBar.getProgress() + 1;
+                ShowQuestLevelView.setText(QuestLevel + "");
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                ShowQuestLevelView.setText(ChooseQuestLevelBar.getProgress() + 1 + "");
+                QuestLevel = ChooseQuestLevelBar.getProgress() + 1;
+                ShowQuestLevelView.setText(QuestLevel + "");
             }
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                ShowQuestLevelView.setText(progress+ 1 + "");
+                QuestLevel = ChooseQuestLevelBar.getProgress() + 1;
+                ShowQuestLevelView.setText(QuestLevel + "");
             }
         });
 
@@ -55,7 +68,8 @@ public class SettingActivity extends AppCompatActivity {
 
     //Quest Making system.
     int QuestTotalNumber = 0;
-    //provide support for store id number.
+    int QuestLevel = 1;
+    //main method, provide support for store id number.
     //Thanks to:https://www.jianshu.com/p/59b266c644f3
     public void StoreQuest(View view){
         ContentValues values = new ContentValues();
@@ -69,7 +83,7 @@ public class SettingActivity extends AppCompatActivity {
                 values.put(QuestDataBaseBasic.COLUMN_NAME_QuestTitle,TypeQuestTitle.getText().toString());
                 values.put(QuestDataBaseBasic.COLUMN_NAME_QuestAnswer,TypeQuestAnswer.getText().toString());
                 values.put(QuestDataBaseBasic.COLUMN_NAME_QuestType,getString(R.string.QuestQuestionTypeTran));
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestLevel,ChooseQuestLevelBar.getProgress()+ 1);
+                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestLevel,QuestLevel);
                 values.put(QuestDataBaseBasic.COLUMN_NAME_QuestHint,"Nothing");
 
                 //initializing the database. And put the data collection in it.
@@ -84,7 +98,7 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
-    //sub method of StoreQuest.
+    //method of StoreQuest.
     //Thanks to:https://www.jianshu.com/p/59b266c644f3!
     @SuppressLint("SetTextI18n")
     private void SavedShowIdNumber(){
@@ -106,6 +120,10 @@ public class SettingActivity extends AppCompatActivity {
         TextView ShowQuestNumber = findViewById(R.id.ShowQuestNumber);
         QuestTotalNumber = IdNumberInfo.getInt("IdNumber", 0);
         ShowQuestNumber.setText(QuestTotalNumber + "");
+    }
+
+    private void CalculateQuestLevel(){
+
     }//end of Quest Making system.
 
 
@@ -232,6 +250,11 @@ public class SettingActivity extends AppCompatActivity {
 
     public void GoToEditorActivity(View view){
         Intent i = new Intent(this,EditorActivity.class);
+        startActivity(i);
+    }
+
+    public void GoToBackUpActivity(View view){
+        Intent i = new Intent(this,BackUpActivity.class);
         startActivity(i);
     }
 }

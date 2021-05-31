@@ -3,11 +3,14 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -23,6 +26,15 @@ public class TourneyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tourney);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
 
         //initializing MaxEvaluation number.
         TextView MaxEvaluationView = findViewById(R.id.MaxEvaluationView);
@@ -187,13 +199,13 @@ public class TourneyActivity extends AppCompatActivity {
     private void CalculateTotalPt(){
         TextView BossAbilityView = findViewById(R.id.BossAbilityView);
         TextView EvaluationValueView = findViewById(R.id.EvaluationValueView);
-        //BasicPtValue = 100+（bossHP比例数值）-【（boss回合数- 10）*（bossHP比例 / boss回合数）】+【（bossHP比例 / boss回合数）*（能力评价加成）】
+        //old formula: BasicPtValue = 100+（bossHP比例数值）-【（boss回合数- 10）*（bossHP比例 / boss回合数）】+【（bossHP比例 / boss回合数）*（能力评价加成）】
         if(PtIndex == 0){
             PtIndex = 1;
         }
         PtValue = (int) ( BossHP / BossTurn * PtIndex);
         BossAbilityView.setText(AbilityList.toString());
-        EvaluationValueView.setText(PtValue + "");
+        EvaluationValueView.setText(SupportClass.ReturnKiloLongString(PtValue) + "");
     }//end of Tourney system.
 }
 

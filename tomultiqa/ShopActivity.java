@@ -5,11 +5,13 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -22,6 +24,15 @@ public class ShopActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shop);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         getEXPInformation();
         InitializingResourceData();
         CheckLimitedGettable();
@@ -86,7 +97,7 @@ public class ShopActivity extends AppCompatActivity {
         TakeGood1View.setOnClickListener(new CheckBox.OnClickListener(){
             @Override
             public void onClick(View v) {
-                int Good1Price = 2500;
+                CloseLimitGoodChoose();
                 if(TakeGood1View.isChecked()){
                     AllGoodPrice = AllGoodPrice + Good1Price;
                 }else if(!TakeGood1View.isChecked()){
@@ -98,7 +109,7 @@ public class ShopActivity extends AppCompatActivity {
         TakeGood2View.setOnClickListener(new CheckBox.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int Good2Price = 225000;
+                CloseLimitGoodChoose();
                 if(TakeGood2View.isChecked()){
                     AllGoodPrice = AllGoodPrice + Good2Price;
                 }else if (!TakeGood2View.isChecked()){
@@ -110,15 +121,13 @@ public class ShopActivity extends AppCompatActivity {
         TakeLimited1View.setOnClickListener(new CheckBox.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int Limited1Price = 1000000;
                 //because Limited good is limited to buy 1 forever, so it can`t calculate with normal Good.
                 CloseNormalGoodChoose();
-
                 if(TakeLimited1View.isChecked()){
-                    CloseAllNumberChoosing();
+                    CloseAllOption();
                     AllGoodPrice = AllGoodPrice + Limited1Price;
                 }else if (!TakeLimited1View.isChecked()){
-                    OpenAllNumberChoosing();
+                    OpenAllOption();
                     AllGoodPrice = AllGoodPrice- Limited1Price;
                 }
                 CalculateGoodPrice();
@@ -132,16 +141,20 @@ public class ShopActivity extends AppCompatActivity {
     int UserLevel;
     int UserPoint;
     int UserMaterial;
+    //Good Price definition.
+    private static final int Good1Price = 2500;
+    private static final int Good2Price = 225000;
+    private static final int Limited1Price = 1000000;
 
     @SuppressLint("SetTextI18n")
     private void InitializingResourceData(){
-        TextView PointCountingView = findViewById(R.id.PointCountingView);
-        TextView MaterialCountingView = findViewById(R.id.MaterialCountingView);
+        TextView PointCountingView = findViewById(R.id.PointCountInExcess);
+        TextView MaterialCountingView = findViewById(R.id.MaterialCountInExcess);
         //!!!
         UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
         UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
-        PointCountingView.setText( UserPoint + "");
-        MaterialCountingView.setText( UserMaterial + "");
+        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
+        MaterialCountingView.setText(SupportClass.ReturnKiloIntString(UserMaterial));
     }//end of basic value.
 
 
@@ -149,8 +162,6 @@ public class ShopActivity extends AppCompatActivity {
     private void CloseNormalGoodChoose(){
         CheckBox TakeGood1View = findViewById(R.id.TakeGood1View);
         CheckBox TakeGood2View = findViewById(R.id.TakeGood2View);
-        int Good1Price = 2500;
-        int Good2Price = 225000;
 
         if(TakeGood1View.isChecked()){
             AllGoodPrice = AllGoodPrice - Good1Price;
@@ -160,12 +171,22 @@ public class ShopActivity extends AppCompatActivity {
             AllGoodPrice = AllGoodPrice- Good2Price;
             TakeGood2View.setChecked(false);
         }
-
-        CloseAllNumberChoosing();
+        CloseAllOption();
         CalculateGoodPrice();
     }
 
-    private void CloseAllNumberChoosing(){
+    private void CloseLimitGoodChoose(){
+        CheckBox TakeLimited1View = findViewById(R.id.TakeLimited1View);
+        if(TakeLimited1View.isChecked()){
+            AllGoodPrice = AllGoodPrice - Limited1Price;
+            TakeLimited1View.setEnabled(false);
+            TakeLimited1View.setChecked(false);
+        }
+        CalculateGoodPrice();
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void CloseAllOption(){
         CheckBox TakeGood1View = findViewById(R.id.TakeGood1View);
         CheckBox TakeGood2View = findViewById(R.id.TakeGood2View);
         EditText GoodNumberShowView = findViewById(R.id.GoodNumberShowView);
@@ -175,14 +196,15 @@ public class ShopActivity extends AppCompatActivity {
         if(GoodNumber != 1){
             GoodNumber = 1;
         }
+        if(GoodNumberShowView.isEnabled()){
+            GoodNumberShowView.setEnabled(false);
+            GoodNumberShowView.setText(GoodNumber + "");
+        }
         if(TakeGood1View.isEnabled()){
             TakeGood1View.setEnabled(false);
         }
         if(TakeGood2View.isEnabled()){
             TakeGood2View.setEnabled(false);
-        }
-        if(GoodNumberShowView.isEnabled()){
-            GoodNumberShowView.setEnabled(false);
         }
         if(MoreGoodButton.isEnabled()){
             MoreGoodButton.setEnabled(false);
@@ -192,17 +214,17 @@ public class ShopActivity extends AppCompatActivity {
         }
     }
 
-    private void OpenAllNumberChoosing(){
+    private void OpenAllOption(){
         CheckBox TakeGood1View = findViewById(R.id.TakeGood1View);
         CheckBox TakeGood2View = findViewById(R.id.TakeGood2View);
         EditText GoodNumberShowView = findViewById(R.id.GoodNumberShowView);
         Button MoreGoodButton = findViewById(R.id.MoreGoodButton);
         Button LessGoodButton = findViewById(R.id.LessGoodButton);
 
-        if(!TakeGood1View.isEnabled()){
+        if(!TakeGood1View.isEnabled() && UserLevel < LevelLimit){
             TakeGood1View.setEnabled(true);
         }
-        if(!TakeGood2View.isEnabled()){
+        if(!TakeGood2View.isEnabled() && UserLevel < LevelLimit){
             TakeGood2View.setEnabled(true);
         }
         if(!GoodNumberShowView.isEnabled()){
@@ -214,6 +236,15 @@ public class ShopActivity extends AppCompatActivity {
         if(!LessGoodButton.isEnabled()){
             LessGoodButton.setEnabled(true);
         }
+    }
+
+    private void CloseAllChecked(){
+        CheckBox TakeGood1View = findViewById(R.id.TakeGood1View);
+        CheckBox TakeGood2View = findViewById(R.id.TakeGood2View);
+        CheckBox TakeLimited1View = findViewById(R.id.TakeLimited1View);
+        TakeGood1View.setChecked(false);
+        TakeGood2View.setChecked(false);
+        TakeLimited1View.setChecked(false);
     }
 
     private void CheckLimitedGettable(){
@@ -228,6 +259,7 @@ public class ShopActivity extends AppCompatActivity {
 
 
     //EXP system, belong and refers to MainActivity.
+    int LevelLimit = 50;
     int UserHaveEXP;
     private void GetEXP(int AddNumber){
         UserHaveEXP = UserHaveEXP + AddNumber;
@@ -240,7 +272,7 @@ public class ShopActivity extends AppCompatActivity {
         SharedPreferences EXPInfo = getSharedPreferences("EXPInformationStoreProfile", MODE_PRIVATE);
         UserLevel = EXPInfo.getInt("UserLevel",1);
         UserHaveEXP = EXPInfo.getInt("UserHaveEXP", 0);
-        if(UserLevel >= 300){
+        if(UserLevel >= LevelLimit){
             TakeGood1View.setEnabled(false);
             TakeGood2View.setEnabled(false);
         }
@@ -256,14 +288,14 @@ public class ShopActivity extends AppCompatActivity {
     private void CostPoints(int CostNumber){
         UserPoint = UserPoint - CostNumber;
         SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-        TextView PointCountingView = findViewById(R.id.PointCountingView);
-        PointCountingView.setText(UserPoint + "");
+        TextView PointCountingView = findViewById(R.id.PointCountInExcess);
+        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
     }
 
     @SuppressLint("SetTextI18n")
     private void CalculateGoodPrice(){
         TextView TotalPriceShowView = findViewById(R.id.TotalPriceShowView);
-        TotalPriceShowView.setText(GoodNumber * AllGoodPrice + "");
+        TotalPriceShowView.setText(SupportClass.ReturnKiloIntString(GoodNumber * AllGoodPrice));
     }
 
     @SuppressLint("SetTextI18n")
@@ -274,7 +306,6 @@ public class ShopActivity extends AppCompatActivity {
         final EditText GoodNumberShowView = findViewById(R.id.GoodNumberShowView);
         int TotalCostOfPoints;
         //AllGoodPrice is price per Good, please take notice!
-
         //0.preparation.
         if(UserLevel >= 300){
             TakeGood1View.setEnabled(false);
@@ -282,11 +313,22 @@ public class ShopActivity extends AppCompatActivity {
             TakeGood2View.setEnabled(false);
             TakeGood2View.setChecked(false);
         }
-
         //1.calculating total price of good.
         TotalCostOfPoints = (GoodNumber * AllGoodPrice);
         //TotalCostOfPoints > 0 is prevent from int data over limit to be number that below 0.
         if(AllGoodPrice > 0 && GoodNumber > 0 && UserPoint >= TotalCostOfPoints && TotalCostOfPoints <= 200000000 && TotalCostOfPoints > 0){
+            //report point situation to user.
+            SupportClass.CreateOnlyTextDialog(this,
+                    getString(R.string.NoticeWordTran),
+                     getString(R.string.ShopBuyCompletedTran) + "\n" +
+                            getString(R.string.PointWordTran) + "\n" +
+                            SupportClass.ReturnKiloIntString(UserPoint) + " → " + SupportClass.ReturnKiloIntString(UserPoint - TotalCostOfPoints) + "\n" +
+                            getString(R.string.CostWordTran) + "\n" +
+                            SupportClass.ReturnKiloIntString(TotalCostOfPoints),
+                    getString(R.string.ConfirmWordTran),
+                    "Nothing",
+                    true
+            );
             //1.1 after choose Good.Cost Point to buy it.
             CostPoints(TotalCostOfPoints);
             //because user can buy multi Goods independently, so we need to make their effect independently, too.(it means instead of "if-else if", we need to use multi "if")
@@ -301,21 +343,21 @@ public class ShopActivity extends AppCompatActivity {
                 TakeLimited1View.setChecked(false);
                 TakeLimited1View.setEnabled(false);
                 SupportClass.saveBooleanData(this,"LimitedGoodsFile","MillionMasterGot",true);
-                OpenAllNumberChoosing();
-
-
             }
-            //2.reset the total price of Goods.
+            //3.reset Shop system.
             AllGoodPrice = 0;
-        }else if(UserPoint < TotalCostOfPoints){
+            GoodNumber = 1;
+            GoodNumberShowView.setText(GoodNumber + "");
+            OpenAllOption();
+            CloseAllChecked();
+        }else if(UserPoint < TotalCostOfPoints){//reset Good number function.
             final int MaxNumberCanBuy = UserPoint / AllGoodPrice;
             //1.using android api to create a dialog object.
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             //2.set basic values of dialog, including content text,button text,and title.
             dialog.setTitle(getString(R.string.NoticeWordTran));
-            dialog.setMessage("Not enough Points to buy.\nThe max number you can afford is:\n" + MaxNumberCanBuy);
+            dialog.setMessage(getString(R.string.ShopNotEnoughPointTran) + MaxNumberCanBuy);
             dialog.setCancelable(true);
-
             dialog.setPositiveButton(
                     //set left button`s text.
                     getString(R.string.ConfirmWordTran),
@@ -339,7 +381,6 @@ public class ShopActivity extends AppCompatActivity {
                             }
                         });
             }
-
             //3. Use this object to create a actual View in android.
             AlertDialog DialogView = dialog.create();
             DialogView.show();
@@ -349,7 +390,7 @@ public class ShopActivity extends AppCompatActivity {
             CalculateGoodPrice();
             SupportClass.CreateOnlyTextDialog(this,
                     getString(R.string.NoticeWordTran),
-                    "The max Price Limit of trade is 200,000,000 per time.",
+                    getString(R.string.ShopMaxCostErrorTran),
                     getString(R.string.ConfirmWordTran),
                     "Nothing",
                     true);
@@ -359,7 +400,7 @@ public class ShopActivity extends AppCompatActivity {
     public void ShowShopHelpDialog(View view){
         SupportClass.CreateOnlyTextDialog(this,
                 getString(R.string.HelpWordTran),
-                "Using Points to buy Goods in shop, increasing your Power, to be a well-known Adventurer!",
+                getString(R.string.ShopHelpTextTran),
                 getString(R.string.ConfirmWordTran),
                 "Nothing",
                 true);

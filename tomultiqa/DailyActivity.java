@@ -3,9 +3,12 @@ package com.example.android.tomultiqa;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
@@ -21,10 +24,19 @@ public class DailyActivity extends AppCompatActivity {
         SharedPreferences RecordInfo = getSharedPreferences("RecordDataFile", MODE_PRIVATE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daily);
+        //make StatusBar is same color as ActionBar in Activity.
+        //thanks to: https://blog.csdn.net/kiven9609/article/details/73162307 !
+        // https://www.color-hex.com/color/26c6da ! #26C6DA is our App Primary Color.
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.rgb(38,198,218));
+        //底部导航栏
+        //window.setNavigationBarColor(activity.getResources().getColor(colorResId));
+        //main method below.
         InitializingDailyData();
         InitializingResourceData();
         InitializingEXPData();
-        if(RecordInfo.getInt("MaxDailyDifficulty",0) > 10){
+        if(RecordInfo.getInt("MaxDailyDifficulty",0) >= 10){
             IsAutoClearEnable = true;
         }
 
@@ -83,7 +95,6 @@ public class DailyActivity extends AppCompatActivity {
     int DailyChance = 0;
     boolean IsAutoClearEnable = false;
 
-
     public void StartAutoClear(View view){
         if(IsAutoClearEnable){
             String RewardTypeShowToUser = "Error";
@@ -99,7 +110,7 @@ public class DailyActivity extends AppCompatActivity {
                     RewardTypeShowToUser = getString(R.string.PointWordTran);
                     break;
                 case "Material":
-                    UserMaterial = UserMaterial + 5 + DailyDifficulty * 3;
+                    UserMaterial = UserMaterial + (5 + DailyDifficulty * 3);
                     SupportClass.saveIntData(this,"BattleDataProfile", "UserMaterial", UserMaterial);
                     RewardTypeShowToUser = getString(R.string.MaterialWordTran);
                     break;
@@ -172,6 +183,9 @@ public class DailyActivity extends AppCompatActivity {
     public void StartDaily(View view){
         if(DailyChance > 0){
             int UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel", 1);
+            int EXPReward = 20 + DailyDifficulty * 30;
+            int PointReward = 1000 + DailyDifficulty * 1500;
+            int MaterialReward = 5 + DailyDifficulty * 3;
             Intent i = new Intent(this, MainActivity.class);
             i.putExtra("DailyDifficulty",DailyDifficulty);
             i.putExtra("Name","Daily");
@@ -181,11 +195,11 @@ public class DailyActivity extends AppCompatActivity {
             i.putExtra("ModeNumber",1);
             i.putExtra("Turn",8);
             if(DailyType.equals("EXP")){
-                i.putExtra("EXPReward",20 + DailyDifficulty * 30);
+                i.putExtra("EXPReward",EXPReward);
             }else if(DailyType.equals("Points")){
-                i.putExtra("PointReward",1000 + DailyDifficulty * 1500);
+                i.putExtra("PointReward",PointReward);
             }else{
-                i.putExtra("MaterialReward",5 + DailyDifficulty * 3);
+                i.putExtra("MaterialReward",MaterialReward);
             }
             i.putExtra("BossAbility",new ArrayList<>());
             //if this state is 1, it means Boss have information transporting from SquareAbility.
