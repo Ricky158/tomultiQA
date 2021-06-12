@@ -15,6 +15,6 @@
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_horizontal"
         android:text="Name: ABC"
-        android:textSize="24sp" />
+        android:textSize="22sp" />
 
 </LinearLayout>

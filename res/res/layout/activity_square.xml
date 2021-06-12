@@ -41,7 +41,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/OpenBackpackButton" />
 
     <Button
         android:id="@+id/button18"
@@ -146,7 +146,7 @@
         app:layout_constraintTop_toBottomOf="@+id/ResourceShowLayout" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/OpenBackpackButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:onClick="OpenBackpackActivity"
@@ -157,7 +157,7 @@
         app:layout_constraintTop_toBottomOf="@+id/button37" />
 
     <Button
-        android:id="@+id/button26"
+        android:id="@+id/OpenMarketButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:onClick="OpenMarketActivity"
@@ -166,5 +166,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/AlchemyEntryButton" />
+
+    <Button
+        android:id="@+id/OpenCraftButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="OpenCraftActivity"
+        android:text="@string/CraftEntryButtonTran"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/OpenMarketButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

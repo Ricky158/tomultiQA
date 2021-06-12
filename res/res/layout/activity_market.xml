@@ -132,6 +132,7 @@
         android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:onClick="GoToBackpack"
         android:text="@string/BackpackWordTran"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button34" />
@@ -227,6 +228,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:onClick="ShowOpeningDetail"
         android:text="@string/MarketDetailTran"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/KeyMarketPrice" />
