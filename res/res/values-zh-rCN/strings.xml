@@ -350,4 +350,23 @@
     <string name="NotEnoughItemTran">物品不足。</string>
     <string name="FavoriteWordTran">收藏</string>
     <string name="EXPFunctionTran">实验性功能</string>
+    <string name="FavoriteCheckTran">判定正误</string>
+    <string name="RemoveFavoriteTran">取消收藏</string>
+    <string name="ThisFavoriteTran">关于本题</string>
+    <string name="RandomWordTran">随机</string>
+    <string name="QueueWordTran">顺序</string>
+    <string name="FavoriteReloadModeTran">刷新模式</string>
+    <string name="ReloadFavoriteHintTran">请点击 \"刷新\" 按钮载入收藏的题目。</string>
+    <string name="ShowAnswerTran">展示答案</string>
+    <string name="AddFavoriteHintTran">您是否要将下列题目加入 “收藏” ？</string>
+    <string name="AddFavoriteCompletedTran">已将题目添加至 “收藏”。</string>
+    <string name="ResetQueueTran">重置顺序</string>
+    <string name="NextQuestTran">下一题</string>
+    <string name="LastQuestTran">上一题</string>
+    <string name="FavoriteCostTimeTran">用时</string>
+    <string name="DeleteFavoriteHintTran">您是否要删除含有下列 [问题] 的收藏？</string>
+    <string name="EmptyFavoriteWarningTran">收藏数据为空，无法刷新，请先在主页面添加。</string>
+    <string name="EnterFavoriteFailTran">您需要至少收藏1个题目才能够进入。</string>
+    <string name="MenuWordTran">菜单</string>
+    <string name="AssistTimerTran">天数计时</string>
 </resources>

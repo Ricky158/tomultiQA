@@ -350,4 +350,23 @@
     <string name="NotEnoughItemTran">Not enough Item.</string>
     <string name="FavoriteWordTran">Favorite</string>
     <string name="EXPFunctionTran">Experiment Function</string>
+    <string name="FavoriteCheckTran">Check</string>
+    <string name="RemoveFavoriteTran">Remove Favorite</string>
+    <string name="ThisFavoriteTran">This Favorite</string>
+    <string name="RandomWordTran">Random</string>
+    <string name="QueueWordTran">Queue</string>
+    <string name="FavoriteReloadModeTran">Reload Mode</string>
+    <string name="ReloadFavoriteHintTran">Press \"Reload\" button to load Favorite Quest.</string>
+    <string name="ShowAnswerTran">Show Answer</string>
+    <string name="AddFavoriteHintTran">Do you want to Add this Quest to \"Favorite\" ?</string>
+    <string name="AddFavoriteCompletedTran">Add \"Favorite\" Completed.</string>
+    <string name="ResetQueueTran">Reset Queue</string>
+    <string name="NextQuestTran">Next Quest</string>
+    <string name="LastQuestTran">Last Quest</string>
+    <string name="FavoriteCostTimeTran">Time</string>
+    <string name="DeleteFavoriteHintTran">Do you want to delete Favorite with this [Quest]?</string>
+    <string name="EmptyFavoriteWarningTran">Favorite data is Empty now, Reload unvaliable. Please go to Add more.</string>
+    <string name="EnterFavoriteFailTran">You need to have at least 1 Favorite Quest to Enter.</string>
+    <string name="MenuWordTran">Menu</string>
+    <string name="AssistTimerTran">Timer</string>
 </resources>
