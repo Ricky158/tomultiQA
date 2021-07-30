@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    tools:context=".ListActivity">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/ListToMainEntry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="16dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:onClick="GoToMainActivity"
+        android:tint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_baseline_chevron_right_24"
+        android:contentDescription="@string/NextPageButtonTran" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ToDoListView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/ListToMainEntry"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView36" />
+
+    <Button
+        android:id="@+id/ListSignButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:onClick="ShowTimerDialog"
+        android:text="@string/SignWordTran"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="@+id/ListToMainEntry"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ListToMainEntry" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ListTimerLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/ListTimerUnitView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sol."
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@+id/ListTimerProgress"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/ListTimerProgressView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="0 / 1"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@+id/ListTimerProgress"
+            app:layout_constraintStart_toEndOf="@+id/ListTimerUnitView" />
+
+        <TextView
+            android:id="@+id/ListTimerDateView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="end"
+            android:text="2021-06-25"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/ListTimerPercentView"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/ListTimerProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/ListTimerPercentView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ListTimerDateView" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:contentDescription="Close Timer Function"
+            android:onClick="CloseTimerLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_baseline_close_24" />
+
+        <TextView
+            android:id="@+id/ListTimerPercentView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:text="100%"
+            app:layout_constraintBottom_toBottomOf="@+id/ListTimerProgress"
+            app:layout_constraintEnd_toStartOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/ListTimerDateView" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/AddToDoButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="AddToDoItem"
+        android:text="@string/AddToDoTran"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toEndOf="@+id/ListSignButton"
+        app:layout_constraintTop_toTopOf="@+id/ListSignButton" />
+
+    <TextView
+        android:id="@+id/textView36"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center_horizontal"
+        android:text="@string/ListWordTran"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ListTimerLayout" />
+
+    <Button
+        android:id="@+id/DeleteToDoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="DeleteToDoItem"
+        android:text="@string/RemoveTodoTran"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="@+id/AddToDoButton"
+        app:layout_constraintStart_toEndOf="@+id/AddToDoButton"
+        app:layout_constraintTop_toTopOf="@+id/ListSignButton" />
+
+    <ImageView
+        android:id="@+id/ListSettingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:onClick="ListSettingEntry"
+        app:layout_constraintBottom_toBottomOf="@+id/textView36"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView36"
+        app:srcCompat="@drawable/ic_baseline_settings_24" />
+
+    <ImageView
+        android:id="@+id/ListSettingHelpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:onClick="ShowListSettingHelp"
+        app:layout_constraintEnd_toStartOf="@+id/ListSettingButton"
+        app:layout_constraintTop_toTopOf="@+id/ListSettingButton"
+        app:srcCompat="@drawable/ic_baseline_help_24" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
