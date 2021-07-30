@@ -7,6 +7,7 @@ Like a RPG game, user can get "growth" in App, and they can learned from self-as
 Development of this App are inspired by AyagiKei's App: Life Up，thanks for his/her idea.  
 This app is in early developing process, so the content and function are not final version.It may changed in development.
 Welcome to add issue or reply to developer.
+
 [中文版]  
 tomultiQA  
 用户提供内容的问答APP  
