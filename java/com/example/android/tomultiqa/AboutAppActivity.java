@@ -39,7 +39,7 @@ public class AboutAppActivity extends AppCompatActivity {
                 "This part is only provided with Chinese.\n"+
                         "Make sure you have skill to read Chinese.\n"+
                         "\n" +//do not remove text above this line. these are language hint.
-                        "【0.30.0版】2021.7.30\n" +
+                        "【0.30.1版】2021.7.31\n" +
                         "【功能性更新】\n" +
                         "1.“比武台”更新：\n" +
                         " 1.1 支持调整挑战的boss等级（默认为用户等级），boss等级将会影响总评价，详情请于“回忆”-“图鉴”-“游戏公式”当中查看。\n" +
@@ -78,6 +78,7 @@ public class AboutAppActivity extends AppCompatActivity {
                         "（注：新增的统计项要在此版本及以上完成的战斗才会计入，早期的数据不会记录，还请注意。）\n" +
                         "4.“敌临境”追加26~30层。（除30层外，26-29层HP相较旧版上调了约500点，以应对等级突破带来的提升。）\n" +
                         " 4.1 由于二阶能力未实装，30层boss的“卸力II”被替换为“考验”，同时HP下调至14800，以平衡难度。\n" +
+                        "5.在“比武台”挑战未符合开始条件时，App会弹窗提示了。\n" +
                         "【内容调整】\n" +
                         "1.以下页面的UI样式调整：\n" +
                         "  1.1 “天赋社”\n" +
@@ -98,6 +99,8 @@ public class AboutAppActivity extends AppCompatActivity {
                         "7.进入“广场”页面时，不再显示“未开启游戏模式”的提示，在此时直接禁用“炼金室”按钮的限制也一并取消，改为点击“炼金室”按钮时显示。\n" +
                         "8.修改了未完成“普通成就”时，成就名称显示的细节。\n" +
                         "9.从商店当中移除“Million Master”成就的出售。请通过点击关于“高难成就”按钮了解新的获取途径。\n" +
+                        "10.更改了“个人”页面-“构成详情”的内容排版。\n" +
+                        "11.调整了“伤害显示”的样式。\n" +
                         "【数值调整】\n" +
                         "1.“望晨崖（日常）”：\n" +
                         "积分产出：1000 + 难度 * 1500 → 5000 + 90 * 用户等级 * 难度\n" +
@@ -137,6 +140,10 @@ public class AboutAppActivity extends AppCompatActivity {
                         "23.修复了对boss的伤害值可以低于0的bug。\n" +
                         "24.修复了护盾结算机制使：护盾以攻击数值，而非最终伤害为准，进行结算的bug。\n" +
                         "（换言之，先前版本的护盾格挡伤害的效果数值，实际上是异常偏高的）\n" +
+                        "25.修复了“比武台”的数据保存机制异常的bug。\n" +
+                        "26.修复了“试炼场”返回按键显示不正确的bug。\n" +
+                        "27.修复了战斗中回答错误会直接导致战斗失败的bug。\n" +
+                        "28.修复了“比武台”在boss的HP设定为1时无法开始战斗的bug。" +
                         "tomultiQA开发组",
                 getString(R.string.ConfirmWordTran));
     }//end of About App function.

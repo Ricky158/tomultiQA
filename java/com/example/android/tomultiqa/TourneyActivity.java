@@ -38,7 +38,7 @@ public class TourneyActivity extends AppCompatActivity {
         UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
         BossLevel = SupportClass.getIntData(this,"TourneyFile","BossLevel",UserLevel);
         BossHP = SupportClass.getIntData(this,"TourneyFile","BossHP",1000);
-        BossLevel = SupportClass.getIntData(this,"TourneyFile","BossTurn",10);
+        BossTurn = SupportClass.getIntData(this,"TourneyFile","BossTurn",10);
         BossLevelView.setText("Lv." + BossLevel);
         BossHPView.setText(BossHP + "");
         BossTurnView.setText(BossTurn + "");
@@ -91,7 +91,7 @@ public class TourneyActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     public void StartTourney(View view){
         //2.Set information needed.
-        if(BossHP > 1 && BossTurn > 0 && PtValue > 0){
+        if(BossHP > 0 && BossTurn > 0 && PtValue > 0){
             //"Start"mode: put data in intent and start MainActivity.
             Intent i = new Intent(this, MainActivity.class);
             i.putExtra("Name",getString(R.string.PastNameTran));
@@ -114,6 +114,12 @@ public class TourneyActivity extends AppCompatActivity {
             i.addFlags(FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             finish();
+        }else{
+            SupportClass.CreateNoticeDialog(this,
+                    getString(R.string.NoticeWordTran),
+                    getString(R.string.StartTourneyHintTran),
+                    getString(R.string.ConfirmWordTran)
+            );
         }
     }
 

@@ -3,7 +3,7 @@ package com.example.android.tomultiqa;
 
 public class ValueClass {
     //App Version.
-    public static final String APP_VERSION = "Version 0.30.0";
+    public static final String APP_VERSION = "Version 0.30.1";
     //App Mode.
     public static final String NORMAL_MODE = "Normal";
     public static final String GAME_MODE = "Game";

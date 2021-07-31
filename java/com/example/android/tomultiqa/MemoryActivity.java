@@ -303,25 +303,25 @@ public class MemoryActivity extends AppCompatActivity {
                         LevelATK + "\n" +
                         getString(R.string.TalentWordTran) + "\n" +
                         (SupportClass.getIntData(this,"BattleDataProfile","ATKTalentLevel",0) * 3) + "\n" +
-                        getString(R.string.LevelExcessATKTran) + "\n" +
+                        getString(R.string.LevelExcessTran) + "\n" +
                         SupportClass.getIntData(this,"ExcessDataFile","LevelExcessATK",0) + "\n" +
                         getString(R.string.AlchemyButtonTran) + "\n" +
-                        (TotalATK - LevelATK - AddATK) + "\n" +
+                        (TotalATK - LevelATK - AddATK) + "\n\n" +
                         getString(R.string.CritialRateWordTran) + "\n" +
                         getString(R.string.LevelWordTran) + "\n" +
                         "5.00\n" +
                         getString(R.string.TalentWordTran) + "\n" +
                         (SupportClass.getIntData(this,"BattleDataProfile","CRTalentLevel",0) * 0.05) + "\n" +
-                        getString(R.string.LevelExcessCRTran) + "\n" +
+                        getString(R.string.LevelExcessTran) + "\n" +
                         SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCR",0) + "\n" +
                         getString(R.string.AlchemyButtonTran) + "\n" +
-                        SupportClass.getIntData(this,"AlchemyDataFile","CRup",0) + "\n" +
+                        SupportClass.getIntData(this,"AlchemyDataFile","CRup",0) + "\n\n" +
                         getString(R.string.CritialDamageWordTran) + "\n" +
                         getString(R.string.LevelWordTran) + "\n" +
                         "150.0\n" +
                         getString(R.string.TalentWordTran) + "\n" +
                         (SupportClass.getIntData(this,"BattleDataProfile","CDTalentLevel",0) * 0.2) + "\n" +
-                        getString(R.string.LevelExcessCDTran) + "\n" +
+                        getString(R.string.LevelExcessTran) + "\n" +
                         SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCD",0) + "\n" +
                         getString(R.string.AlchemyButtonTran) + "\n" +
                         SupportClass.getIntData(this,"AlchemyDataFile","CRup",0),

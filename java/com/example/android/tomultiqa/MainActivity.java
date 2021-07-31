@@ -415,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
     int DailyDifficulty;
     //data in battle calculation.
     //LevelDamageChange means the index which control damage add or less by Level difference between Boss and User.
-    double LevelDamageChange = 0;
+    double LevelDamageChange = 0.0;
     double CurrentDamage = 0;
     boolean IsCritical = false;
 
@@ -520,7 +520,7 @@ public class MainActivity extends AppCompatActivity {
         //if Random Number less than CriticalRate *100, system will think NO Critical, so IsCritical variable will keep false.
         IsCritical = SupportClass.CreateRandomNumber(0, 10000) <= (UserCriticalRate * 100);
         //calculate the basic damage to Boss.
-        if (IsQuestRight && IsBossHere && BattleTurn > 0 && BossNowHP > 0){
+        if (IsBossHere && BattleTurn > 0 && BossNowHP > 0){
             //if critical, then add additional damage to damage counting.
             //check Boss and User Level, and change the Damage.
             if(IsCritical){
@@ -531,7 +531,13 @@ public class MainActivity extends AppCompatActivity {
             //Boss Ability, which useful in battle progression`s calculation.
             MakeAbilityEffective("Calculate");
             //calculate damage to user in double form,but show to user with int form.
-            int DamageToUser = (int) CurrentDamage;
+            int DamageToUser;
+            //if user answer wrong, let the damage to 0. or passed these code when it's right.
+            if(IsQuestRight){
+                DamageToUser = (int) CurrentDamage;
+            }else{
+                DamageToUser = 0;
+            }
             //if damage number smaller than 0, fix it to 0.
             DamageToUser = Math.max(0,DamageToUser);
             //calculating Shield effect.
@@ -546,9 +552,9 @@ public class MainActivity extends AppCompatActivity {
             //finally, cost Boss`s HP based on damage counting.
             BossNowHP = BossNowHP - DamageToUser;
             if(!IsCritical && IsShowDamage){
-                DamageShowView.setText("-" + DamageToUser);
+                DamageShowView.setText("- " + DamageToUser);
             }else if(IsCritical && IsShowDamage){
-                DamageShowView.setText("Critical!  -" + DamageToUser);
+                DamageShowView.setText("Critical! - " + DamageToUser);
             }
             //after one time`s damage calculation, should cost 1 Turn.
             BattleTurn = BattleTurn - 1;
