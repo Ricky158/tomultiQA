@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".EditorActivity">
+
+    <TextView
+        android:id="@+id/textView98"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/SetQuestTitleTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView110" />
+
+    <EditText
+        android:id="@+id/EditTitleView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/SetQuestTitleTran"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:text="@string/QuestEditStartHintTran"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView98"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <TextView
+        android:id="@+id/textView102"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/SetQuestAnswerTitleTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditTitleView" />
+
+    <EditText
+        android:id="@+id/EditAnswerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/TypeAnswerTripsTran"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:text="--"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView102"
+        tools:ignore="TouchTargetSizeCheck,DuplicateSpeakableTextCheck" />
+
+    <TextView
+        android:id="@+id/CurrentQuestNumberView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="0 / 0"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/NextQuestButton"
+        app:layout_constraintEnd_toStartOf="@+id/NextQuestButton"
+        app:layout_constraintStart_toEndOf="@+id/LastQuestButton"
+        app:layout_constraintTop_toTopOf="@+id/NextQuestButton" />
+
+    <EditText
+        android:id="@+id/QuestSearchView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/AllModeHintTran"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintEnd_toStartOf="@+id/ShowQuestSearchButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SearchByGroup"
+        tools:ignore="TouchTargetSizeCheck,TextContrastCheck" />
+
+    <TextView
+        android:id="@+id/textView28"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/SearchByWordTran"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/QuestSearchView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/SearchByGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView28"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/AllSearchMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:clickable="false"
+            android:focusable="false"
+            android:onClick="ChangeSearchMode"
+            android:text="@android:string/selectAll" />
+
+        <RadioButton
+            android:id="@+id/SearchByQuestMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:focusable="false"
+            android:onClick="ChangeSearchMode"
+            android:text="@string/SetQuestTitleTran" />
+
+        <RadioButton
+            android:id="@+id/SearchByOrderMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:focusable="false"
+            android:onClick="ChangeSearchMode"
+            android:text="@string/QuestOrderTran" />
+    </RadioGroup>
+
+    <ImageView
+        android:id="@+id/ShowQuestSearchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@android:string/search_go"
+        android:onClick="SearchDataBase"
+        app:layout_constraintBottom_toBottomOf="@+id/QuestSearchView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SearchByGroup"
+        app:srcCompat="@android:drawable/ic_menu_search"
+        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+
+    <TextView
+        android:id="@+id/textView110"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/SearchResultWordTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/QuestSearchView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:text="@string/QuestLevelWordTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditHintView" />
+
+    <TextView
+        android:id="@+id/TitleLevelView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="--"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="@+id/EditLevelButton"
+        app:layout_constraintEnd_toStartOf="@+id/EditLevelButton"
+        app:layout_constraintTop_toTopOf="@+id/EditLevelButton" />
+
+    <ImageView
+        android:id="@+id/EditLevelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/InputQuestLevelTran"
+        android:onClick="ChangeTitleLevel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditHintView"
+        app:srcCompat="@android:drawable/ic_menu_edit"
+        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+
+    <ImageView
+        android:id="@+id/LastQuestButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:clickable="true"
+        android:contentDescription="@string/LastQuestTran"
+        android:focusable="true"
+        android:onClick="ShowLastResult"
+        app:layout_constraintStart_toEndOf="@+id/textView110"
+        app:layout_constraintTop_toTopOf="@+id/NextQuestButton"
+        app:srcCompat="@android:drawable/ic_media_rew"
+        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+
+    <ImageView
+        android:id="@+id/NextQuestButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="12dp"
+        android:clickable="true"
+        android:contentDescription="@string/NextQuestTran"
+        android:focusable="true"
+        android:onClick="ShowNextResult"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/QuestSearchView"
+        app:srcCompat="@android:drawable/ic_media_ff"
+        tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
+
+    <TextView
+        android:id="@+id/textView115"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/DataBaseEditWordTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditLevelButton" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/DataBaseEditLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView115">
+
+        <Button
+            android:id="@+id/button33"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="UpdateData"
+            android:text="@string/SaveEditQuestTran"
+            android:textAllCaps="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/button28"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button39"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="WipeDataBase"
+            android:text="@string/ClearEntireDataBaseTran"
+            android:textAllCaps="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/button28"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="DeleteSingleQuest"
+            android:text="@string/DeleteThisQuestTran"
+            android:textAllCaps="false"
+            app:layout_constraintStart_toEndOf="@+id/button39"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/ShopHelpTitleTran"
+            android:textAllCaps="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button33" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/SaveStateView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="--"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditLevelButton" />
+
+    <TextView
+        android:id="@+id/textView96"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/HintWordTran"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EditAnswerView" />
+
+    <EditText
+        android:id="@+id/EditHintView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/TypeHintContentHintTran"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:text="--"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView96"
+        tools:ignore="TouchTargetSizeCheck,TextContrastCheck" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
