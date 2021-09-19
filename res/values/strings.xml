@@ -31,7 +31,6 @@
     <string name="BossMode2WordTran">Mode II</string>
     <string name="BossMode3WordTran">Mode III</string>
     <string name="NoBossAbilityWordTran">No Ability</string>
-    <string name="RemainTurnWordTran">Turn</string>
     <string name="ATKWordTran">Attack</string>
     <string name="CritialRateWordTran">Critical Rate</string>
     <string name="CritialDamageWordTran">Critical DMG</string>
@@ -186,21 +185,20 @@
     <string name="TimerRestingTran">[ Resting ]</string>
     <string name="WarningWordTran">Warning</string>
     <string name="SearchByWordTran">Search By</string>
-    <string name="AllModeHintTran">Don\'t need to input in All Mode.</string>
+    <string name="AllModeHintTran">Type something to Search.</string>
     <string name="SearchResultWordTran">Search Result</string>
     <string name="DataBaseEditWordTran">DataBase Edit</string>
     <string name="SaveEditQuestTran">Save Change</string>
     <string name="ClearEntireDataBaseTran">Clear Database</string>
     <string name="DeleteThisQuestTran">Delete Quest</string>
-    <string name="QuestOrderTran">Order (ID)</string>
     <string name="WipeAllQuestTran">Do you want to ripe off all data in Quest Database?</string>
     <string name="QuestCompletedTran">Quest Edit Completed.</string>
     <string name="SavingCompletedTran">Input Completed.</string>
     <string name="InputCastFailTran">Input Fail.—Data Casting Error.</string>
     <string name="InputQuestLevelTran">Input Quest Level(1–10)</string>
     <string name="ResultFoundedTran">result founded.</string>
-    <string name="SwitchResultByButtonTran">Please using buttons to Switch these results.</string>
-    <string name="NoResultWordTran">No results available.</string>
+    <string name="SwitchResultByButtonTran">Please using buttons to Switch these results.\n\nIf you don\'t found any result you wanted, please check:\n1.whether Quest is existed.\n2.select wrong Search Mode.\n3.Inputted correct text.</string>
+    <string name="NoResultWordTran">No results available.\n\nIf you don\'t found any result you wanted, please check:\n1.whether Quest is existed.\n2.select wrong Search Mode.\n3.Inputted correct text.</string>
     <string name="EditNotSaveTran">Edit is Not Save!</string>
     <string name="NoQuestWaitToEditTran">No Quest is Editing.</string>
     <string name="ReQuestEditTran">If you need more Edit operation, do the process Again.</string>
@@ -312,7 +310,6 @@
     <string name="CompletedWordTran">Completed</string>
     <string name="TargetWordTran">Target</string>
     <string name="CraftNumberButtonTran">Number</string>
-    <string name="GameModeHintTran">This Function is [Game] Mode Limited.</string>
     <string name="DreamFruitTran">Dream Fruit</string>
     <string name="NotePasteToClipBoardTran">Note Text pasted to Clipboard successfully.</string>
     <string name="FolderCopy1Tran">Do you want to copy Note to system Clipboard?</string>
@@ -468,17 +465,19 @@
     <string name="OpenNotificationHintTran">Please open Notifications and expand to get detail of Sign.</string>
     <string name="SignChannelWordTran">Sign Channel</string>
     <string name="DataOutputHintTran">
-        You need to select the store path of backup file in next window.\n
-        [Notice: Some of your data in App may not be outputted to file, please check "Help" to know detail.]
+        You need to select the store path of backup file in next window.\n\n
+        [Warning: Some of your data in App may not be outputted to file, please check "Help" to know detail.]\n\n
+        [Notice: Depending on your data amount, you may need to wait a long period of time. Please waiting the process done, or it may harm the data.]
     </string>
     <string name="DataInputHintTran">
-        You need to select the path of backup file, which used to Re-Write its content in the next window.\n
+        You need to select the path of backup file, which used to Re-Write its content in the next window.\n\n
         [Warning: After data Imported, your existed Quest and Item data will have different changes.\n]
         For Quest data:\n
         Quests in file will directly [ ADD ] to the end of existing data.\n
         For Item data:\n
         if some of Item data, which have [ SAME ] name both appear in App and backup file,\n
-        the data from file will [ FULLY COVER ] the existing data, which have [ SAME ] name.
+        the data from file will [ FULLY COVER ] the existing data, which have [ SAME ] name.\n\n
+        [Notice: Depending on your data amount, you may need to wait a long period of time. Please waiting the process done, or it may harm the data.]
     </string>
     <string name="DataPreviewHintTran">You need to select the path of backup file, which used to Re-Write its content in the next window.</string>
     <string name="TypeHintContentHintTran">Type the Hint of this Quest here.(Optional)</string>
@@ -501,7 +500,6 @@
     <string name="JumpFloorMessageTran">You have unlocked the Floor number: </string>
     <string name="TimerHistoryTitleTran">Timer History</string>
     <string name="DeleteWordTran">Delete</string>
-    <string name="SkillWordTran">Skill</string>
     <string name="WakeAbilityTran">Wake</string>
     <string name="DestructAbilityTran">Destruct</string>
     <string name="WakeEffectTran">In Battle, when current Quest cost more than 15 sec, Boss will recover 1.5% max HP /s, and the Recover radio will add 0.1%/s.</string>
@@ -520,4 +518,5 @@
     <string name="ShopSaleEventScriptTran">In the last of month, shop will clear something they don\'t need anymore. In this period, go to shopping is a good option.[Price of most item drop 25%]</string>
     <string name="AlchemyBottleEventScriptTran">Alchemy Room have busy work in most of a month, so asking their help at first day of month should be good. [today \'s Element Limit + 2]</string>
     <string name="SinglePriceWordTran">Unit Price</string>
+    <string name="AllModeWordTran">All</string>
 </resources>

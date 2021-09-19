@@ -32,7 +32,6 @@
     <string name="BossMode2WordTran">阶段 II</string>
     <string name="BossMode3WordTran">阶段 III</string>
     <string name="NoBossAbilityWordTran">无能力</string>
-    <string name="RemainTurnWordTran">回合</string>
     <string name="ATKWordTran">攻击力</string>
     <string name="CritialRateWordTran">暴击率</string>
     <string name="CritialDamageWordTran">暴击伤害</string>
@@ -186,20 +185,19 @@
     <string name="ReturnToWordTran">"退出"</string>
     <string name="WarningWordTran">警告</string>
     <string name="SearchByWordTran">搜索选项</string>
-    <string name="AllModeHintTran">“全选”模式下无需输入。</string>
+    <string name="AllModeHintTran">输入内容以搜索。</string>
     <string name="SearchResultWordTran">搜索结果</string>
     <string name="DataBaseEditWordTran">题库编辑</string>
     <string name="SaveEditQuestTran">保存此题</string>
     <string name="ClearEntireDataBaseTran">清空题库</string>
     <string name="DeleteThisQuestTran">移除此题</string>
-    <string name="QuestOrderTran">题库顺序</string>
     <string name="WipeAllQuestTran">是否需要清空题库？</string>
     <string name="QuestCompletedTran">题目编辑完毕。</string>
     <string name="InputCastFailTran">输入无效—数据格式不符。</string>
     <string name="InputQuestLevelTran">请输入难度数值(1–10)</string>
     <string name="ResultFoundedTran">个结果被找到。</string>
-    <string name="SwitchResultByButtonTran">请使用按钮切换不同结果。</string>
-    <string name="NoResultWordTran">未找到任何结果。</string>
+    <string name="SwitchResultByButtonTran">请使用按钮切换不同结果。\n\n若您未发现您需要的结果，请确认：\n1.题目是否存在。\n2.选择了正确的搜索模式。\n3.输入了正确的文本。</string>
+    <string name="NoResultWordTran">未找到任何结果。\n\n若您未发现您需要的结果，请确认：\n1.题目是否存在。\n2.选择了正确的搜索模式。\n3.输入了正确的文本。</string>
     <string name="SavingCompletedTran">输入完毕。</string>
     <string name="EditNotSaveTran">编辑结果未保存！</string>
     <string name="NoQuestWaitToEditTran">编辑器空闲中。</string>
@@ -313,7 +311,6 @@
     <string name="CompletedWordTran">完成</string>
     <string name="TargetWordTran">目标</string>
     <string name="CraftNumberButtonTran">选择数量</string>
-    <string name="GameModeHintTran">需要开启 [游戏] 模式后才能访问。</string>
     <string name="DreamFruitTran">清梦果</string>
     <string name="NotePasteToClipBoardTran">笔记内容已被复制到剪贴板。</string>
     <string name="FolderCopy1Tran">您是否需要将笔记复制到系统剪贴板？</string>
@@ -468,16 +465,18 @@
     <string name="OpenNotificationHintTran">请打开通知栏并展开以查看签到信息。</string>
     <string name="SignChannelWordTran">签到提示</string>
     <string name="DataOutputHintTran">
-        在接下来的弹窗当中，您需要选择备份文件的保存位置，来让App导出数据。\n
-        [提示：部分数据是无法通过文件备份的，请您务必阅读“帮助”知悉情况，否则可能会引发数据损失。]
+        在接下来的弹窗当中，您需要选择备份文件的保存位置，来让App导出数据。\n\n
+        [警告：部分数据是无法通过文件备份的，请您务必阅读“帮助”知悉情况，否则可能会引发数据损失。]\n\n
+         [提示：根据数据量的不同，您可能需要等待较长时间，请耐心等待App完成工作。]
     </string>
     <string name="DataInputHintTran">
-        在接下来的弹窗当中，您需要选择备份文件的位置，来让App读取其中的数据进行导入。\n
+        在接下来的弹窗当中，您需要选择备份文件的位置，来让App读取其中的数据进行导入。\n\n
         [警告：在文件导入之后，已经存在的“题目”和“物品”数据可能会有不同的变更。具体如下所示：]\n
         对于“题目”数据：\n
         文件当中的题目数据将会直接 [附加] 在已有数据的末尾。\n
         对于“物品”数据：\n
-        如果现有数据当中存在与文件当中记录 [同名] 的物品，那么，[同名] 的物品的所有数据将会被 [覆盖]。换言之，原有的数据会丢失。
+        如果现有数据当中存在与文件当中记录 [同名] 的物品，那么，[同名] 的物品的所有数据将会被 [覆盖]。换言之，原有的数据会丢失。\n\n
+        [提示：根据数据量的不同，您可能需要等待较长时间，请耐心等待App完成工作。]
     </string>
     <string name="DataPreviewHintTran">在接下来的弹窗当中，您需要选择备份文件的位置，来让App读取其中的数据进行预览。</string>
     <string name="TypeHintContentHintTran">请在此输入题目的提示文本。(可选)</string>
@@ -500,7 +499,6 @@
     <string name="JumpFloorMessageTran">您已解锁的最大层数为： </string>
     <string name="TimerHistoryTitleTran">计时历史</string>
     <string name="DeleteWordTran">删除</string>
-    <string name="SkillWordTran">技能</string>
     <string name="WakeAbilityTran">苏醒</string>
     <string name="DestructAbilityTran">破坏</string>
     <string name="WakeEffectTran">战斗状态下，当前题目答题用时超过15秒，Boss将每秒回复1.5%最大HP，且回复量每秒上升0.1%最大HP的数值。</string>
@@ -519,4 +517,5 @@
     <string name="ShopSaleEventScriptTran">在月末的时候，商贸居会清理多余的商品。在这个时期购物似乎是不错的选择。[物品价格降低25%]</string>
     <string name="AlchemyBottleEventScriptTran">炼金室在每月的大多数时候都十分繁忙，如果要找他们帮忙，月初是最好的选择。[当天的要素上限 + 2]</string>
     <string name="SinglePriceWordTran">单价</string>
+    <string name="AllModeWordTran">全选</string>
 </resources>
