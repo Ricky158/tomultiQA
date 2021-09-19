@@ -739,11 +739,13 @@ public class BackUpActivity extends AppCompatActivity {
         //here are the loading process.
         ItemDataBaseBasic ItemDbHelper = new ItemDataBaseBasic(this);
         SQLiteDatabase db = ItemDbHelper.getWritableDatabase();
+        SQLiteDatabase db2 = ItemDbHelper.getReadableDatabase();
         ContentValues Inputs = new ContentValues();
         String ThisItemName = "";
         while (Position <= MaxLength){//reading until done MaxLength.
-            ThisLine = getPureString(TextElement.get(Position) );//get this line of String.
-
+            //get this line of String.
+            ThisLine = getPureString(TextElement.get(Position) );
+            //decide where this line in file should write to.
             switch (Counting){
                 case 0:
                     Inputs.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName,ThisLine);
@@ -763,18 +765,31 @@ public class BackUpActivity extends AppCompatActivity {
             }
             Counting = Counting + 1;
             Position = Position + 1;
-            if(Counting >= 4){//finish one Item Import, reset Counting to change the [way] of data entrance.
+            //finish one Item Import, reset Counting to change the [way] of data entrance.
+            if(Counting >= 4){
                 Counting = 0;
                 LoadedItem = LoadedItem + 1;//recording import Item number.
                 //finish one item data import, submit changes to database.
                 if(!IsPreview){//only not Preview state will actually change database.
+                    //search this item whether in the database.
+                    String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
+                    String[] SelectionArgs = new String[]{ThisItemName};
+                    ItemCursor = db2.query(
+                            ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
+                            null,
+                            Selection,
+                            SelectionArgs,
+                            null,
+                            null,
+                            null
+                    );
                     if(ItemCursor.moveToFirst()){
                         //check if this item is existed in database now, if true, method will not insert new line, instead of delete existed line first, and insert new one later.
                         //delete existed line (because of you can't update exist row with a ContentValue, which has full data of a line.)
                         db.delete(
                                 ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-                                ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?",
-                                new String[]{ThisItemName}
+                                Selection,
+                                SelectionArgs
                         );
                     }
                     db.insert(ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,null,Inputs);

@@ -99,6 +99,7 @@ public class CraftActivity extends AppCompatActivity {
     private void ShowRecipeDetail(){
         //1.load Craft Recipe showed to user.
         // TODO: define Recipe Detail which needed to show user here.
+        //official sample:
         if(SelectedRecipe.equals(getString(R.string.DreamFruitTran))){
             RecipeDetailText = "1 * " + getString(R.string.MagicPieceTran) + "\n2 * " + getString(R.string.ElementFlowBottleTran);
         }
@@ -114,35 +115,6 @@ public class CraftActivity extends AppCompatActivity {
         }
     }//end of Craft Recipe part.
 
-
-    //Number Input part.
-    int CraftNumber;
-
-    @SuppressLint("SetTextI18n")
-    public void OpenCraftNumberInput(View view){
-        //1.prepare Input layout.
-        final EditText NumberView = new EditText(this);
-        NumberView.setInputType(InputType.TYPE_CLASS_NUMBER);
-        NumberView.setHint(getString(R.string.CraftNumberInputTran));
-        //2.show dialog to user.
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(getString(R.string.YouAreCraftingTran) + SelectedRecipe + "].");
-        dialog.setCancelable(true);
-        dialog.setView(NumberView);
-        dialog.setPositiveButton(
-                getString(R.string.ConfirmWordTran),
-                (dialog1, id) -> {//3.do work.
-                    CraftNumber = SupportClass.getInputNumber(NumberView);
-                    TextView CraftNumberView = findViewById(R.id.CraftNumberView);
-                    CraftNumberView.setText(CraftNumber + "");
-                    dialog1.cancel();
-                });
-        dialog.setNegativeButton(getString(R.string.CancelWordTran),
-                (dialog12, which) -> dialog12.cancel());
-        AlertDialog DialogView = dialog.create();
-        DialogView.show();
-    }//end of Number Input part.
-    
     
     //Craft part.
     //lv.3 method, main method of Craft part.
@@ -152,17 +124,26 @@ public class CraftActivity extends AppCompatActivity {
         ArrayList<Integer> CostNumberList = new ArrayList<>();
         //1.show dialog to user.
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(getString(R.string.DoYouWantToCraftTran) + SelectedRecipe + "] ?");
+        dialog.setTitle(getString(R.string.DoYouWantToCraftTran) + SelectedRecipe + "] * " + CraftNumber + "?");
         dialog.setCancelable(true);
         dialog.setPositiveButton(
                 getString(R.string.ConfirmWordTran),
                 (dialog1, id) -> {//2.do work.
                     //2.1 decide recipe and cost.
                     // TODO: define Craft Recipe and Cost here.
+                    /*
+                     * Warning: do not set the same cost between two or more item.
+                     * because of Craft number check method use List.indexOf() to search list.
+                     * if you did that, this method can't correctly check all item, which have same number.
+                     * so, I am not suggest to do that. Please notice.
+                     */
+                    //official sample:
                     if(SelectedRecipe.equals(getString(R.string.DreamFruitTran))){
+                        //each item's information should have same id in two list.
                         ItemCostList.add(getString(R.string.MagicPieceTran));
-                        ItemCostList.add(getString(R.string.ElementFlowBottleTran));
                         CostNumberList.add(CraftNumber);
+                        //you can split a line to differ each item which included in recipe.
+                        ItemCostList.add(getString(R.string.ElementFlowBottleTran));
                         CostNumberList.add(CraftNumber * 2);
                     }
                     //2.2 if recipe and cost not empty, execute Cost and Craft Process.
@@ -273,37 +254,6 @@ public class CraftActivity extends AppCompatActivity {
         }
     }
 
-//    private void CostItem2(String ItemName, int CostNumber){
-//        //3.2.0 preparation.
-//        String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
-//        String[] SelectionArgs = {ItemName};
-//        ContentValues ItemNumberValues = new ContentValues();
-//        //3.2.1 get data from database, and fill Cursor.
-//        SearchDataBase(Selection,SelectionArgs);
-//        //3.2.2 get if Item Exist situation from Cursor.
-//        boolean IsItemExist = ReturnCursor.moveToFirst();
-//        //3.3 do Item data delete / update branch.
-//        if(IsItemExist){
-//            //3.3.1
-//            if(CostNumber > 0){
-//                int ItemNumberInDb = ReturnCursor.getInt(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber));
-//                ItemNumberValues.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber,ItemNumberInDb - CostNumber);
-//                dbWrite.update(
-//                        ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-//                        ItemNumberValues,
-//                        Selection,
-//                        SelectionArgs
-//                );
-//            }else{//if number is 0, delete item record in database.
-//                dbWrite.delete(
-//                        ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-//                        Selection,
-//                        SelectionArgs
-//                );
-//            }
-//        }
-//    }
-
     //lv.1 method, sub method. Provide create new column in database support.
     private void NewItemColumn(String ItemName, String ItemType, String ItemText, int ItemNumber){
         ContentValues values = new ContentValues();
@@ -326,6 +276,38 @@ public class CraftActivity extends AppCompatActivity {
                 null
         );
     }//end of Craft part.
+
+
+    //Number Input part.
+    int CraftNumber = 1;//default value.
+
+    @SuppressLint("SetTextI18n")
+    public void OpenCraftNumberInput(View view){
+        //1.prepare Input layout.
+        final EditText NumberView = new EditText(this);
+        NumberView.setInputType(InputType.TYPE_CLASS_NUMBER);
+        NumberView.setHint(getString(R.string.CraftNumberInputTran));
+        //2.show dialog to user.
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(getString(R.string.YouAreCraftingTran) + SelectedRecipe + "].");
+        dialog.setCancelable(true);
+        dialog.setView(NumberView);
+        dialog.setPositiveButton(
+                getString(R.string.ConfirmWordTran),
+                (dialog1, id) -> {//3.do work.
+                    CraftNumber = SupportClass.getInputNumber(NumberView);
+                    if(CraftNumber <= 0){
+                        CraftNumber = 1;//fix value.
+                    }
+                    TextView CraftNumberView = findViewById(R.id.CraftNumberView);
+                    CraftNumberView.setText(CraftNumber + "");
+                    dialog1.cancel();
+                });
+        dialog.setNegativeButton(getString(R.string.CancelWordTran),
+                (dialog12, which) -> dialog12.cancel());
+        AlertDialog DialogView = dialog.create();
+        DialogView.show();
+    }//end of Number Input part.
     //end of Craft system.
 
 

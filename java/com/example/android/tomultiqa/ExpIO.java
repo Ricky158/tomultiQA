@@ -4,9 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 
 /**
- * Main Class for Exp Operation, you can use methods below this class to manage Exp system in Game.
- * You need to construct a Instance to call methods in this class.
- * You can refer examples in ShopActivity - BuyAndAffect(), MainActivity and SquareActivity - ShowResourceCodeInput() method.
+ * Main Class for Exp Operation, you can use methods below this class to manage Exp system in Game.<br/>
+ * You need to construct a Instance to call methods in this class.<br/>
+ * You can refer examples in ShopActivity - BuyAndAffect(), MainActivity and SquareActivity - ShowResourceCodeInput() method.<br/>
  */
 
 public class ExpIO{
@@ -19,39 +19,39 @@ public class ExpIO{
 
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.
-     * Or it will cause number error.
+     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * Or it will cause number error.<br/>
      */
     protected int UserLevel;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.
-     * Or it will cause number error.
+     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * Or it will cause number error.<br/>
      */
     protected int LevelLimit = 50;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.
-     * Or it will cause number error.
+     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * Or it will cause number error.<br/>
      */
     protected int UserHaveEXP;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.
-     * Or it will cause number error.
+     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * Or it will cause number error.<br/>
      */
     protected int EXPRecord = 0;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.
-     * Or it will cause number error.
+     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * Or it will cause number error.<br/>
      */
     protected int UserUpgradeEXP = 1;
 
     /**
-     * You can use this method to add Exp to total number of User having Exp.
-     * And the IO will calculate the current Level, HaveExp, Upgrade Exp.
-     * @param AddNumber the Number of Exp that you want to give to user.
+     * You can use this method to add Exp to total number of User having Exp.<br/>
+     * And the IO will calculate the current Level, HaveExp, Upgrade Exp.<br/>
+     * @param AddNumber the Number of Exp that you want to give to user.<br/>
      */
     protected void GetEXP(int AddNumber){
         UserHaveEXP = UserHaveEXP + AddNumber;
@@ -59,9 +59,9 @@ public class ExpIO{
     }
 
     /**
-     * You can use this method to Minus Exp to total number of User having Exp.
-     * And the IO will calculate the current Level, HaveExp, Upgrade Exp.
-     * @param MinusNumber the Number of Exp that you want to minus to user.
+     * You can use this method to Minus Exp to total number of User having Exp.<br/>
+     * And the IO will calculate the current Level, HaveExp, Upgrade Exp.<br/>
+     * @param MinusNumber the Number of Exp that you want to minus to user.<br/>
      */
     protected void LostEXP(int MinusNumber){
         UserHaveEXP = UserHaveEXP - MinusNumber;
@@ -69,9 +69,9 @@ public class ExpIO{
     }
 
     /**
-     * You need to call this method to save All Exp data variation (including adding, costing, changes, ane etc.) after all usage done.
-     * We suggest you call it when the current Context is [done], like OnPause() or OnStop() in Activity, to cut down unnecessary cost.
-     * @param context Using in SharedPreferences, which used in saving data.
+     * You need to call this method to save All Exp data variation (including adding, costing, changes, ane etc.) after all usage done.<br/>
+     * We suggest you call it when the current Context is [done], like OnPause() or OnStop() in Activity, to cut down unnecessary cost.<br/>
+     * @param context Using in SharedPreferences, which used in saving data.<br/>
      */
     protected void ApplyChanges(Context context){
         SupportClass.saveIntData(context,"EXPInformationStoreProfile","UserLevel",UserLevel);
@@ -106,7 +106,7 @@ public class ExpIO{
         // it just use for double form number calculating, it is not used in actual EXP system code.
         double EXPLimit;
         //it means the number: level^1.6 + 15 - level^1.1.
-        EXPLimit = Math.pow(UserLevel,1.6) + 15 - Math.pow(UserLevel,1.1) ;
+        EXPLimit = Math.pow(UserLevel,1.6) + 150 - Math.pow(UserLevel,1.2) ;
         //lost the number under 0`s part,or "FLOOR".
         UserUpgradeEXP = (int) EXPLimit;
         //UpgradeEXP data will be showed in PrintEXPData() method.

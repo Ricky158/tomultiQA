@@ -11,6 +11,11 @@ import android.provider.BaseColumns;
 //2021.3.14: support: https://stackoverflow.com/questions/513084/ship-an-application-with-a-database?answertab=votes#tab-top !
 public final class QuestDataBaseBasic extends SQLiteOpenHelper {
     //define basic information for database.
+    /**
+     * Notice: this [Version] static int define the database version in Current App Version.
+     * if user upgrade from older version of App, when App installing, the onUpgrade() method will be executed.
+     * You can define the upgrade behavior here.
+     */
     private static final int DB_VERSION = 1;
     private static final String DB_NAME = "Quest.db";
     public static final String TABLE_NAME = "Quest";
@@ -58,13 +63,20 @@ public final class QuestDataBaseBasic extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_ENTRIES);
     }
 
-    //these methods will not be used in reality, because we just update database by update entire APP.
+    //will be executed in App install, so we can define the upgrade logic here.
+    //thanks to: https://www.jianshu.com/p/f634f9658809, and: https://blog.csdn.net/xiaolaohuqwer/article/details/78434912 !
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
-        db.execSQL(SQL_DELETE_ENTRIES);
+        if(oldVersion < newVersion){
+            //for each old version, developer should define the upgrade code for it.
+            //so, for database upgrade across multi version, we need to include legacy update code.
+            switch (oldVersion){
+                case 1:
+                    break;
+            }
+        }
         onCreate(db);
     }
+
     //these methods will not be used in reality, because we just update database by update entire APP.
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);

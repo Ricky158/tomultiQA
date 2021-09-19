@@ -859,12 +859,14 @@ public class MainActivity extends AppCompatActivity {
     private void ReloadBossBaseInf(){
         TextView BossHPShowView = findViewById(R.id.BossHPShowView);
         TextView BattleTurnView = findViewById(R.id.BattleTurnView);
+        TextView AlchemyTurnView = findViewById(R.id.AlchemyTurnView);
         if(BossNowSD > 0){
             BossHPShowView.setText(BossNowHP + " (+" + BossNowSD + ") / " + BossTotalHP);
         }else{
             BossHPShowView.setText(BossNowHP + " / " + BossTotalHP);
         }
         BattleTurnView.setText(BattleTurn + "");
+        AlchemyTurnView.setText(AlchemyTurn + "");
     }
 
     //lv.1 method,sub method of BattleCalculation() and CloseBattle() method.
@@ -897,7 +899,7 @@ public class MainActivity extends AppCompatActivity {
     boolean IsAlchemyStop = false;//record is Alchemy add has been removed, prevent from multiple Remove bug.
 
     @SuppressLint("SetTextI18n")
-    private void MakeAbilityEffective(String Position){
+    private void MakeAbilityEffective(String Position){// TODO: 2021/9/19 define BossAbility Effect here.
         //which used in judging how to make Ability effective.
         if(!BossAbilityText.contains("Nothing")){
             switch (Position) {
@@ -927,9 +929,7 @@ public class MainActivity extends AppCompatActivity {
                     if(BossAbilityText.contains(getString(R.string.SlowAbilityTran))){
                         BattleTurn = BattleTurn + 1;
                     }
-//                if(BossAbilityText.contains(getString(R.string.DuelAbilityTran))){
-//                    BattleTurn = 1;
-//                }//not necessary, we can edit Turn number in boss design.
+                    //the Duel Ability actually not effect at all, just notice user this boss only have 1 turn to fight, so there are no code for it.
                     if(BossAbilityText.contains(getString(R.string.TrialAbilityTran))){
                         BossTotalHP = (int)(BossTotalHP * 1.3);
                         BossNowHP = BossTotalHP;
@@ -947,15 +947,12 @@ public class MainActivity extends AppCompatActivity {
                     if(AlchemyTurn > 0){
                         AlchemyTurn = AlchemyTurn - 1;
                     }else if(!IsAlchemyStop){
-                        AlchemyTurn = 0;
                         UserATK = UserATK - AlchemyATK;
                         UserCriticalRate = UserCriticalRate - AlchemyCriticalRate;
                         UserCriticalDamage = UserCriticalDamage - AlchemyCriticalDamage;
+                        AlchemyTurn = 0;
                         IsAlchemyStop = true;
-                        SharedPreferences A = getSharedPreferences("AlchemyDataFile", MODE_PRIVATE);
-                        SharedPreferences.Editor editor= A.edit();
-                        editor.clear();
-                        editor.apply();
+                        SupportClass.saveIntData(this,"AlchemyDataFile","AlchemyTurn",0);
                     }
                     if(BossAbilityText.contains(getString(R.string.RecoverAbilityTran)) && BossNowHP > 0){
                         BossNowHP = (int) (BossNowHP * (1 + SupportClass.CreateRandomNumber(0,25) / 100.0));
@@ -1489,7 +1486,7 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(MainActivity.this, AdventureActivity.class);
             startActivity(i);
         }else{
-            SupportClass.CreateNoticeDialog(this,getString(R.string.HintWordTran),getString(R.string.GameModeHintTran),getString(R.string.ConfirmWordTran));
+            SupportClass.CreateNoticeDialog(this,getString(R.string.HintWordTran),getString(R.string.NotInGameModeTran),getString(R.string.ConfirmWordTran));
         }
     }
 

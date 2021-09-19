@@ -259,18 +259,18 @@ public class MemoryActivity extends AppCompatActivity {
         //1.1 Text Branch.
         String Line8;
         if(AlchemyTurn <= 0){
-            Line8 = "--";
+            Line8 = "-";
         }else{
             Line8 = String.valueOf(AlchemyTurn);
         }
         //1.2 show text to user.
         String[] Data = new String[]{
                 getString(R.string.ATKWordTran),
-                String.valueOf(TotalATK),
+                TotalATK + "\n",
                 getString(R.string.CritialRateWordTran),
-                TotalCR + "%",
+                TotalCR + "%\n",
                 getString(R.string.CritialDamageWordTran),
-                TotalCD + "%",
+                TotalCD + "%\n",
                 getString(R.string.AlchemyTurnWordTran),
                 Line8
         };

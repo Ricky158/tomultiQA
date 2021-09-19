@@ -91,8 +91,8 @@ public class TimerActivity extends AppCompatActivity {
     String ThisRecord = "";//prevent from empty error, record for this time Activity access.
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {//not using onStop() method is that if App be placed between front and background multi-time, the method will execute multi-time.
+        super.onDestroy();
         if(IsWorking){
             ResetTimer(null);
         }
@@ -105,7 +105,9 @@ public class TimerActivity extends AppCompatActivity {
             SupportClass.saveStringData(TimerActivity.this,"TimerSettingProfile","TimerHistory", UpdatedHistory);
         });
         thread.start();
-    }
+    }//end of History function.
+
+
 
     private void ShowHistory(){
         //it can't be placed in another thread.
@@ -120,7 +122,7 @@ public class TimerActivity extends AppCompatActivity {
         }
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.TimerHistoryTitleTran));
-        dialog.setMessage(History);
+        dialog.setMessage(History.toString());
         dialog.setPositiveButton(
                 getString(R.string.CloseWordTran),
                 (dialog1, which) -> dialog1.cancel()

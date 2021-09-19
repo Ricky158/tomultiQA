@@ -6,13 +6,13 @@ import java.util.ArrayList;
 
 
 /**
- *  This Class can get Abilities Information in Game, you can use methods below this class to access Ability detail.
- *  Each Ability has its own Name, Effect, Tourney Index.
- *  [Name] is the Ability label, which shown for user. user can watch Name to remember the effect of Ability.
- *  [Effect] is the Ability's Effect, which activated in Battle, it can affect Boss or User's State, Values, and etc.
- *  [Tourney Index] is the Ability's Evaluation Index of Tourney, the Abilities can be selected by User and equip to Boss, to change its Evaluation.
- *  As Developer, you need to edit all Abilities Information here, including all variables above, and it changed automatically in all codes.
- *  Oh, you need to know that, this class not included Operation for Battle definition, you need to do it in MainActivity.
+ *  This Class can get Abilities Information in Game, you can use methods below this class to access Ability detail.<br/>
+ *  Each Ability has its own Name, Effect, Tourney Index.<br/>
+ *  [Name] is the Ability label, which shown for user. user can watch Name to remember the effect of Ability.<br/>
+ *  [Effect] is the Ability's Effect, which activated in Battle, it can affect Boss or User's State, Values, and etc.<br/>
+ *  [Tourney Index] is the Ability's Evaluation Index of Tourney, the Abilities can be selected by User and equip to Boss, to change its Evaluation.<br/>
+ *  As Developer, you need to edit all Abilities Information here, including all variables above, and it changed automatically in all codes.<br/>
+ *  Oh, you need to know that, this class not included Operation for Battle definition, you need to do it in MainActivity.<br/>
  */
 
 public class AbilityList {

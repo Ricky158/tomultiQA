@@ -216,7 +216,11 @@ public class BackpackActivity extends AppCompatActivity {
     @SuppressLint("Range")
     public void LoadSelectedItem(){
         if(ReturnCursor != null && ReturnCursor.getCount() > 0 && ItemSelectedId != -1){
-            ReturnCursor.moveToPosition(ItemSelectedId);
+            try {
+                ReturnCursor.moveToPosition(ItemSelectedId);
+            }catch (android.database.CursorIndexOutOfBoundsException e){
+                ReturnCursor.moveToFirst();
+            }
             ItemTypeToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemType));
             ItemTextToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemText));
             ItemNumberToShow = ReturnCursor.getInt(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber));
@@ -265,7 +269,7 @@ public class BackpackActivity extends AppCompatActivity {
                     //3.1 get user want to sell number.
                     int SellNumber = SupportClass.getInputNumber(NumberView);
                     //3.2 start sell process.
-                    if(!ItemSelectedName.equals("") && SellNumber <= ItemNumberToShow){
+                    if(!ItemSelectedName.equals("") && SellNumber <= ItemNumberToShow && SellNumber > 0){
                         //3.2.0 preparation.
                         TextView ItemNumberView = findViewById(R.id.ItemNumberView);
                         String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
@@ -278,43 +282,43 @@ public class BackpackActivity extends AppCompatActivity {
                         //3.3 do Item data insert / update branch.
                         if(IsItemExist){//3.3.1 if item is in database.
                             //3.3.1.0 preparation.
-                            ItemNumberToShow = ItemNumberToShow - SellNumber;//cost item.
+                            int AfterSold = ItemNumberToShow - SellNumber;//record after item are sold, item's number.
                             int SellReward = SellNumber * 1000;
                             //3.3.1.1 change the number and save changes.
-                            ItemNumberValues.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber,ItemNumberToShow);
-                            if(ItemNumberToShow > 0){
+                            if(AfterSold >= 0){
+                                ItemNumberValues.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber,AfterSold);
                                 dbWrite.update(
                                         ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
                                         ItemNumberValues,
                                         Selection,
                                         SelectionArgs
                                 );
-                            }else{//if number is 0, delete item record in database.
-                                dbWrite.delete(
-                                        ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-                                        Selection,
-                                        SelectionArgs
-                                );
+                                //3.3.2 if item was successfully sold some, then give user reward and save data.
+                                //3.3.2.1 refresh data when selling is done, to prevent from data loading error.
+                                ItemNameList.clear();//prevent from repeat add item.
+                                InitializingBackpack();
+                                //3.3.2.2 get Points and show result after selling.
+                                UserPoint = UserPoint + SellReward;
+                                PointRecord = PointRecord + SellReward;
+                                SupportClass.saveLongData(this,"RecordDataFile","PointGotten",PointRecord);
+                                SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
+                                //3.3.2.3 after checked user have enough item to sell, then actually cost item and show changes to user.
+                                ItemNumberToShow = AfterSold;
+                                ItemNumberView.setText(getString(R.string.ItemNumberWordTran) + " " + ItemNumberToShow);
+                            }else{//3.3.1.2 if user doesn't have enough item at all.(AfterSold < 0)
+                                SupportClass.CreateNoticeDialog(
+                                        this,
+                                        getString(R.string.ErrorWordTran),
+                                        "Number is larger than you have.",
+                                        getString(R.string.ConfirmWordTran)
+                                        );
                             }
-                            //3.3.1.2 get Points and show result after selling.
-                            UserPoint = UserPoint + SellReward;
-                            PointRecord = PointRecord + SellReward;
-                            SupportClass.saveLongData(BackpackActivity.this,"RecordDataFile","PointGotten",PointRecord);
-                            SupportClass.saveIntData(BackpackActivity.this,"BattleDataProfile","UserPoint",UserPoint);
-                            ItemNumberView.setText(getString(R.string.ItemNumberWordTran) + " " + ItemNumberToShow);
-                        }else if(ItemSelectedName.equals("")){//3.3.2 if item is not in database.(or no item is selected.)
+                        }else if(ItemSelectedName.equals("")){//3.3.4 if item is not in database.(or no item is selected.)
                             SupportClass.CreateNoticeDialog(
-                                    BackpackActivity.this,
+                                    this,
                                     getString(R.string.ErrorWordTran),
                                     "No item selected yet.",
                                     getString(R.string.ConfirmWordTran));
-                        }else if(SellNumber > ItemNumberToShow){//3.3.3 if Sell number is too large.
-                            SupportClass.CreateNoticeDialog(
-                                    BackpackActivity.this,
-                                    getString(R.string.ErrorWordTran),
-                                    "Number is larger than you have.",
-                                    getString(R.string.ConfirmWordTran)
-                                    );
                         }
                     }
                     dialog12.cancel();

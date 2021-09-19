@@ -3,7 +3,7 @@ package com.example.android.tomultiqa;
 
 public class ValueClass {
     //App Version.
-    public static final int APP_VERSION = 500;
+    public static final int APP_VERSION = 510;
     //App Mode.
     public static final String NORMAL_MODE = "Normal";
     public static final String GAME_MODE = "Game";
@@ -88,12 +88,12 @@ public class ValueClass {
 
     public static final String GAME_FORMULA_HELP =
             "This Help File is only provided with Chinese edition.\n" +
-                    "更新日期：2021/9/14\n" +
+                    "更新日期：2021.9.19\n" +
                     "APP内的公式：\n" +
                     "\n" +
                     "1 用户/答题相关\n" +
                     "1.1 升级所需的EXP\n" +
-                    "当前等级 ^ 1.6 + 15 - 当前等级 ^ 1.1\n" +
+                    "当前等级 ^ 1.6 + 200 - 当前等级 ^ 1.3\n" +
                     "1.2 答题奖励积分\n" +
                     "题目难度 * 10 + 连击数 ^ 2.6\n" +
                     "（最大值为10000）\n" +
@@ -191,10 +191,27 @@ public class ValueClass {
                     "7“比武台”相关\n" +
                     "7.1 评价计算公式：\n" +
                     "boss的HP / boss的回合数 * 评价加成系数 * 等级加成系数。\n" +
-                    "公式为浮点运算，后转为整型显示。\n" +
+                    "公式为int整数运算,最大值同int型上限。\n" +
                     "7.2 评价加成系数：\n" +
                     "所有已选择能力数值的总和。（注：其数值为0时，等价于1。）\n" +
-                    "详情请见“图鉴”。\n" +
+                    "数值详情：\n" +
+                    "名称（中/英），评价加成系数\n" +
+                    "考验 Trial，+30\n" +
+                    "速攻 Rush，-17\n" +
+                    "脆弱 Fragile,-70\n" +
+                    "弱点 WeakSpot,-25\n" +
+                    "迟缓 Slow,-17\n" +
+                    "腐蚀 Corrosion\n" +
+                    "诅咒 Curse, +60\n" +
+                    "卸力 Diversion, +25\n" +
+                    "恢复 Recover, +85\n" +
+                    "残伤 LastHurt, -105\n" +
+                    "护盾 Shield, +35\n" +
+                    "快进 FastStep, +100\n" +
+                    "傲立 Proud, +36\n" +
+                    "惧意 Fear, +8\n" +
+                    "时滞 ReTime，-33\n" +
+                    "活跃 Active，+9\n" +
                     "7.3 等级加成系数：\n" +
                     "公式：（boss等级 - 用户等级） * 0.03 + 1\n" +
                     "简而言之，boss每比用户高1级，总评价上升3%，反之则下降3%。双方同级则系数为1。\n" +
