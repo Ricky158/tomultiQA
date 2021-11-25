@@ -28,7 +28,7 @@ public class DailyActivity extends AppCompatActivity {
         InitializingDailyData();
         InitializingResourceData();
         InitializingEXPData();
-        if(SupportClass.getIntData(this,"RecordDataFile","MaxDailyDifficulty",0) >= 10){
+        if(SupportLib.getIntData(this,"RecordDataFile","MaxDailyDifficulty",0) >= 10){
             IsAutoClearEnable = true;
         }
 
@@ -60,21 +60,17 @@ public class DailyActivity extends AppCompatActivity {
     }
 
     //User information Part.
-    int UserLevel;
-    int UserHaveEXP;
-    int UserPoint;
-    int UserMaterial;
+    ExpIO expIO;
+    ResourceIO resourceIO;
 
     //read EXP data method.
     private void InitializingEXPData(){
-        UserHaveEXP = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserHaveEXP", 0);
-        UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel", 1);
+        expIO = new ExpIO(this);
     }
 
     //read Resource data method.
     private void InitializingResourceData(){
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
+        resourceIO = new ResourceIO(this);
     }//end of Resource and EXP Port.
 
 
@@ -92,41 +88,41 @@ public class DailyActivity extends AppCompatActivity {
             String RewardTypeShowToUser = "Error";//if no response in code, the type show to user will be Error.
             switch (DailyType) {
                 case "EXP":
-                    UserHaveEXP = UserHaveEXP + 20 + DailyDifficulty * 30;
-                    SupportClass.saveIntData(this,"EXPInformationStoreProfile", "UserHaveEXP", UserHaveEXP);
+                    expIO.GetEXP(20 + DailyDifficulty * 30);
+                    expIO.ApplyChanges(this);
                     RewardTypeShowToUser = getString(R.string.EXPWordTran);
                     break;
                 case "Point":
-                    UserPoint = UserPoint + 5000 + 90 * UserLevel * DailyDifficulty;
-                    SupportClass.saveIntData(this,"BattleDataProfile", "UserPoint", UserPoint);
+                    resourceIO.GetPoint(5000 + 90 * expIO.UserLevel * DailyDifficulty);
+                    resourceIO.ApplyChanges(this);
                     RewardTypeShowToUser = getString(R.string.PointWordTran);
                     break;
                 case "Material":
-                    UserMaterial = UserMaterial + (5 + DailyDifficulty * 3);
-                    SupportClass.saveIntData(this,"BattleDataProfile", "UserMaterial", UserMaterial);
+                    resourceIO.GetMaterial(5 + DailyDifficulty * 3);
+                    resourceIO.ApplyChanges(this);
                     RewardTypeShowToUser = getString(R.string.MaterialWordTran);
                     break;
             }
             //3.cost DailyChance.
             DailyChance = DailyChance - 1;
-            SupportClass.saveIntData(this,"BattleDataProfile","DailyChance",DailyChance);
+            SupportLib.saveIntData(this,"BattleDataProfile","DailyChance",DailyChance);
 
             TextView DailyCompleteStateView =findViewById(R.id.DailyCompleteStateView);
             DailyCompleteStateView.setText(getString(R.string.CompletedWordTran) + "!");
             //4.refresh UI.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ReportWordTran),
                     getString(R.string.AutoDailyReport1Tran)+RewardTypeShowToUser+getString(R.string.AutoDailyReport2Tran),
                     getString(R.string.ConfirmWordTran)
             );
         }else if(!IsAutoClearEnable){
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.HintWordTran),
                     getString(R.string.UnlockAutoDailyHintTran),
                     getString(R.string.ConfirmWordTran)
             );
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.HaveFinishedDailyTran),
                     getString(R.string.ConfirmWordTran));
@@ -138,7 +134,7 @@ public class DailyActivity extends AppCompatActivity {
         TextView DailyCompleteStateView =findViewById(R.id.DailyCompleteStateView);
         TextView DailyRewardTypeShow = findViewById(R.id.DailyRewardTypeShow);
         //because of lack of Counting Time system, we just make Default value to 1, in future, it will be depended on this system.
-        if(SupportClass.getIntData(this,"BattleDataProfile","DailyChance",1) > 0){
+        if(SupportLib.getIntData(this,"BattleDataProfile","DailyChance",1) > 0){
             DailyChance = 1;
             DailyCompleteStateView.setText(getString(R.string.NotFinishDailyHintTran));
         }else{
@@ -175,7 +171,7 @@ public class DailyActivity extends AppCompatActivity {
             DailyRewardValueShow.setText(20 + DailyDifficulty * 30 + "");
         }else if(DailyType.equals("Points")){
             DailyRewardTypeShow.setText(getString(R.string.RewardWordTran) + getString(R.string.PointsRewardWordTran));
-            DailyRewardValueShow.setText(5000 + 90 * UserLevel * DailyDifficulty + "");
+            DailyRewardValueShow.setText(5000 + 90 * expIO.UserLevel * DailyDifficulty + "");
         }else{
             DailyRewardTypeShow.setText(getString(R.string.RewardWordTran) + getString(R.string.MaterialRewardWordTran));
             DailyRewardValueShow.setText(5 + DailyDifficulty * 3 + "");
@@ -193,7 +189,7 @@ public class DailyActivity extends AppCompatActivity {
             if(DailyType.equals("EXP")){
                 EXPReward = 20 + DailyDifficulty * 30;
             }else if(DailyType.equals("Points")){
-                PointReward = 5000 + 90 * UserLevel * DailyDifficulty;
+                PointReward = 5000 + 90 * expIO.UserLevel * DailyDifficulty;
             }else{
                 MaterialReward = 5 + DailyDifficulty * 3;
             }
@@ -201,8 +197,8 @@ public class DailyActivity extends AppCompatActivity {
             Intent i = new Intent(this, MainActivity.class);
             i.putExtra("DailyDifficulty",DailyDifficulty);
             i.putExtra("Name",getString(R.string.DailyBossNameTran));
-            i.putExtra("Level",UserLevel);
-            i.putExtra("HP",(UserLevel * SupportClass.CreateRandomNumber(11 + DailyDifficulty * 11,61 + DailyDifficulty * 9) ));
+            i.putExtra("Level",expIO.UserLevel);
+            i.putExtra("HP",(expIO.UserLevel * SupportLib.CreateRandomNumber(11 + DailyDifficulty * 11,61 + DailyDifficulty * 9) ));
             i.putExtra("SD",0);
             i.putExtra("ModeNumber",1);
             i.putExtra("Turn",8);
@@ -214,13 +210,13 @@ public class DailyActivity extends AppCompatActivity {
             i.putExtra("BossState",2);
             //3.cost DailyChance.
             DailyChance = DailyChance - 1;
-            SupportClass.saveIntData(this,"BattleDataProfile","DailyChance",DailyChance);
+            SupportLib.saveIntData(this,"BattleDataProfile","DailyChance",DailyChance);
             //4.start challenging.
             i.addFlags(FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
             finish();
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.HaveFinishedDailyTran),
                     getString(R.string.ConfirmWordTran));

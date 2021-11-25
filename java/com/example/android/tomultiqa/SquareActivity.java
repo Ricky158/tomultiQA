@@ -22,6 +22,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+//LinearLayout divider: https://blog.csdn.net/qq_35928566/article/details/101773490 !
+
 public class SquareActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
@@ -36,13 +38,12 @@ public class SquareActivity extends AppCompatActivity {
             ImportAppMode();
         });
         thread.start();
-        InitializingResourceData();
         ImportExperiment();
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         InitializingResourceData();
     }
 
@@ -61,45 +62,28 @@ public class SquareActivity extends AppCompatActivity {
 
 
     //basic value of whole activity.
-    int UserPoint;
-    int PointRecord;
-    int UserMaterial;
+    ResourceIO resourceIO;
     String AppMode = "Normal";
 
     private void ImportAppMode(){
         SharedPreferences ChooseAppMode = getSharedPreferences("ChooseAppModeProfile", MODE_PRIVATE);
-        AppMode = ChooseAppMode.getString("AppMode", ValueClass.NORMAL_MODE);
+        AppMode = ChooseAppMode.getString("AppMode", ValueLib.NORMAL_MODE);
     }
 
     @SuppressLint("SetTextI18n")
     private void InitializingResourceData(){
         TextView PointCountingView = findViewById(R.id.PointCountInMarket);
         TextView MaterialCountingView = findViewById(R.id.KeyCountInMarket);
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
+        resourceIO = new ResourceIO(this);
         //make number into financial form.
-        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
-        MaterialCountingView.setText(SupportClass.ReturnKiloIntString(UserMaterial));
+        PointCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+        MaterialCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserMaterial));
     }//end of basic values.
-
-
-    //Resource system from MainActivity.
-    //basic operation of resource, just do it automatically.
-    @SuppressLint("SetTextI18n")
-    private void GetPoint(int addNumber){
-        TextView PointCountingView = findViewById(R.id.PointCountInMarket);
-        UserPoint = UserPoint + addNumber;
-        PointRecord = PointRecord + addNumber;
-        SupportClass.saveLongData(this,"RecordDataFile","PointGotten",PointRecord);
-        SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-        //make number into financial form.
-        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
-    }//end of Resource system.
 
 
     //Import Experiment Function.
     private void ImportExperiment(){
-        boolean IsItemFuncOn = SupportClass.getBooleanData(this,"EXPFuncFile","ItemSystemEnable",false);
+        boolean IsItemFuncOn = SupportLib.getBooleanData(this,"EXPFuncFile","ItemSystemEnable",false);
         Button OpenBackpackButton = findViewById(R.id.OpenBackpackButton);
         Button OpenMarketButton = findViewById(R.id.OpenMarketButton);
         Button OpenCraftButton = findViewById(R.id.OpenCraftButton);
@@ -178,13 +162,17 @@ public class SquareActivity extends AppCompatActivity {
     }
 
     public void OpenMissionActivity(View view){
-        Intent i = new Intent(this,MissionActivity.class);
-        startActivity(i);
+        SupportLib.CreateNoticeDialog(this,
+                getString(R.string.NoticeWordTran),
+                "This page is not available for current version of App. You can't excess it.",
+                getString(R.string.ConfirmWordTran));
+        //Intent i = new Intent(this,MissionActivity.class);
+        //startActivity(i);
     }
 
     public void OpenAlchemyActivity(View view){
-        if(!AppMode.equals(ValueClass.GAME_MODE)){
-            SupportClass.CreateNoticeDialog(this,
+        if(!AppMode.equals(ValueLib.GAME_MODE)){
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.HintWordTran),
                     getString(R.string.NotInGameModeTran),
                     getString(R.string.ConfirmWordTran)
@@ -242,49 +230,57 @@ public class SquareActivity extends AppCompatActivity {
                 .setPositiveButton(getString(R.string.ConfirmWordTran), (dialogInterface, i) -> {
                     //after input confirmed.
                     String FormulaText = FormulaView.getText().toString();
-                    int FormulaNumber = SupportClass.getInputNumber(NumberView);//store the exact Number in Code in int form.
+                    int FormulaNumber = SupportLib.getInputNumber(NumberView);//store the exact Number in Code in int form.
                     //according the Code, give user resource.
-                    if(FormulaText.contains("greedisgood")){
-                        GetPoint(FormulaNumber);
-                    }
-                    if(FormulaText.contains("whosyourdaddy")){
-                        SupportClass.saveIntData(SquareActivity.this,"CheatFile","CheatATK",FormulaNumber);
-                    }
-                    if(FormulaText.contains("/xp")){
-                        SupportClass.saveIntData(SquareActivity.this,"EXPInformationStoreProfile","UserHaveEXP",FormulaNumber);
-                    }
-                    if(FormulaText.contains("maxrank")){
-                        SupportClass.saveIntData(SquareActivity.this,"ExcessDataFile","LevelLimit",300);
-                        SupportClass.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessRank",10);
-                        SupportClass.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessATK",5000);
-                        SupportClass.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessCR",25);
-                        SupportClass.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessCD",50);
-                    }
-                    if(FormulaText.contains("unlockvhquest")){
-                        SupportClass.saveIntData(SquareActivity.this,"BattleDataProfile","UserConflictFloor",CONFLICT_MAX_FLOOR);
-                    }
-                    if(FormulaText.contains("goodmorning")){
-                        SupportClass.saveIntData(SquareActivity.this,"TimerSettingProfile","SignDay",-1);
-                        Intent intent1 = new Intent(this, ListActivity.class);
-                        intent1.addFlags(FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent1);
-                    }
-                    if(FormulaText.contains("resetexp")){
-                        ExpIO expIO = new ExpIO(this);
-                        expIO.UserLevel = 1;
-                        expIO.UserHaveEXP = 0;
-                        expIO.ApplyChanges(this);
-                    }
-                    if(FormulaText.contains("WipeQuestData")){
-                        QuestDataBaseBasic questDataBaseBasic = new QuestDataBaseBasic(this);
-                        questDataBaseBasic.DeleteEntire(questDataBaseBasic.getWritableDatabase());
-                    }
-                    if(FormulaText.contains("WipeItemData")){
-                        ItemDataBaseBasic itemDataBaseBasic = new ItemDataBaseBasic(this);
-                        itemDataBaseBasic.DeleteEntire(itemDataBaseBasic.getWritableDatabase());
+                    switch (FormulaText){
+                        case "greedisgood":
+                            TextView PointCountingView = findViewById(R.id.PointCountInMarket);
+                            resourceIO.GetPoint(FormulaNumber);
+                            resourceIO.ApplyChanges(this);
+                            //make number into financial form.
+                            PointCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+                            break;
+                        case "whosyourdaddy":
+                            SupportLib.saveIntData(SquareActivity.this,"CheatFile","CheatATK",FormulaNumber);
+                            break;
+                        case "/xp":
+                            SupportLib.saveIntData(SquareActivity.this,"EXPInformationStoreProfile","UserHaveEXP",FormulaNumber);
+                            break;
+                        case "maxrank":
+                            SupportLib.saveIntData(SquareActivity.this,"ExcessDataFile","LevelLimit",300);
+                            SupportLib.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessRank",10);
+                            SupportLib.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessATK",5000);
+                            SupportLib.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessCR",25);
+                            SupportLib.saveIntData(SquareActivity.this,"ExcessDataFile","LevelExcessCD",50);
+                            break;
+                        case "unlockvhquest":
+                            SupportLib.saveIntData(SquareActivity.this,"BattleDataProfile","UserConflictFloor",CONFLICT_MAX_FLOOR);
+                            break;
+                        case "goodmorning":
+                            SupportLib.saveIntData(SquareActivity.this,"TimerSettingProfile","SignDay",-1);
+                            Intent intent1 = new Intent(this, ListActivity.class);
+                            intent1.addFlags(FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent1);
+                            break;
+                        case "resetexp":
+                            ExpIO expIO = new ExpIO(this);
+                            expIO.UserLevel = 1;
+                            expIO.UserHaveEXP = 0;
+                            expIO.ApplyChanges(this);
+                            break;
+                        case "WipeQuestData":
+                            QuestDbHelper questDbHelper = new QuestDbHelper(this);
+                            questDbHelper.DeleteEntire(questDbHelper.getWritableDatabase());
+                            break;
+                        case "WipeItemData":
+                            ItemDbHelper itemDbHelper = new ItemDbHelper(this);
+                            itemDbHelper.DeleteEntire(itemDbHelper.getWritableDatabase());
+                            break;
+                        default:
+                            break;
                     }
                     //end of after input confirm.
-                    Toast.makeText(getApplicationContext(),"Exchange Completed.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"Exchange Completed.", Toast.LENGTH_SHORT).show();
                 }).setNegativeButton(getString(R.string.CancelWordTran),null).show();
     }//end of Exchange Resource system.
 

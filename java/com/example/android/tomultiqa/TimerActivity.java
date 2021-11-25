@@ -36,14 +36,15 @@ public class TimerActivity extends AppCompatActivity {
         TextView GatherSpeedView = findViewById(R.id.GatherSpeedView);
         TextView TotalPointView = findViewById(R.id.TotalPointView);
         Switch TimerShowSwitch = findViewById(R.id.TimerShowSwitch);
-        int RightAnswering = SupportClass.getIntData(this,"RecordDataFile","RightAnswering",0);
-        int WrongAnswering = SupportClass.getIntData(this,"RecordDataFile","WrongAnswering",0);
-        IsShowTimeNumber = SupportClass.getBooleanData(this,"TimerSettingProfile","ChronometerShowCount",true);
+        int RightAnswering = SupportLib.getIntData(this,"RecordDataFile","RightAnswering",0);
+        int WrongAnswering = SupportLib.getIntData(this,"RecordDataFile","WrongAnswering",0);
+        IsShowTimeNumber = SupportLib.getBooleanData(this,"TimerSettingProfile","ChronometerShowCount",true);
         GatherPointSpeed = 0.1 + (RightAnswering + WrongAnswering) / 800.0;
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
+        //initializing ResourceIO Instance.
+        resourceIO = new ResourceIO(this);
 
-        GatherSpeedView.setText(SupportClass.ReturnTwoBitText(GatherPointSpeed));
-        TotalPointView.setText(SupportClass.ReturnKiloIntString(UserPoint));
+        GatherSpeedView.setText(SupportLib.ReturnTwoBitText(GatherPointSpeed));
+        TotalPointView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
         TimerShowSwitch.setChecked(IsShowTimeNumber);
         //ChronometerTickListener.
         final ProgressBar SquareTimerProgress = findViewById(R.id.SquareTimerProgress);
@@ -57,12 +58,12 @@ public class TimerActivity extends AppCompatActivity {
                 //1.Timer add 1 sec.
                 AddTimerCount();
                 //2.set ProgressBar value.the value is working time percentage.and show to user.
-                    SquareTimerProgress.setProgress(SupportClass.CalculatePercent(TimerCountNumber,TimerCountNumber + TimerStopTime));
+                    SquareTimerProgress.setProgress(SupportLib.CalculatePercent(WorkDuration, WorkDuration + RestDuration));
             }
             //3.if user is[Working], give user Point Reward.
             if(IsWorking && IsTimerStarted){
                 GatheredNumber = GatheredNumber + GatherPointSpeed;
-                GatherNumberView.setText(SupportClass.ReturnTwoBitText(GatheredNumber));
+                GatherNumberView.setText(SupportLib.ReturnTwoBitText(GatheredNumber));
             }
         });
     }
@@ -86,6 +87,39 @@ public class TimerActivity extends AppCompatActivity {
     }//end of ActionBar Menu.
 
 
+    //Background Timer.
+    /**
+     * If TimerActivity has been put into background, then this variable will be filled with the Time Stamp of user leave Activity.<br/>
+     * then, when user back to this Activity. You can use <code>BackTimeEnd</code> minus <code>BackTimeStart</code> to get the background time duration.<br/>
+     * Value: If the value equal to -1, it means user never put Activity to background, then no record.<br/>
+     * Notice: The unit of <code>BackTime</code> is <code>Second</code>.
+     */
+    long BackTimeStart = -1;
+    long BackTimeEnd = -1;
+
+    //when user put this Activity to background.
+    @Override
+    protected void onPause() {
+        super.onPause();
+        BackTimeStart = System.currentTimeMillis() / 1000;
+    }
+
+    //when user pull this Activity from background.
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BackTimeEnd = System.currentTimeMillis() / 1000;
+        //write time number to foreground timer.
+        int BackDuration = (int) (BackTimeEnd - BackTimeStart);
+        if(IsTimerStarted && IsWorking){
+            WorkDuration = WorkDuration + BackDuration;
+            ReloadTimerUI(WorkDuration);
+        }else if(IsTimerStarted){//REST state of Timer.
+            RestDuration = RestDuration + BackDuration;
+            ReloadTimerUI(RestDuration);
+        }
+    }//end of Background Timer.
+
     //History Function.
     StringBuilder History = new StringBuilder();//prevent from empty error, the accumulate record for Timer.
     String ThisRecord = "";//prevent from empty error, record for this time Activity access.
@@ -102,20 +136,18 @@ public class TimerActivity extends AppCompatActivity {
             if(UpdatedHistory.length() > 50000){
                 UpdatedHistory = "";//if History is too long, system will reset it to default value, to save storage.
             }
-            SupportClass.saveStringData(TimerActivity.this,"TimerSettingProfile","TimerHistory", UpdatedHistory);
+            SupportLib.saveStringData(TimerActivity.this,"TimerSettingProfile","TimerHistory", UpdatedHistory);
         });
         thread.start();
-    }//end of History function.
-
-
+    }
 
     private void ShowHistory(){
         //it can't be placed in another thread.
         //1.import String to Buffer to reverse it to show to user.(initialize)
-        History = new StringBuilder(SupportClass.getStringData(this,"TimerSettingProfile","TimerHistory","") );//default value.
+        History = new StringBuilder(SupportLib.getStringData(this,"TimerSettingProfile","TimerHistory","") );//default value.
         //2.do process.
         if(History.length() > 40000){//hint user.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ErrorWordTran),
                     "The History is too long for loading, please delete or backup it manually, or App will do these soon.",
                     getString(R.string.ConfirmWordTran));
@@ -133,7 +165,7 @@ public class TimerActivity extends AppCompatActivity {
                     Thread thread = new Thread(() -> {
                         History = new StringBuilder();
                         ThisRecord = "";
-                        SupportClass.saveStringData(TimerActivity.this,"TimerSettingProfile","TimerHistory","");//default value.
+                        SupportLib.saveStringData(TimerActivity.this,"TimerSettingProfile","TimerHistory","");//default value.
                     });
                     thread.start();
                     dialog13.cancel();
@@ -158,17 +190,28 @@ public class TimerActivity extends AppCompatActivity {
 
 
     //Timer function.
-    //recording which Timer is on or off.
-    boolean IsTimerStarted = false;//record Timer is Initialized or not, when the Timer is Counting (no matter in WORK or REST state), it will be true.
-    boolean IsWorking = false;//is Timer in WORK state, false is in REST state. but this variable can't show Timer is ON or OFF.
+    /**
+     * Record Timer is Initialized or not.<br/>
+     * When the Timer is Counting (no matter in WORK or REST state), it will be <code>true</code>.<br/>
+     * If it is <code>false</code>, that means Timer isn't start counting at all.
+     */
+    boolean IsTimerStarted = false;
+    /**
+     * Value:<br/>
+     * <code>true</code>: Timer is in WORK state.<br/>
+     * <code>false</code>: Timer is in REST state.<br/>
+     * Notice: This variable can't show Timer is ON or OFF.
+     */
+    boolean IsWorking = false;
     boolean IsShowTimeNumber = true;
-    int TimerCountNumber = 0;//WORK state secs.
-    int TimerStopTime = 0;//REST state secs.
+    //WORK state secs.
+    int WorkDuration = 0;
+    //REST state secs.
+    int RestDuration = 0;
     double GatherPointSpeed = 0.00;
     double GatheredNumber = 0.00;
 
-    int UserPoint = 0;
-    long PointRecord = 0;
+    ResourceIO resourceIO;
 
     //lv.3 method, main method.
     public void ResetTimer(View view){
@@ -176,16 +219,16 @@ public class TimerActivity extends AppCompatActivity {
         //"+ "\n----\n" + CurrentDate + "\n" +" String is spilt line of each Record.
         String Report =
                 getString(R.string.TimerTotalTimeWordTran) + "\n" +
-                SupportClass.ReturnTimerString(TimerCountNumber + TimerStopTime) + "\n" +
-                getString(R.string.TimerWorkingTran) + " " +  SupportClass.CalculatePercent(TimerCountNumber,TimerCountNumber + TimerStopTime) + "%" + "\n" +
-                SupportClass.ReturnTimerString(TimerCountNumber) + "\n" +
-                getString(R.string.TimerRestingTran) + " " + SupportClass.CalculatePercent(TimerStopTime,TimerCountNumber + TimerStopTime) + "%" + "\n" +
-                SupportClass.ReturnTimerString(TimerStopTime);
-        if(TimerCountNumber + TimerStopTime > 0){//we can't record empty History.
-            ThisRecord = SupportClass.getSystemTime() + "\n" + Report + "\n----\n" + ThisRecord;
+                SupportLib.ReturnTimerString(WorkDuration + RestDuration) + "\n" +
+                getString(R.string.TimerWorkingTran) + " " +  SupportLib.CalculatePercent(WorkDuration, WorkDuration + RestDuration) + "%\n" +
+                SupportLib.ReturnTimerString(WorkDuration) + "\n" +
+                getString(R.string.TimerRestingTran) + " " + SupportLib.CalculatePercent(RestDuration, WorkDuration + RestDuration) + "%\n" +
+                SupportLib.ReturnTimerString(RestDuration);
+        if(WorkDuration + RestDuration > 0){//we can't record empty History.
+            ThisRecord = SupportLib.getSystemTime() + "\n" + Report + "\n----\n" + ThisRecord;
         }
         //2.show to user with format.
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.ReportWordTran),
                 getString(R.string.TimerResetedReportTran) + "\n" + Report,
                 getString(R.string.ConfirmWordTran)
@@ -226,28 +269,39 @@ public class TimerActivity extends AppCompatActivity {
         IsWorking = !IsWorking;
     }
 
-    //lv.1 method, main method.
     //thanks to: https://blog.csdn.net/weixin_43564923/article/details/94550630 !
     // https://stackoverflow.com/questions/22545644/how-to-convert-seconds-into-hhmmss !
+    /**
+     * lv.1 main method, which can add 1 sec to Counting Number depending which Mode Timer is using.
+     */
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void AddTimerCount(){
-        final TextView TimerShowView = findViewById(R.id.TimerShowView);
+        TextView TimerShowView = findViewById(R.id.TimerShowView);
         //0.the first sec will not be loaded automatically.we need to update text manually.
-        if(TimerCountNumber == 1 && IsWorking || TimerStopTime == 1 && !IsWorking){
+        if(WorkDuration == 1 && IsWorking || RestDuration == 1 && !IsWorking){
             TimerShowView.setText("00:00:01");
         }
         //1.add 1 sec to total Time number.
-        int ShowedNumber;
         if(IsWorking){
-            TimerCountNumber = TimerCountNumber + 1;
-            ShowedNumber = TimerCountNumber;
+            WorkDuration = WorkDuration + 1;
+            //2.transform time format.and show to user.
+            ReloadTimerUI(WorkDuration);
         }else {
-            TimerStopTime = TimerStopTime + 1;
-            ShowedNumber = TimerStopTime;
+            RestDuration = RestDuration + 1;
+            //2.transform time format.and show to user.
+            ReloadTimerUI(RestDuration);
         }
-        // 2.transform time format.and show to user.
+    }
+
+    /**
+     * Transform Sec number to Time format, and show the Time Number to user (refresh UI).
+     * @param ShowedNumber Because of Timer have two mode Counting Number, you can put which you want to show here.
+     */
+    @SuppressLint("SetTextI18n")
+    private void ReloadTimerUI(int ShowedNumber){
+        TextView TimerShowView = findViewById(R.id.TimerShowView);
         if(IsShowTimeNumber){
-            TimerShowView.setText(SupportClass.ReturnTimerString(ShowedNumber));
+            TimerShowView.setText(SupportLib.ReturnTimerString(ShowedNumber));
         }else{
             TimerShowView.setText("00:00:00");
         }
@@ -266,7 +320,7 @@ public class TimerActivity extends AppCompatActivity {
     public void ChangeShowTimeState(View view){
         Switch TimerShowSwitch = findViewById(R.id.TimerShowSwitch);
         IsShowTimeNumber = TimerShowSwitch.isChecked();
-        SupportClass.saveBooleanData(this,"TimerSettingProfile","ChronometerShowCount",IsShowTimeNumber);
+        SupportLib.saveBooleanData(this,"TimerSettingProfile","ChronometerShowCount",IsShowTimeNumber);
     }
 
     //lv.1 method, sub method of ChangeTimerState() method.
@@ -277,7 +331,10 @@ public class TimerActivity extends AppCompatActivity {
         SquareTimer.start();
     }
 
-    //lv.1 method, sub method of ResetTimer() method.
+    /**
+     * lv.1 method, sub method of <code>ResetTimer()</code> method.<br/>
+     * Call this method to let TimerActivity UI back to Initial State.
+     */
     @SuppressLint("SetTextI18n")
     private void ClearTimer(){
         //1.stop progress immediately.
@@ -298,8 +355,8 @@ public class TimerActivity extends AppCompatActivity {
         SquareTimer.setBase(SystemClock.elapsedRealtime());
         SquareTimer.stop();
         //5.clear counting variables.
-        TimerCountNumber = 0;
-        TimerStopTime = 0;
+        WorkDuration = 0;
+        RestDuration = 0;
         IsWorking = !StartWithSwitch.isChecked();
     }//end of Timer Function.
 
@@ -316,18 +373,12 @@ public class TimerActivity extends AppCompatActivity {
         if (GatheredNumber > 1) {
             CanBeGathered = (int) (Math.floor(GatheredNumber));
             GatheredNumber = GatheredNumber - CanBeGathered;
-            GatherNumberView.setText(SupportClass.ReturnTwoBitText(GatheredNumber));
+            GatherNumberView.setText(SupportLib.ReturnTwoBitText(GatheredNumber));
 
-            UserPoint = UserPoint + CanBeGathered;
-            TotalPointView.setText(SupportClass.ReturnKiloIntString(UserPoint));
-
-            Thread thread = new Thread(() -> {
-                PointRecord = PointRecord + CanBeGathered;
-                SupportClass.saveLongData(this, "RecordDataFile", "PointGotten", PointRecord);
-                SupportClass.saveIntData(this, "BattleDataProfile", "UserPoint", UserPoint);
-            });
-            thread.start();
-            SupportClass.CreateNoticeDialog(this,
+            resourceIO.GetPoint(CanBeGathered);
+            resourceIO.ApplyChanges(this);
+            TotalPointView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.GetWordTran) + CanBeGathered + getString(R.string.PointWordTran),
                     getString(R.string.ConfirmWordTran)

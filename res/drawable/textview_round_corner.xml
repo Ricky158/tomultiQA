@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--xml hint: https://yiibai.com/xml/xml_comments.html !-->
+<!--shape file format: https://www.jianshu.com/p/588ef768db32 !-->
+<!--textview corner: https://www.cnblogs.com/wenhui92/p/6242457.html ! -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <solid android:color="#F4F4F4" />
+    <corners android:radius="6dp" />
+    <padding
+        android:left="5dp"
+        android:top="5dp"
+        android:right="5dp"
+        android:bottom="5dp" />
+</shape>

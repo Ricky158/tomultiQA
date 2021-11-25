@@ -28,11 +28,17 @@ public class AlchemyActivity extends AppCompatActivity {
         InitializingMasteryData();
         //confirm if user is already have Alchemy still Effective. if user have, then close the Create button.
         Button CreateAlchemyButton = findViewById(R.id.CreateAlchemyButton);
-        if(SupportClass.getIntData(this,"AlchemyDataFile","AlchemyTurn",0) > 0){
+        if(SupportLib.getIntData(this,"AlchemyDataFile","AlchemyTurn",0) > 0){
             CreateAlchemyButton.setClickable(false);
             CreateAlchemyButton.setText(getString(R.string.YouHadOneAvailableTran));
             CreateAlchemyButton.setTextColor(Color.RED);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // TODO: 2021/9/24 save Resource data here in future.
     }
 
     //add a button menu to ActionBar in this Activity.
@@ -53,12 +59,12 @@ public class AlchemyActivity extends AppCompatActivity {
         }else if(item.getItemId() == R.id.action_ShopEvent){
             LoadEvent();
             if(!EventName.equals("")){
-                SupportClass.CreateNoticeDialog(this,
+                SupportLib.CreateNoticeDialog(this,
                         getString(R.string.ShopEventTitleTran),
                         EventName + "\n\n" + EventScript,
                         getString(R.string.ConfirmWordTran));
             }else{
-                SupportClass.CreateNoticeDialog(this,
+                SupportLib.CreateNoticeDialog(this,
                         getString(R.string.ShopEventTitleTran),
                         getString(R.string.NothingWordTran),
                         getString(R.string.ConfirmWordTran));
@@ -101,16 +107,16 @@ public class AlchemyActivity extends AppCompatActivity {
 
     //main method.
     private void InitializingMasteryData(){
-        MasteryLevel = SupportClass.getIntData(this,"AlchemyMasteryFile","MasteryLevel",0);
-        MasteryEXP = SupportClass.getIntData(this,"AlchemyMasteryFile","MasteryEXP",0);
+        MasteryLevel = SupportLib.getIntData(this,"AlchemyMasteryFile","MasteryLevel",0);
+        MasteryEXP = SupportLib.getIntData(this,"AlchemyMasteryFile","MasteryEXP",0);
         //define the benefit which upgrade Mastery can get.
         MasteryDataSet();
     }
 
     //sub method of GetMastery() method.
     private void SaveMasteryData(){
-        SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryLevel",MasteryLevel);
-        SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryEXP",MasteryEXP);
+        SupportLib.saveIntData(this,"AlchemyMasteryFile","MasteryLevel",MasteryLevel);
+        SupportLib.saveIntData(this,"AlchemyMasteryFile","MasteryEXP",MasteryEXP);
     }
 
     //lv.2 sub method, full collection of Mastery Level.
@@ -138,7 +144,7 @@ public class AlchemyActivity extends AppCompatActivity {
 
         MasteryLevelView.setText("Lv." + MasteryLevel);
         MasteryNumberView.setText(MasteryEXP + "/" + MasteryUpgradeEXP);
-        MasteryEXPView.setProgress(SupportClass.CalculatePercent(MasteryEXP,MasteryUpgradeEXP));
+        MasteryEXPView.setProgress(SupportLib.CalculatePercent(MasteryEXP,MasteryUpgradeEXP));
     }
 
     //lv.1 sub method of InitializingMasteryData() method.
@@ -156,13 +162,14 @@ public class AlchemyActivity extends AppCompatActivity {
 
 
     //Material part.
-    int UserMaterial = 0;
+    ResourceIO resourceIO;
+
     @SuppressLint("SetTextI18n")
     //lv.1 method, main method of Alchemy function.
     private void InitializingMaterial(){
         TextView MaterialNumberView = findViewById(R.id.MaterialNumberView);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",UserMaterial);
-        MaterialNumberView.setText(SupportClass.ReturnKiloIntString(UserMaterial) + " " + getString(R.string.MaterialWordTran));
+        resourceIO = new ResourceIO(this);
+        MaterialNumberView.setText(resourceIO.UserMaterial + " " + getString(R.string.MaterialWordTran));
     }//end of Material part.
 
 
@@ -290,7 +297,7 @@ public class AlchemyActivity extends AppCompatActivity {
             ChangeRecipeText();
             ChangeRecipeReport();
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     "You have touched the Recipe Element Limitation of Current Mastery Level.",
                     getString(R.string.ConfirmWordTran)
@@ -301,23 +308,23 @@ public class AlchemyActivity extends AppCompatActivity {
     //lv.2 method, main method of Alchemy function.
     public void StartAlchemy(View view){
         //1.save data.
-        if(SupportClass.CreateRandomNumber(1,100) <= SuccessRate && RecipeTurn > 0 && AddSuccessRateElementNumber + AddTurnElementNumber < MaxRecipeElementNumber){
+        if(SupportLib.CreateRandomNumber(1,100) <= SuccessRate && RecipeTurn > 0 && AddSuccessRateElementNumber + AddTurnElementNumber < MaxRecipeElementNumber){
             //Alchemy effect recording.
             if(ATKElementNumber > 0){
-                SupportClass.saveIntData(this,"AlchemyDataFile","ATKup",ATKElementNumber * 10);
+                SupportLib.saveIntData(this,"AlchemyDataFile","ATKup",ATKElementNumber * 10);
             }
             if(CRElementNumber > 0){
-                SupportClass.saveIntData(this,"AlchemyDataFile","CRup",CRElementNumber * 5);
+                SupportLib.saveIntData(this,"AlchemyDataFile","CRup",CRElementNumber * 5);
             }
             if(CDElementNumber > 0){
-                SupportClass.saveIntData(this,"AlchemyDataFile","CDup",CDElementNumber * 15);
+                SupportLib.saveIntData(this,"AlchemyDataFile","CDup",CDElementNumber * 15);
             }
             if(AddTurnElementNumber > 0){
-                SupportClass.saveIntData(this,"AlchemyDataFile","AlchemyTurn",AddTurnElementNumber * 5);
+                SupportLib.saveIntData(this,"AlchemyDataFile","AlchemyTurn",AddTurnElementNumber * 5);
             }
 
-            int MasteryWillGet = RecipeCost * RecipeElementNumber * SupportClass.CreateRandomNumber(0,10);
-            SupportClass.CreateNoticeDialog(this,
+            int MasteryWillGet = RecipeCost * RecipeElementNumber * SupportLib.CreateRandomNumber(0,10);
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     "Alchemy Create Success.\n" +
                             "You get " + MasteryWillGet + " Mastery EXP!",
@@ -326,19 +333,19 @@ public class AlchemyActivity extends AppCompatActivity {
             GetMastery(MasteryWillGet);
 
         }else if(RecipeTurn <= 0){
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     "You can`t Create Alchemy result which Sustain Turn is lower than 1!",
                     getString(R.string.ConfirmWordTran)
             );
         }else if(AddSuccessRateElementNumber + AddTurnElementNumber >= MaxRecipeElementNumber){
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     "Why do you want to Create a Alchemy result which contains no Effective Elements? Please change your Recipe.",
                     getString(R.string.ConfirmWordTran)
             );
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     "Oh...",
                     "We made it Exploded...Create fail.",
                     getString(R.string.ConfirmWordTran)

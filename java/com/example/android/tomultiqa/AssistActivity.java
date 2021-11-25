@@ -34,29 +34,37 @@ public class AssistActivity extends AppCompatActivity {
         if(TimerUnitString.equals("") || TimerUnitString.length() > 6){//Prevent from Empty.
             TimerUnitString = "Sol.";
         }
-        SupportClass.saveStringData(this,"TimerSettingProfile","TimerUnit",TimerUnitString);
+        SupportLib.saveStringData(this,"TimerSettingProfile","TimerUnit",TimerUnitString);
         //save Timer Target Day.
-        int TimerTargetDay = SupportClass.getInputNumber(TimerTargetDayView);
+        int TimerTargetDay = SupportLib.getInputNumber(TimerTargetDayView);
         if(TimerTargetDay <= 0 || TimerTargetDay > 3660){
             TimerTargetDay = 30;
         }
-        SupportClass.saveIntData(this,"TimerSettingProfile","TimerTargetDay",TimerTargetDay);
+        SupportLib.saveIntData(this,"TimerSettingProfile","TimerTargetDay",TimerTargetDay);
     }
 
     //Assist initializing function.
     //the data are stored in TimerSettingProfile for history reason. Please pay attention!!
     private void InitializingAssistSwitch(){
         Switch AutoKeyboardSwitch = findViewById(R.id.AutoKeyboardSwitch);
-        Switch DamageDialogSwitch = findViewById(R.id.DamageDialogSwitch);
         Switch AutoClearAnswerSwitch = findViewById(R.id.AutoClearAnswerSwitch);
+        Switch DamageDialogSwitch = findViewById(R.id.DamageDialogSwitch);
+        Switch PopWrongWindowSwitch = findViewById(R.id.PopWrongWindowSwitch);
         RadioButton AutoCaseOff = findViewById(R.id.AutoCaseOff);
         RadioButton AutoCaseCaps = findViewById(R.id.AutoCaseCaps);
         RadioButton AutoCaseLows = findViewById(R.id.AutoCaseLows);
 
-        AutoKeyboardSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","AutoKeyboard",false));
-        DamageDialogSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","StopDamageDialog",true));
-        AutoClearAnswerSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","AutoClearAnswer",false));
-        int AutoCaseState = SupportClass.getIntData(this,"TimerSettingProfile","AutoCase",-1);
+        boolean[] SwitchData = SupportLib.getMultiBoolean(
+                this,
+                "TimerSettingProfile",
+                new String[]{"AutoKeyboard","AutoClearAnswer","StopDamageDialog","AutoWrongWindow"},
+                new boolean[]{false,false,true,true}
+        );
+        AutoKeyboardSwitch.setChecked(SwitchData[0]);
+        AutoClearAnswerSwitch.setChecked(SwitchData[1]);
+        DamageDialogSwitch.setChecked(SwitchData[2]);
+        PopWrongWindowSwitch.setChecked(SwitchData[3]);
+        int AutoCaseState = SupportLib.getIntData(this,"TimerSettingProfile","AutoCase",-1);
         if(AutoCaseState == 1){
             AutoCaseCaps.setChecked(true);
         }else if(AutoCaseState == 0){
@@ -74,19 +82,24 @@ public class AssistActivity extends AppCompatActivity {
         Switch TimerFortuneSwitch = findViewById(R.id.TimerFortuneSwitch);
         EditText TimerTargetDayView = findViewById(R.id.TimerTargetDayView);
         EditText TimerUnitView = findViewById(R.id.TimerUnitView);
-
-        TimerEnableSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","TimerEnabled",false));
-        TimerFortuneSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","TimerFortune",false));
-        TimerTargetDayView.setText(SupportClass.getIntData(this,"TimerSettingProfile","TimerTargetDay",30) + "");
-        TimerUnitView.setText(SupportClass.getStringData(this,"TimerSettingProfile","TimerUnit","Sol."));
+        boolean[] TimeBooleans = SupportLib.getMultiBoolean(
+                this,
+                "TimerSettingProfile",
+                new String[]{"TimerEnabled","TimerFortune"},
+                new boolean[]{false,false}
+        );
+        TimerEnableSwitch.setChecked(TimeBooleans[0]);
+        TimerFortuneSwitch.setChecked(TimeBooleans[1]);
+        TimerTargetDayView.setText(SupportLib.getIntData(this,"TimerSettingProfile","TimerTargetDay",30) + "");
+        TimerUnitView.setText(SupportLib.getStringData(this,"TimerSettingProfile","TimerUnit","Sol."));
     }//end of Timer system.
 
 
     //Switch Management system.
     public void ChangeSwitchState(View view){
-        Switch AnySwitchView = findViewById(view.getId());
-        boolean SwitchIsChecked = AnySwitchView.isChecked();
-        String SwitchText = AnySwitchView.getText().toString();
+        Switch AnySwitch = findViewById(view.getId());
+        boolean SwitchIsChecked = AnySwitch.isChecked();
+        String SwitchText = AnySwitch.getText().toString();
         SharedPreferences TimerInfo = getSharedPreferences("TimerSettingProfile", MODE_PRIVATE);
         SharedPreferences.Editor editor= TimerInfo.edit();
 
@@ -102,6 +115,8 @@ public class AssistActivity extends AppCompatActivity {
             editor.putBoolean("StopDamageDialog",SwitchIsChecked);
         }else if(SwitchText.equals(getString(R.string.AutoClearAnswerTran))){
             editor.putBoolean("AutoClearAnswer",SwitchIsChecked);
+        }else if(SwitchText.equals(getString(R.string.AutoWrongWindowTran))){
+            editor.putBoolean("AutoWrongWindow",SwitchIsChecked);
         }
         editor.apply();
     }//end of Switch Management system.
@@ -127,9 +142,9 @@ public class AssistActivity extends AppCompatActivity {
 
     //Show Assist Function Help.
     public void ShowAssistHelp(View view){
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.HelpWordTran),
-                ValueClass.ASSIST_FUNCTION_HELP,
+                ValueLib.ASSIST_FUNCTION_HELP,
                 getString(R.string.ConfirmWordTran));
     }
 }

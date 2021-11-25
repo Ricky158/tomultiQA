@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.android.tomultiqa"
-    android:versionCode="20210919"
-    android:versionName="0.51.0">
+    android:versionCode="20211125"
+    android:versionName="0.60.0">
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -12,106 +12,137 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".HandbookActivity"
+            android:exported="true"
+            android:label="@string/HandBookWordTran"
+            android:parentActivityName=".MemoryActivity" />
+        <activity
             android:name=".StatisticsActivity"
+            android:exported="true"
             android:label="@string/StatisticsWordTran"
             android:parentActivityName=".MemoryActivity" />
         <activity
             android:name=".MainActivity"
+            android:exported="false"
             android:parentActivityName=".ListActivity" />
         <activity
             android:name=".FavoriteActivity"
+            android:exported="false"
             android:label="@string/FavoriteWordTran"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".CraftActivity"
+            android:exported="false"
             android:label="@string/CraftEntryButtonTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".AboutAppActivity"
+            android:exported="true"
             android:label="@string/AboutAppWordTran"
             android:parentActivityName=".SettingActivity" />
         <activity
             android:name=".MarketActivity"
+            android:exported="false"
             android:label="@string/MarketWordTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".BackpackActivity"
+            android:exported="false"
             android:label="@string/BackpackWordTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".AdventureActivity"
+            android:exported="false"
             android:label="@string/AdventureWordTran"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".LimitUpActivity"
+            android:exported="false"
             android:label="@string/LimitUpTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".BackUpActivity"
+            android:exported="true"
             android:label="@string/BackUpWordTran"
             android:parentActivityName=".SettingActivity" />
         <activity
             android:name=".EditorActivity"
+            android:exported="false"
             android:label="@string/QuestEditorWordTran"
             android:parentActivityName=".SettingActivity" />
         <activity
             android:name=".TimerActivity"
+            android:exported="true"
             android:label="@string/SquareTimerTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".AssistActivity"
+            android:exported="true"
             android:label="@string/AdditionalFunctionTran"
             android:parentActivityName=".SettingActivity" />
         <activity
             android:name=".AchievementActivity"
+            android:exported="true"
             android:label="@string/AchievementWordTran"
             android:parentActivityName=".MemoryActivity" />
         <activity
             android:name=".TourneyActivity"
+            android:exported="false"
             android:label="@string/TourneyWordTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".AlchemyActivity"
+            android:exported="true"
             android:label="@string/AlchemyButtonTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".StoryActivity"
+            android:exported="true"
             android:label="@string/StoryWordTran"
             android:parentActivityName=".MemoryActivity" />
         <activity
             android:name=".MemoryActivity"
+            android:exported="true"
             android:label="@string/MemoryWordTran"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".FolderActivity"
+            android:exported="true"
             android:label="@string/FolderWordTran"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".MissionActivity"
+            android:exported="true"
             android:label="Mission"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".ShopActivity"
+            android:exported="true"
             android:label="@string/ShopTitleTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".TalentActivity"
+            android:exported="true"
             android:label="@string/TalentTitleTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".DailyActivity"
-            android:label="@string/DailyWordTran"
+            android:exported="false"
+            android:label="@string/DailyButtonTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".ConflictActivity"
+            android:exported="false"
             android:label="@string/ConflictTitleTran"
             android:parentActivityName=".SquareActivity" />
         <activity
             android:name=".SquareActivity"
+            android:exported="true"
             android:label="@string/SquareTran"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SettingActivity"
+            android:exported="true"
             android:label="@string/SettingTitleTran"
             android:parentActivityName=".MainActivity" />
         <activity

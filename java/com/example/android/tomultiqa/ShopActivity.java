@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,23 +55,18 @@ public class ShopActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_ShopHelp) {//if setting icon in Menu be touched.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.HelpWordTran),
                     getString(R.string.ShopHelpTextTran),
                     getString(R.string.ConfirmWordTran)
             );
         }else if(item.getItemId() == R.id.action_ShopEvent){
             LoadEvent();
+            ConstraintLayout ShopRootLayout = findViewById(R.id.ShopRootLayout);
             if(!EventName.equals("")){
-                SupportClass.CreateNoticeDialog(this,
-                        getString(R.string.ShopEventTitleTran),
-                        EventName + "\n\n" + EventScript,
-                        getString(R.string.ConfirmWordTran));
+                SupportLib.CreateWindowDialog(this, ShopRootLayout, getString(R.string.ShopEventTitleTran) + ":\n" + EventName + "\n" + EventScript);
             }else{
-                SupportClass.CreateNoticeDialog(this,
-                        getString(R.string.ShopEventTitleTran),
-                        getString(R.string.NothingWordTran),
-                        getString(R.string.ConfirmWordTran));
+                SupportLib.CreateWindowDialog(this, ShopRootLayout, getString(R.string.ShopEventTitleTran) + ":\n" + getString(R.string.NoEventWordTran));
             }
 
         }else if(item.getItemId() == android.R.id.home){
@@ -91,7 +87,7 @@ public class ShopActivity extends AppCompatActivity {
     ArrayList<String> SelectedGoodList = new ArrayList<>();
     ArrayList<Integer> SelectedPriceList = new ArrayList<>();
     //Limit Goods.
-//    boolean IsLimit1Gettable = true;
+    //boolean IsLimit1Gettable = true;
     //Current Selected variables.
     String ItemSelectedName = "";
     int ItemSelectedId = -1;
@@ -106,31 +102,34 @@ public class ShopActivity extends AppCompatActivity {
         //2.show a dialog to user to start settlement.
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.NoticeWordTran));
-        dialog.setMessage(getString(R.string.ShopTakeGoodsTran) + "\n" + AllSelectedGoods + "\n" + getString(R.string.TotalPriceHintTran) + "\n" + TotalPrice + getString(R.string.PointWordTran));
+        dialog.setMessage(getString(R.string.ShopTakeGoodsTran) + "\n" + AllSelectedGoods + "\n" + getString(R.string.TotalPriceHintTran) + "\n" + SupportLib.ReturnKiloIntString(TotalPrice) + getString(R.string.PointWordTran));
         dialog.setCancelable(true);
         dialog.setPositiveButton(
                 getString(R.string.ConfirmWordTran),
                 (dialog13, id) -> {
                     //1.NPE and enough point check.
                     ExpIO expIO = new ExpIO(this);
-                    if(!SelectedPriceList.isEmpty() && !SelectedGoodList.isEmpty() && UserPoint >= TotalPrice){
+                    if(!SelectedPriceList.isEmpty() && !SelectedGoodList.isEmpty() && resourceIO.UserPoint >= TotalPrice){
                         //2.for any element in Shopping cart, check it's name, cost points, and give it to user.
                         for(String Good: SelectedGoodList){// TODO: 2021/9/4 change each Good Effect here.
                             //2.1 cost point according the price of specific good.
-                            CostPoint( (int) (getGoodPrice(Good) * EventEffect) );
+                            resourceIO.CostPoint( (int) (getGoodPrice(Good) * EventEffect) );
+                            resourceIO.ApplyChanges(this);
+                            TextView PointCountingView = findViewById(R.id.PointCountInMarket);
+                            PointCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
                             //2.2 settlement process(结算).give effect to user.
                             //2.2.1 Normal Goods, each branch represents a kind of Good.
-                            if(Good.equals(GoodNameList.get(0)) && expIO.UserHaveEXP <= 1000000){
+                            if(Good.equals(GoodNameList.get(0))){
                                 expIO.GetEXP(50);
-                            }else if(Good.equals(GoodNameList.get(1)) && expIO.UserHaveEXP <= 1000000){
+                            }else if(Good.equals(GoodNameList.get(1))){
                                 expIO.GetEXP(2500);
                             }
                         }
                         expIO.ApplyChanges(this);
                         dialog13.cancel();
-                    }else if(UserPoint < TotalPrice){
+                    }else if(resourceIO.UserPoint < TotalPrice){
                         dialog13.cancel();//close buying dialog first and open error dialog later to prevent two dialog on same surface.
-                        SupportClass.CreateNoticeDialog(this,
+                        SupportLib.CreateNoticeDialog(this,
                                 getString(R.string.ErrorWordTran),
                                 getString(R.string.NotEnoughPointTran),
                                 getString(R.string.ConfirmWordTran));
@@ -152,7 +151,7 @@ public class ShopActivity extends AppCompatActivity {
     public void CheckCart(View view){
         String Content = getCartDetail();
         //2.show to user.
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.ShoppingCartTran),
                 Content,
                 getString(R.string.ConfirmWordTran));
@@ -192,7 +191,7 @@ public class ShopActivity extends AppCompatActivity {
         //1.set SeekBar Max value.
         int GoodMaxNumber;
         if(!ItemSelectedName.equals("") && ItemSelectedId != -1){
-            GoodMaxNumber = Math.min(UserPoint / (getGoodPrice(ItemSelectedName) + getCartTotalPrice()),100);//the max select number in once is 100.
+            GoodMaxNumber = Math.min(resourceIO.UserPoint / (getGoodPrice(ItemSelectedName) + getCartTotalPrice()),100);//the max select number in once is 100.
         }else {
             GoodMaxNumber = 0;
         }
@@ -225,7 +224,7 @@ public class ShopActivity extends AppCompatActivity {
                     //2.calculate total cost of selected goods and refresh UI.
                     int TotalPrice = getCartTotalPrice();
                     TextView TotalPriceShowView = findViewById(R.id.TotalPriceShowView);
-                    TotalPriceShowView.setText(TotalPrice + "");
+                    TotalPriceShowView.setText(SupportLib.ReturnKiloIntString(TotalPrice) );
                     dialog12.cancel();
                 });
         dialog.setNegativeButton(
@@ -244,7 +243,7 @@ public class ShopActivity extends AppCompatActivity {
         //2.calculate total cost of selected goods and refresh UI.
         int TotalPrice = getCartTotalPrice();
         TextView TotalPriceShowView = findViewById(R.id.TotalPriceShowView);
-        TotalPriceShowView.setText(TotalPrice + "");
+        TotalPriceShowView.setText(SupportLib.ReturnKiloIntString(TotalPrice) );
     }//end of Shop system.(not included support code.)
 
 
@@ -272,11 +271,12 @@ public class ShopActivity extends AppCompatActivity {
         GoodPriceList.add(Price);
     }
 
-//    //lv.1 method, sub method of BuyAndAffect() method, Remove specific good in the Good(Name/Price)List by good's name.
-//    private void RemoveGoodInf(String Name){todo
-//        GoodNameList.remove(Name);
-//        GoodPriceList.remove(SelectedGoodList.indexOf(Name));
-//    }//end of Initializing RecyclerView.
+    //lv.1 method, sub method of BuyAndAffect() method, Remove specific good in the Good(Name/Price)List by good's name.
+    //private void RemoveGoodInf(String Name){
+    //GoodNameList.remove(Name);
+    //GoodPriceList.remove(SelectedGoodList.indexOf(Name));
+    // }
+    // end of Initializing RecyclerView.
 
 
     //Event system.
@@ -294,25 +294,15 @@ public class ShopActivity extends AppCompatActivity {
 
 
     //resource system.
-    int UserPoint;
-    int UserMaterial;
+    ResourceIO resourceIO;
 
     @SuppressLint("SetTextI18n")
     private void ReloadResourceData(){
         TextView PointCountingView = findViewById(R.id.PointCountInMarket);
         TextView MaterialCountingView = findViewById(R.id.KeyCountInMarket);
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
-        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
-        MaterialCountingView.setText(SupportClass.ReturnKiloIntString(UserMaterial));
-    }
-
-    //lv.1 method, sub method of BuyAndAffect() method.Basic operation of resource, just do it automatically.
-    private void CostPoint(int Cost){
-        UserPoint = UserPoint - Cost;
-        SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-        TextView PointCountingView = findViewById(R.id.PointCountInMarket);
-        PointCountingView.setText(SupportClass.ReturnKiloIntString(UserPoint));
+        resourceIO = new ResourceIO(this);
+        PointCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+        MaterialCountingView.setText(SupportLib.ReturnKiloIntString(resourceIO.UserMaterial));
     }//end of resource system.
 
 

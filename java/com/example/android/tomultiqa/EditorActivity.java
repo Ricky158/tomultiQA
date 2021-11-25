@@ -36,7 +36,7 @@ public class EditorActivity extends AppCompatActivity {
         //initializing Mode Spinner.
         LoadModeSpinner();
         //3.get Quest number from SharedPreference instead of database to improve loading time.
-        QuestTotalNumber = SupportClass.getIntData(this,"IdNumberStoreProfile","IdNumber",0);
+        QuestTotalNumber = SupportLib.getIntData(this,"IdNumberStoreProfile","IdNumber",0);
         //3.1 if Quest number is 0, close the UI accessibility to prevent from user caused NPE.
         ControlEditor(QuestTotalNumber <= 0);
     }
@@ -75,19 +75,19 @@ public class EditorActivity extends AppCompatActivity {
                     case 0:
                         break;//if in "All" search mode, just skip this switch and not change any default value.
                     case 1:
-                        Selection = QuestDataBaseBasic.COLUMN_NAME_QuestTitle + " = ?";
+                        Selection = QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestTitle + " = ?";
                         SelectionArgs = new String[]{input};
                         break;
                     case 2:
-                        Selection = QuestDataBaseBasic.COLUMN_NAME_QuestAnswer + " = ?";
+                        Selection = QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestAnswer + " = ?";
                         SelectionArgs = new String[]{input};
                         break;
                     case 3:
-                        Selection = QuestDataBaseBasic.COLUMN_NAME_QuestHint + " = ?";
+                        Selection = QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestHint + " = ?";
                         SelectionArgs = new String[]{input};
                         break;
                     case 4:
-                        Selection = QuestDataBaseBasic.COLUMN_NAME_QuestLevel + " = ?";
+                        Selection = QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestLevel + " = ?";
                         SelectionArgs = new String[]{input};
                         break;
                 }
@@ -213,13 +213,13 @@ public class EditorActivity extends AppCompatActivity {
                         (dialogInterface, i) -> {
                             //1. get the number in String form, and transform it to int form.
                             //thanks to: https://stackoverflow.com/questions/5585779/how-do-i-convert-a-string-to-an-int-in-java?rq=1 !
-                            int NumberInText = SupportClass.getInputNumber(InputView);//store the exact Number in Code in int form.
+                            int NumberInText = SupportLib.getInputNumber(InputView);//store the exact Number in Code in int form.
                             try {
                                 //2. get the first number in String, and transform it to int form.
                                 if(NumberInText > 0 && NumberInText <= 10){
                                     TitleLevel = NumberInText;
                                 }else{
-                                    SupportClass.CreateNoticeDialog(EditorActivity.this,
+                                    SupportLib.CreateNoticeDialog(EditorActivity.this,
                                             getString(R.string.ErrorWordTran),
                                             getString(R.string.InputCastFailTran),
                                             getString(R.string.ConfirmWordTran)
@@ -248,7 +248,7 @@ public class EditorActivity extends AppCompatActivity {
         ContentValues AnswerValue = new ContentValues();
         ContentValues HintValue = new ContentValues();
         ContentValues LevelValue = new ContentValues();
-        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
+        QuestDbHelper QuestDataBase = new QuestDbHelper(this);
         SQLiteDatabase db = QuestDataBase.getWritableDatabase();
         EditText EditTitleView = findViewById(R.id.EditTitleView);
         EditText EditAnswerView = findViewById(R.id.EditAnswerView);
@@ -268,13 +268,13 @@ public class EditorActivity extends AppCompatActivity {
             LevelValue.put("QuestLevel",TitleLevel);
 
             //2.after which data should deliver to database, use database class ""upgrade" method to update data.
-            String TableName = QuestDataBaseBasic.TABLE_NAME;
+            String TableName = QuestDbHelper.TABLE_NAME;
             db.update(TableName, TitleValue, "QuestTitle = ?", OldTitle);
             db.update(TableName, AnswerValue,"QuestAnswer = ?",OldAnswer);
             db.update(TableName, HintValue,"QuestHint = ?",OldTitleHint);
             db.update(TableName, LevelValue,"QuestTitle = ?",OldTitle);//update Quest which have Certain Title 's Level data.
             //3. finish change, report to user.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.QuestCompletedTran) + "\n" +
                             getString(R.string.QuestShowTitleTran) + "\n" +
@@ -289,7 +289,7 @@ public class EditorActivity extends AppCompatActivity {
                     getString(R.string.ConfirmWordTran)
             );
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.EditEmptyFailTran),
                     getString(R.string.ConfirmWordTran));
@@ -320,26 +320,25 @@ public class EditorActivity extends AppCompatActivity {
         dialog.setPositiveButton(
                 getString(R.string.ConfirmWordTran),
                 (dialog12, id) -> {
-                    if(!TitleText.equals("") && !AnswerText.equals("")){
-                        //2.preparation.
-                        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
-                        SQLiteDatabase db = QuestDataBase.getWritableDatabase();
-                        //3.delete Quest which have certain Title.
-                        db.delete(QuestDataBaseBasic.TABLE_NAME,"QuestTitle = ?", OldTitle);
-                        //3.1 after deleted, total number of Quest should re-calculate.
-                        QuestTotalNumber = QueryCursor(null,null);//it might delete multi Quest(with same Title), so we can not only minus 1.
-                        SupportClass.saveIntData(this,"IdNumberStoreProfile","IdNumber", QuestTotalNumber);
-                        //3.2 after deleted, change the behavior of Editor.
-                        if(QuestTotalNumber <= 0){
-                            ControlEditor(true);
-                            finish();//make sure data correct.
-                        }else{
-                            LoadDataFromCursor();//refresh Editor (load another Quest).
-                        }
+                    //2.preparation.
+                    QuestDbHelper QuestDataBase = new QuestDbHelper(this);
+                    SQLiteDatabase db = QuestDataBase.getWritableDatabase();
+                    //3.delete Quest which have certain Title.
+                    db.delete(QuestDbHelper.TABLE_NAME,"QuestTitle = ?", OldTitle);
+                    //3.1 after deleted, total number of Quest should re-calculate.
+                    QuestTotalNumber = QueryCursor(null,null);//it might delete multi Quest(with same Title), so we can not only minus 1.
+                    SupportLib.saveIntData(this,"IdNumberStoreProfile","IdNumber", QuestTotalNumber);
+                    //3.2 after deleted, change the behavior of Editor.
+                    if(QuestTotalNumber <= 0){
+                        ControlEditor(true);
+                        finish();//make sure data correct.
                     }else{
-                        SupportClass.CreateNoticeDialog(this,
+                        LoadDataFromCursor();//refresh Editor (load another Quest).
+                    }
+                    if(TitleText.equals("") || AnswerText.equals("")){
+                        SupportLib.CreateNoticeDialog(this,
                                 getString(R.string.NoticeWordTran),
-                                getString(R.string.EditEmptyFailTran),
+                                "You have removed all not full Quest in database.",
                                 getString(R.string.ConfirmWordTran));
                     }
                     dialog12.cancel();
@@ -360,12 +359,12 @@ public class EditorActivity extends AppCompatActivity {
         dialog.setPositiveButton(
                 getString(R.string.ConfirmWordTran),
                 (dialog12, id) -> {
-                    QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(EditorActivity.this);
+                    QuestDbHelper QuestDataBase = new QuestDbHelper(EditorActivity.this);
                     SQLiteDatabase db = QuestDataBase.getWritableDatabase();
                     QuestDataBase.DeleteEntire(db);
                     ControlEditor(true);
                     QuestTotalNumber = 0;
-                    SupportClass.saveIntData(this,"IdNumberStoreProfile","IdNumber", QuestTotalNumber);
+                    SupportLib.saveIntData(this,"IdNumberStoreProfile","IdNumber", QuestTotalNumber);
                     dialog12.cancel();
                     finish();
                 });
@@ -402,17 +401,29 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private int QueryCursor(String Selection, String[] SelectionArgs){
-        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
+        QuestDbHelper QuestDataBase = new QuestDbHelper(this);
         SQLiteDatabase db = QuestDataBase.getReadableDatabase();
-        ResultCursor = db.query(
-                QuestDataBaseBasic.TABLE_NAME,   // The table to query
-                null,             // The array of columns to return (pass null to get all)
-                Selection,              // The columns for the WHERE clause
-                SelectionArgs,          // The values for the WHERE clause
-                null,                   // don't group the rows
-                null,                   // don't filter by row groups
-                null               // The sort order
-        );
+        //do search according SearchMode.
+        if(SearchMode == 0 || SearchMode == 4){
+            //All or Level SearchMode, these mode don't need blur searching.
+            ResultCursor = db.query(QuestDbHelper.TABLE_NAME, null, Selection, SelectionArgs, null, null, null);
+        }else{
+            //not All search mode, use native sqlite to do blur search.
+            //return all lines which content including SelectionArgs text, no matter the text position in content.
+            //sqlite grammar: https://www.runoob.com/sqlite/sqlite-like-clause.html and https://blog.csdn.net/fantianheyey/article/details/9199235 !
+            /*
+            manual:
+            1. Selection.replace(), because of Selection input is like "XX = ?",
+            according the sqlite grammar, this parameter must be Column name itself, can't contain another char, so we need to delete " = ?" before query.
+            2.SelectionArgs[0], we need to add "%" in the begin and end of Arg, to use sqlite blur search function.
+            and because of this parameter only have ONE element, so just call "%" + XX[0] + "%".
+             */
+            ResultCursor = db.rawQuery(
+                    "SELECT * FROM " + QuestDbHelper.TABLE_NAME + " WHERE " + Selection.replace(" = ?","") + " LIKE " + "'%" + SelectionArgs[0] + "%'",
+                    null
+                    );
+        }
+        //after search, return the Cursor length to method to tell user how many result founded.
         if(ResultCursor.moveToFirst()){
             return ResultCursor.getCount();
         }else{

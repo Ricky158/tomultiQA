@@ -55,9 +55,9 @@ public class FavoriteActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_TimerHistory) {//if setting icon in Menu be touched.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.HelpWordTran),
-                    ValueClass.FAVORITE_HELP,
+                    ValueLib.FAVORITE_HELP,
                     getString(R.string.ConfirmWordTran));
         }else if (item.getItemId() == android.R.id.home) {
             Intent i = new Intent(this,MainActivity.class);
@@ -97,7 +97,7 @@ public class FavoriteActivity extends AppCompatActivity {
     public void LastQuestButton(View view){
         //1.move the Cursor Position according to Current Mode.
         if(IsCursorNotEmpty && ReloadFavoriteMode.equals("Random")){
-            ReadCursorPosition = SupportClass.CreateRandomNumber(0,ReadCursorLength - 1);//Length is base on 1, but Position is base on 0. So need to minus 1.
+            ReadCursorPosition = SupportLib.CreateRandomNumber(0,ReadCursorLength - 1);//Length is base on 1, but Position is base on 0. So need to minus 1.
             FavReadCursor.moveToPosition(ReadCursorPosition);
         }else if(IsCursorNotEmpty && ReloadFavoriteMode.equals("Queue")){
             if(!FavReadCursor.isFirst()){//if Cursor have enough Quest to load, or back to First.
@@ -117,7 +117,7 @@ public class FavoriteActivity extends AppCompatActivity {
     public void NextQuestButton(View view){
         //1.move the Cursor Position according to Current Mode.
         if(IsCursorNotEmpty && ReloadFavoriteMode.equals("Random")){
-            ReadCursorPosition = SupportClass.CreateRandomNumber(0,ReadCursorLength - 1);//Length is base on 1, but Position is base on 0. So need to minus 1.
+            ReadCursorPosition = SupportLib.CreateRandomNumber(0,ReadCursorLength - 1);//Length is base on 1, but Position is base on 0. So need to minus 1.
             FavReadCursor.moveToPosition(ReadCursorPosition);
         }else if(IsCursorNotEmpty && ReloadFavoriteMode.equals("Queue")){
             if(!FavReadCursor.isLast()){//if Cursor have enough Quest to load, or back to First.
@@ -140,8 +140,8 @@ public class FavoriteActivity extends AppCompatActivity {
         EditText FavoriteAnswerView = findViewById(R.id.FavoriteAnswerView);
         //1.Reload Text and show to user.
         if(FavReadCursor.moveToFirst()){//Empty Check.
-            FavoriteTitle = FavReadCursor.getString(FavReadCursor.getColumnIndex(FavoriteDataBaseBasic.DataBaseEntry.COLUMN_NAME_FavoriteTitle));
-            FavoriteAnswer = FavReadCursor.getString(FavReadCursor.getColumnIndex(FavoriteDataBaseBasic.DataBaseEntry.COLUMN_NAME_FavoriteAnswer));
+            FavoriteTitle = FavReadCursor.getString(FavReadCursor.getColumnIndex(FavoriteDbHelper.DataBaseEntry.COLUMN_NAME_FavoriteTitle));
+            FavoriteAnswer = FavReadCursor.getString(FavReadCursor.getColumnIndex(FavoriteDbHelper.DataBaseEntry.COLUMN_NAME_FavoriteAnswer));
         }
         FavoriteTitleView.setText(FavoriteTitle);
         if(IsShowFavoriteAnswer){
@@ -160,11 +160,11 @@ public class FavoriteActivity extends AppCompatActivity {
 
     //lv.2 method, main method of Import Favorite data from db.
     private void ImportFavoriteData(){
-        FavoriteDataBaseBasic FavoriteDbHelper = new FavoriteDataBaseBasic(this);
+        FavoriteDbHelper FavoriteDbHelper = new FavoriteDbHelper(this);
         FavoriteDbRead = FavoriteDbHelper.getReadableDatabase();
         FavoriteDbWrite = FavoriteDbHelper.getWritableDatabase();
         FavReadCursor =  FavoriteDbRead.query(
-                FavoriteDataBaseBasic.DataBaseEntry.TABLE_NAME,
+                com.example.android.tomultiqa.FavoriteDbHelper.DataBaseEntry.TABLE_NAME,
                 null,
                 null,
                 null,
@@ -173,7 +173,7 @@ public class FavoriteActivity extends AppCompatActivity {
                 null
         );
         IsCursorNotEmpty = FavReadCursor.moveToFirst();
-        FavoriteNumber = SupportClass.getIntData(this,"FavoriteFile","FavoriteNumber",0);
+        FavoriteNumber = SupportLib.getIntData(this,"FavoriteFile","FavoriteNumber",0);
         ReadCursorLength = FavReadCursor.getCount();
         PrintFavoriteProcess();
     }
@@ -186,7 +186,7 @@ public class FavoriteActivity extends AppCompatActivity {
         EditText FavoriteAnswerView = findViewById(R.id.FavoriteAnswerView);
         //1.save change state to storage.
         IsShowFavoriteAnswer = FavoriteAnswerShowSwitch.isChecked();
-        SupportClass.saveBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",IsShowFavoriteAnswer);
+        SupportLib.saveBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",IsShowFavoriteAnswer);
         //2.if Switch is ON, show user answer.
         if(IsShowFavoriteAnswer && !FavoriteTitle.equals("")){
             FavoriteAnswerView.setText(FavoriteAnswer);
@@ -208,13 +208,13 @@ public class FavoriteActivity extends AppCompatActivity {
         }else if(SelectedID == QueueReloadChoose.getId()){
             ReloadFavoriteMode = "Queue";
         }
-        SupportClass.saveStringData(this,"FavoriteFile","ReloadFavoriteMode",ReloadFavoriteMode);
+        SupportLib.saveStringData(this,"FavoriteFile","ReloadFavoriteMode",ReloadFavoriteMode);
     }
 
     //lv.1 method, main method of Reset Cursor Position.
     public void ResetFavoriteQueue(View view){
         FavReadCursor.moveToFirst();
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.ReportWordTran),
                 getString(R.string.ResetFavoriteQueueTran),
                 getString(R.string.ConfirmWordTran));
@@ -266,9 +266,9 @@ public class FavoriteActivity extends AppCompatActivity {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private void ImportFavoriteSetting(){
         //1.load variables.
-        ReloadFavoriteMode = SupportClass.getStringData(this,"FavoriteFile","ReloadFavoriteMode","Random");
-        IsShowFavoriteAnswer = SupportClass.getBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",false);
-        IsAutoJudge = SupportClass.getBooleanData(this,"FavoriteFile","FavoriteJudge",false);
+        ReloadFavoriteMode = SupportLib.getStringData(this,"FavoriteFile","ReloadFavoriteMode","Random");
+        IsShowFavoriteAnswer = SupportLib.getBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",false);
+        IsAutoJudge = SupportLib.getBooleanData(this,"FavoriteFile","FavoriteJudge",false);
         //2.Set RadioButton state.
         if(ReloadFavoriteMode.equals("Random")){
             RadioButton RandomReloadChoose = findViewById(R.id.RandomReloadChoose);
@@ -289,7 +289,7 @@ public class FavoriteActivity extends AppCompatActivity {
         Switch FavoriteJudgeSwitch = findViewById(R.id.FavoriteJudgeSwitch);
         //1.save change state to storage.
         IsAutoJudge = FavoriteJudgeSwitch.isChecked();
-        SupportClass.saveBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",IsAutoJudge);
+        SupportLib.saveBooleanData(this,"FavoriteFile","ShowFavoriteAnswer",IsAutoJudge);
     }
 
     //lv.1 method, main method.
@@ -314,19 +314,18 @@ public class FavoriteActivity extends AppCompatActivity {
                 getString(R.string.ConfirmWordTran),
                 (dialog12, id) -> {
                     //1.delete Favorite.
-                    String WhereClause = FavoriteDataBaseBasic.DataBaseEntry.COLUMN_NAME_FavoriteTitle + " = ?";
+                    String WhereClause = FavoriteDbHelper.DataBaseEntry.COLUMN_NAME_FavoriteTitle + " = ?";
                     String[] WhereArgs = {FavoriteTitle};
                     FavoriteDbWrite.delete(
-                            FavoriteDataBaseBasic.DataBaseEntry.TABLE_NAME,
+                            FavoriteDbHelper.DataBaseEntry.TABLE_NAME,
                             WhereClause,
                             WhereArgs
                     );
                     FavoriteNumber = FavoriteNumber - 1;
-                    SupportClass.saveIntData(this,"FavoriteFile","FavoriteNumber",FavoriteNumber);
+                    SupportLib.saveIntData(this,"FavoriteFile","FavoriteNumber",FavoriteNumber);
                     //2.Reload the database which after Deleted, and reload Favorite prevent from data error.
                     ImportFavoriteData();
-                    boolean IsFavoriteEmpty = FavReadCursor.moveToFirst();
-                    if(IsFavoriteEmpty){//2.1 if Cursor still not Empty.
+                    if(IsCursorNotEmpty){//2.1 if Cursor still not Empty.
                         ReloadFavoriteText();
                         Toast.makeText(this,getString(R.string.ProgressCompletedTran),Toast.LENGTH_SHORT).show();
                     }else{//2.2 if Cursor is Empty.
@@ -339,7 +338,7 @@ public class FavoriteActivity extends AppCompatActivity {
                         NextFavoriteButton.setEnabled(false);
                         FavoriteTitle = "";
                         FavoriteAnswer = "";
-                        SupportClass.CreateNoticeDialog(this,
+                        SupportLib.CreateNoticeDialog(this,
                                 getString(R.string.WarningWordTran),
                                 getString(R.string.EmptyFavoriteWarningTran),
                                 getString(R.string.ConfirmWordTran));
@@ -350,7 +349,7 @@ public class FavoriteActivity extends AppCompatActivity {
         dialog.setNegativeButton(
                 getString(R.string.CancelWordTran),
                 (dialog1, id) -> dialog1.cancel());
-        if(FavoriteTitle.equals("")){//if Title text is empty, not show dialog to user.
+        if(!FavoriteTitle.equals("")){//if Title text is empty, not show dialog to user.
             AlertDialog DialogView = dialog.create();
             DialogView.show();
         }
@@ -391,9 +390,9 @@ public class FavoriteActivity extends AppCompatActivity {
 
     //main method.
     private void InitializingAssistFunction(){
-        IsAutoKeyboard = SupportClass.getBooleanData(this,"TimerSettingProfile", "AutoKeyboard", false);
-        IsAutoClearAnswer = SupportClass.getBooleanData(this,"TimerSettingProfile","AutoClearAnswer",false);
-        AutoCaseState = SupportClass.getIntData(this,"TimerSettingProfile","AutoCase",-1);
+        IsAutoKeyboard = SupportLib.getBooleanData(this,"TimerSettingProfile", "AutoKeyboard", false);
+        IsAutoClearAnswer = SupportLib.getBooleanData(this,"TimerSettingProfile","AutoClearAnswer",false);
+        AutoCaseState = SupportLib.getIntData(this,"TimerSettingProfile","AutoCase",-1);
     }
 
     private void AutoKeyboardControl(){

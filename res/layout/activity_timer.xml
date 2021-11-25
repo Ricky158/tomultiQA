@@ -12,11 +12,12 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:focusable="false"
         android:fontFamily="sans-serif-condensed"
-        android:text="00:00"
         android:textSize="1sp"
         app:layout_constraintBottom_toTopOf="@+id/TimerShowSwitch"
         app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="TextContrastCheck"
         tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -32,7 +33,8 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="@+id/SquareTimerProgress"
         app:layout_constraintTop_toBottomOf="@+id/WorkStateView"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@android:drawable/ic_media_play"
+        tools:ignore="ImageContrastCheck" />
 
     <ProgressBar
         android:id="@+id/SquareTimerProgress"
@@ -61,7 +63,8 @@
         android:onClick="ResetTimer"
         app:layout_constraintEnd_toStartOf="@+id/SquareTimerStartButton"
         app:layout_constraintTop_toTopOf="@+id/SquareTimerStartButton"
-        app:srcCompat="@android:drawable/ic_menu_rotate" />
+        app:srcCompat="@android:drawable/ic_menu_rotate"
+        tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -74,7 +77,8 @@
         android:onClick="CollectReward"
         app:layout_constraintStart_toEndOf="@+id/SquareTimerStartButton"
         app:layout_constraintTop_toTopOf="@+id/SquareTimerStartButton"
-        app:srcCompat="@android:drawable/ic_menu_save" />
+        app:srcCompat="@android:drawable/ic_menu_save"
+        tools:ignore="TouchTargetSizeCheck" />
 
     <TextView
         android:id="@+id/WorkStateView"
@@ -246,7 +250,8 @@
         android:text="@string/TimerInitializedTran"
         app:layout_constraintBottom_toTopOf="@+id/TimerRewardLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="TouchTargetSizeCheck" />
 
     <Switch
         android:id="@+id/TimerShowSwitch"
@@ -260,6 +265,7 @@
         android:text="@string/ShowTimerCountNumberTran"
         app:layout_constraintBottom_toTopOf="@+id/StartWithSwitch"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="TouchTargetSizeCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

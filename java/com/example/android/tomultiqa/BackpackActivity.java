@@ -1,10 +1,8 @@
 package com.example.android.tomultiqa;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
@@ -37,37 +35,36 @@ public class BackpackActivity extends AppCompatActivity {
         setContentView(R.layout.activity_backpack);
         //thanks to: https://dev.mi.com/console/doc/detail?pId=2229 !
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
-        //1.initializing recyclerview.
-        //1.1 prepare content which needed to be showed to user.
-        //1.2 add content to ArrayList, data from ItemDataBase.
-        InitializingBackpack();
         InitializingSellData();
-        //1.3 after import Content(Adapter) and Controller(Manager), finished initializing RecyclerView.
-        //2.initialize TabLayout function.
+        //1.initialize TabLayout function.
         //thanks to: https://segmentfault.com/a/1190000008753052 !
         TabLayout ItemTypeLayout = findViewById(R.id.ItemTypeLayout);
         //set default selected Tab, to prevent from NPE.
         Objects.requireNonNull(ItemTypeLayout.getTabAt(0)).select();
-        SelectedTabName = getString(R.string.ResourceWordTran);
-        //initializing UI.
+        SelectedItemType = getString(R.string.ResourceWordTran);
+        //2.initializing recyclerview.
+        //2.1 prepare content which needed to be showed to user.
+        //2.2 add content to ArrayList, data from ItemDataBase.
+        //2.3 after import Content(Adapter) and Controller(Manager), finished initializing RecyclerView.
+        itemIO = new ItemIO(this);
         InitializingBackpack();
         //set Tab selected listener.
         ItemTypeLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {//get Current Selected Tab in TabLayout.
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                SelectedTabName = Objects.requireNonNull(tab.getText()).toString();
+                SelectedItemType = Objects.requireNonNull(tab.getText()).toString();
                 InitializingBackpack();
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                SelectedTabName = Objects.requireNonNull(tab.getText()).toString();
+                SelectedItemType = Objects.requireNonNull(tab.getText()).toString();
                 InitializingBackpack();
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                SelectedTabName = Objects.requireNonNull(tab.getText()).toString();
+                SelectedItemType = Objects.requireNonNull(tab.getText()).toString();
                 InitializingBackpack();
             }
         });
@@ -86,9 +83,9 @@ public class BackpackActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_TimerHistory) {//if setting icon in Menu be touched.
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.HelpWordTran),
-                    ValueClass.ITEM_SYSTEM_HELP,
+                    ValueLib.ITEM_SYSTEM_HELP,
                     getString(R.string.ConfirmWordTran));
         }
         return super.onOptionsItemSelected(item);
@@ -97,8 +94,6 @@ public class BackpackActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        dbRead.close();
-        dbWrite.close();
         ReturnCursor.close();//Stop Using Cursor.
     }
 
@@ -153,47 +148,35 @@ public class BackpackActivity extends AppCompatActivity {
 
     //Backpack main part.
     //database part.
+    ItemIO itemIO;
     Cursor ReturnCursor;//store all data from database.
-    SQLiteDatabase dbRead;
-    SQLiteDatabase dbWrite;
     List <String> ItemNameList = new ArrayList<>();//store all ItemName data.
+    ArrayList<Integer> ItemNumberList = new ArrayList<>();
     //which any Item in RecyclerView was selected, its Name and Text(Description) to be showed will be wrote in here.
     int ItemSelectedId = -1;
     String ItemSelectedName = "";
     String ItemTextToShow = "--";
     String ItemTypeToShow = "--";
     int ItemNumberToShow = 0;
-    String SelectedTabName = "";
+    String SelectedItemType = "";
 
     //lv.2 method, main method.
     //thanks to: https://stackoverflow.com/questions/7222873/how-to-test-if-cursor-is-empty-in-a-sqlitedatabase-query ！
     private void InitializingBackpack(){
-        ItemDataBaseBasic DBHelper = new ItemDataBaseBasic(this);
-        if(dbRead == null){//if db were not loaded, do load, or skip loading to cut down process time.
-            dbRead = DBHelper.getReadableDatabase();
-            dbWrite = DBHelper.getWritableDatabase();
-        }
-        //1.query entire backpack database, store all query result.
-        String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemType + " = ?";
-        String[] SelectionArgs = {SelectedTabName};
-        SearchDataBase(Selection,SelectionArgs);
-        //2.load data to variables.
-        if(ReturnCursor != null && ReturnCursor.getCount() > 0){//prevent from NPE.
-            ReturnCursor.moveToFirst();//prevent from -1 position.
-            //calculate variables and keep them to improve efficiency.
-            int ItemNameColumnId = ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName);
-            boolean IsMoreData = !ReturnCursor.isLast();//check Is it more data available to query.
-            do {//query at first position of Cursor.
-                if(ReturnCursor.isLast()){
-                    IsMoreData = false;
-                }
-                ItemNameList.add(ReturnCursor.getString(ItemNameColumnId));
-                ReturnCursor.moveToNext();
-            }while (IsMoreData);//if IsMoreData is false(no more data), stop query, if not, continue query.
-        }else{//no data in Cursor.
-            // prevent from NPE and empty UI.
-            ItemNameList.clear();//prevent from repeat add item.
-            ItemSelectedName = "--";//repeat load RecyclerView should clear selected Item inf.
+        //1.if SelectedTab changed, reload all List from database.
+        itemIO.RefreshAllList(SelectedItemType);
+        ItemNameList = itemIO.getItemNameList();
+        ItemNumberList = itemIO.getItemNumberList();
+        //2.fill Cursor to get another Item's attributes.
+        String Selection = ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemType + " = ?";
+        String[] SelectionArgs = new String[]{SelectedItemType};
+        ReturnCursor = itemIO.SearchDatabase(Selection,SelectionArgs);
+        //2.1 prevent from NPE, repeat item and empty UI.
+        if(ItemNameList.isEmpty() || ItemNumberList.isEmpty()){
+            ItemNameList.clear();
+            ItemNumberList.clear();
+            //loading RecyclerView should clear current selected Item inf.
+            ItemSelectedName = "--";
             ItemTextToShow = getString(R.string.NothingSelectedTran);
             ItemTypeToShow = getString(R.string.NoTypeTran);
             ItemNumberToShow = 0;
@@ -221,9 +204,9 @@ public class BackpackActivity extends AppCompatActivity {
             }catch (android.database.CursorIndexOutOfBoundsException e){
                 ReturnCursor.moveToFirst();
             }
-            ItemTypeToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemType));
-            ItemTextToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemText));
-            ItemNumberToShow = ReturnCursor.getInt(ReturnCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber));
+            ItemTypeToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemType));
+            ItemTextToShow = ReturnCursor.getString(ReturnCursor.getColumnIndex(ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemText));
+            ItemNumberToShow = ReturnCursor.getInt(ReturnCursor.getColumnIndex(ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemNumber));
             ShowItemInformation();
         }
     }
@@ -247,8 +230,7 @@ public class BackpackActivity extends AppCompatActivity {
     }
 
     //Sell Function Entry.
-    int UserPoint;
-    long PointRecord;
+    ResourceIO resourceIO;
 
     //lv.2 method, main method of Sell Function.
     @SuppressLint("SetTextI18n")
@@ -267,16 +249,15 @@ public class BackpackActivity extends AppCompatActivity {
                 getString(R.string.ConfirmWordTran),
                 (dialog12, id) -> {
                     //3.1 get user want to sell number.
-                    int SellNumber = SupportClass.getInputNumber(NumberView);
+                    int SellNumber = SupportLib.getInputNumber(NumberView);
                     //3.2 start sell process.
                     if(!ItemSelectedName.equals("") && SellNumber <= ItemNumberToShow && SellNumber > 0){
                         //3.2.0 preparation.
                         TextView ItemNumberView = findViewById(R.id.ItemNumberView);
-                        String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
+                        String Selection = ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
                         String[] SelectionArgs = {ItemSelectedName};
-                        ContentValues ItemNumberValues = new ContentValues();
                         //3.2.1 get data from database, and fill Cursor.
-                        SearchDataBase(Selection,SelectionArgs);
+                        ReturnCursor = itemIO.SearchDatabase(Selection,SelectionArgs);
                         //3.2.2 get if Item Exist situation from Cursor.
                         boolean IsItemExist = ReturnCursor.moveToFirst();
                         //3.3 do Item data insert / update branch.
@@ -286,27 +267,18 @@ public class BackpackActivity extends AppCompatActivity {
                             int SellReward = SellNumber * 1000;
                             //3.3.1.1 change the number and save changes.
                             if(AfterSold >= 0){
-                                ItemNumberValues.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber,AfterSold);
-                                dbWrite.update(
-                                        ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-                                        ItemNumberValues,
-                                        Selection,
-                                        SelectionArgs
-                                );
+                                itemIO.EditOneItem(ItemSelectedName,getString(R.string.ResourceWordTran),SellNumber * -1);//need to negative number to do minus.
                                 //3.3.2 if item was successfully sold some, then give user reward and save data.
                                 //3.3.2.1 refresh data when selling is done, to prevent from data loading error.
-                                ItemNameList.clear();//prevent from repeat add item.
                                 InitializingBackpack();
                                 //3.3.2.2 get Points and show result after selling.
-                                UserPoint = UserPoint + SellReward;
-                                PointRecord = PointRecord + SellReward;
-                                SupportClass.saveLongData(this,"RecordDataFile","PointGotten",PointRecord);
-                                SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
+                                resourceIO.GetPoint(SellReward);
+                                resourceIO.ApplyChanges(this);
                                 //3.3.2.3 after checked user have enough item to sell, then actually cost item and show changes to user.
                                 ItemNumberToShow = AfterSold;
                                 ItemNumberView.setText(getString(R.string.ItemNumberWordTran) + " " + ItemNumberToShow);
                             }else{//3.3.1.2 if user doesn't have enough item at all.(AfterSold < 0)
-                                SupportClass.CreateNoticeDialog(
+                                SupportLib.CreateNoticeDialog(
                                         this,
                                         getString(R.string.ErrorWordTran),
                                         "Number is larger than you have.",
@@ -314,7 +286,7 @@ public class BackpackActivity extends AppCompatActivity {
                                         );
                             }
                         }else if(ItemSelectedName.equals("")){//3.3.4 if item is not in database.(or no item is selected.)
-                            SupportClass.CreateNoticeDialog(
+                            SupportLib.CreateNoticeDialog(
                                     this,
                                     getString(R.string.ErrorWordTran),
                                     "No item selected yet.",
@@ -333,23 +305,7 @@ public class BackpackActivity extends AppCompatActivity {
 
     //lv.1 method, main method.
     private void InitializingSellData(){
-        Thread thread = new Thread(() -> {
-            UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-            PointRecord = SupportClass.getLongData(this,"RecordDataFile","PointGotten",0);
-        });
+        Thread thread = new Thread(() -> resourceIO = new ResourceIO(this));
         thread.start();
-    }
-
-    //lv.1 method, sub method.
-    private void SearchDataBase(String Selection, String[] SelectionArgs){
-        ReturnCursor = dbRead.query(//let Cursor return the ItemName and ItemNumber data in this name line.
-                ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
-                null,
-                Selection,
-                SelectionArgs,
-                null,
-                null,
-                null
-        );
     }
 }

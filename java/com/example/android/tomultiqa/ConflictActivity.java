@@ -44,8 +44,8 @@ public class ConflictActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_TimerHistory) {//if setting icon in Menu be touched.
-            AbilityList AllAbility = new AbilityList(this);
-            SupportClass.CreateNoticeDialog(this,
+            AbilityIO AllAbility = new AbilityIO(this);
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.BossAbilityWordTran) + getString(R.string.HandBookWordTran),
                     AllAbility.PrintFullAbilityString(),
                     getString(R.string.ConfirmWordTran));
@@ -80,7 +80,7 @@ public class ConflictActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void InitializingConflictData(){
         TextView CurrentFloorShowView = findViewById(R.id.CurrentFloorShowView);
-        UserUnlockedFloor = SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0);
+        UserUnlockedFloor = SupportLib.getIntData(this,"BattleDataProfile","UserConflictFloor",0);
         CurrentShowFloor = Math.max(UserUnlockedFloor, 1);
 //       equals to: if(UserConflictFloor > 1){
 //                    CurrentShowFloor = UserConflictFloor;
@@ -92,14 +92,14 @@ public class ConflictActivity extends AppCompatActivity {
     }
 
     public void ShowBossAbilityDetail(View view){
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.AbilityDetailTran),
                 BossAbilityText,
                 getString(R.string.DialogConfirmButtonTran));
     }
 
     public void ShowConflictHelpText(View view){
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.HelpWordTran),
                 getString(R.string.ConflictHelpTextTran),
                 getString(R.string.ConfirmWordTran)
@@ -107,7 +107,7 @@ public class ConflictActivity extends AppCompatActivity {
     }
 
     public void ShowConflictReward(View view){
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.RewardWordTran),
                 "EXP" + "\n" +
                         BossEXPReward + "\n" +
@@ -142,13 +142,13 @@ public class ConflictActivity extends AppCompatActivity {
                             CurrentFloorShowView.setText(CurrentShowFloor + "");
                             ShowConflictBossInformation();
                         }else if(JumpFloor > UserUnlockedFloor && JumpFloor <= CONFLICT_MAX_FLOOR){
-                            SupportClass.CreateNoticeDialog(ConflictActivity.this,
+                            SupportLib.CreateNoticeDialog(ConflictActivity.this,
                                     getString(R.string.NoticeWordTran),
                                     getString(R.string.GoToUnlockJumpTextTran),
                                     getString(R.string.ConfirmWordTran)
                             );
                         }else if(JumpFloor > CONFLICT_MAX_FLOOR){
-                            SupportClass.CreateNoticeDialog(ConflictActivity.this,
+                            SupportLib.CreateNoticeDialog(ConflictActivity.this,
                                     getString(R.string.NoticeWordTran),
                                     getString(R.string.NoHigherFloorHintTran),
                                     getString(R.string.ConfirmWordTran)
@@ -173,13 +173,13 @@ public class ConflictActivity extends AppCompatActivity {
         if(CurrentShowFloor < CONFLICT_MAX_FLOOR && CurrentShowFloor < UserUnlockedFloor + 1){
             CurrentShowFloor = CurrentShowFloor + 1;
         }else if(CurrentShowFloor >= CONFLICT_MAX_FLOOR){
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.NoHigherFloorOpenHintTran),
                     getString(R.string.ConfirmWordTran)
             );
         }else if(CurrentShowFloor >= UserUnlockedFloor + 1){
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.NoWinConflictRecordHintTran),
                     getString(R.string.ConfirmWordTran)
@@ -198,7 +198,7 @@ public class ConflictActivity extends AppCompatActivity {
             CurrentFloorShowView.setText(CurrentShowFloor + "");
             ShowConflictBossInformation();
         }else{
-            SupportClass.CreateNoticeDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.NoticeWordTran),
                     getString(R.string.ReachedLowestFloorTran),
                     getString(R.string.ConfirmWordTran)
@@ -210,7 +210,7 @@ public class ConflictActivity extends AppCompatActivity {
     public void StartConflict(View view){
         //using method in "Start" Mode to load boss data.
         BossDataSet("Start");
-        SupportClass.saveIntData(this,"BattleDataProfile","CurrentShowFloor",CurrentShowFloor);
+        SupportLib.saveIntData(this,"BattleDataProfile","CurrentShowFloor",CurrentShowFloor);
     }
 
     //lv.4 method, method which belongs to ShowHigherFloor/ShowLowerFloor/InitializingConflictData method.

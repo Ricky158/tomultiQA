@@ -2,6 +2,7 @@ package com.example.android.tomultiqa;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -23,7 +24,6 @@ public class FolderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_folder);
         //thanks to: https://dev.mi.com/console/doc/detail?pId=2229 !
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
-        InitializingFolderData();
     }
 
     //add a button menu to ActionBar in MainActivity.
@@ -74,12 +74,15 @@ public class FolderActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         EditText MemoTextShowView = findViewById(R.id.MemoTextShowView);
-        SupportClass.saveStringData(FolderActivity.this,"FolderProfile","NoteText", MemoTextShowView.getText().toString());
+        SupportLib.saveStringData(FolderActivity.this,"FolderProfile","NoteText", MemoTextShowView.getText().toString());
     }
 
-    private void InitializingFolderData(){
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //InitializingFolderData.
         EditText MemoTextShowView = findViewById(R.id.MemoTextShowView);
-        MemoTextShowView.setText(SupportClass.getStringData(this,"FolderProfile","NoteText","-There is no Note-"));
+        MemoTextShowView.setText(SupportLib.getStringData(this,"FolderProfile","NoteText","-There is no Note-"));
     }//end of Note AutoSave Function.
 
 
@@ -110,8 +113,8 @@ public class FolderActivity extends AppCompatActivity {
                 getString(R.string.ConfirmWordTran),
                 (dialog12, id) -> {
                     MemoTextShowView.setText("");
-                    SupportClass.saveStringData(FolderActivity.this,"FolderProfile","NoteText", "");
-                    Toast.makeText(getApplicationContext(), "Successfully Clear", Toast.LENGTH_SHORT).show();
+                    SupportLib.saveStringData(FolderActivity.this,"FolderProfile","NoteText", "");
+                    Toast.makeText(this, getString(R.string.ClearTextButtonTran) + " " + getString(R.string.CompletedWordTran), Toast.LENGTH_SHORT).show();
                     dialog12.cancel();
                 });
             dialog.setNegativeButton(
@@ -119,5 +122,13 @@ public class FolderActivity extends AppCompatActivity {
                     (dialog1, id) -> dialog1.cancel());
         AlertDialog DialogView = dialog.create();
         DialogView.show();
+    }
+
+    public void GoToBackup(View view){
+        EditText MemoTextShowView = findViewById(R.id.MemoTextShowView);
+        SupportLib.saveStringData(FolderActivity.this,"FolderProfile","NoteText", MemoTextShowView.getText().toString());
+        Intent i = new Intent(this,BackUpActivity.class);
+        startActivity(i);
+        finish();
     }
 }

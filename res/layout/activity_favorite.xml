@@ -50,10 +50,12 @@
         android:layout_marginEnd="8dp"
         android:hint="@string/ReloadFavoriteHintTran"
         android:importantForAutofill="no"
-        android:inputType="text"
+        android:inputType="textMultiLine"
+        android:maxLines="5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout3" />
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout3"
+        tools:ignore="TouchTargetSizeCheck,TextContrastCheck" />
 
     <TextView
         android:id="@+id/textView65"
@@ -75,10 +77,12 @@
         android:layout_marginEnd="8dp"
         android:hint="@string/TypeAnswerTripsTran"
         android:importantForAutofill="no"
-        android:inputType="text"
+        android:inputType="textMultiLine"
+        android:maxLines="5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView65" />
+        app:layout_constraintTop_toBottomOf="@+id/textView65"
+        tools:ignore="TouchTargetSizeCheck,TextContrastCheck" />
 
     <Switch
         android:id="@+id/FavoriteAnswerShowSwitch"
@@ -90,7 +94,8 @@
         app:layout_constraintBottom_toBottomOf="@+id/textView65"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView65"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="TouchTargetSizeCheck" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
@@ -99,13 +104,14 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
         android:clickable="true"
+        android:contentDescription="@string/SettingTitleTran"
+        android:focusable="true"
         android:onClick="ShowFavoriteSetting"
         android:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_baseline_settings_24"
-        android:contentDescription="@string/SettingTitleTran"
-        android:focusable="true" />
+        tools:ignore="ImageContrastCheck" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -216,6 +222,12 @@
                     android:onClick="ResetFavoriteQueue"
                     android:text="@string/ResetQueueTran"
                     android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/button40"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ShopHelpTitleTran" />
             </RadioGroup>
 
         </LinearLayout>

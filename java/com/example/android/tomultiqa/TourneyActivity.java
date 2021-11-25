@@ -31,35 +31,38 @@ public class TourneyActivity extends AppCompatActivity {
         getWindow().setNavigationBarColor(Color.TRANSPARENT);
         //initializing MaxEvaluation number.
         TextView MaxEvaluationView = findViewById(R.id.MaxEvaluationView);
-        MaxEvaluationView.setText(SupportClass.ReturnKiloLongString(SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0) ) );
+        MaxEvaluationView.setText(SupportLib.ReturnKiloLongString(SupportLib.getLongData(this,"TourneyDataFile","MaxPtRecord",0) ) );
         //set default boss level and show to user.
         TextView BossLevelView = findViewById(R.id.TourneyLevelView);
         TextView BossHPView = findViewById(R.id.TourneyHPView);
         TextView BossTurnView = findViewById(R.id.TourneyTurnView);
-        UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
-        BossLevel = SupportClass.getIntData(this,"TourneyDataFile","BossLevel",UserLevel);
-        BossHP = SupportClass.getIntData(this,"TourneyDataFile","BossHP",1000);
-        BossTurn = SupportClass.getIntData(this,"TourneyDataFile","BossTurn",10);
+        expIO = new ExpIO(this);
+        expIO.UserLevel = SupportLib.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
+        BossLevel = SupportLib.getIntData(this,"TourneyDataFile","BossLevel",expIO.UserLevel);
+        BossHP = SupportLib.getIntData(this,"TourneyDataFile","BossHP",1000);
+        BossTurn = SupportLib.getIntData(this,"TourneyDataFile","BossTurn",10);
         BossLevelView.setText("Lv." + BossLevel);
         BossHPView.setText(BossHP + "");
         BossTurnView.setText(BossTurn + "");
-        //initializing List imported from AbilityList Class.
-        AbilityList abilityList = new AbilityList(this);
-        AllEffectList = abilityList.EffectList;
-        AllValueList = abilityList.TourneyList;
+        //initializing List imported from AbilityIO Class.
+        AbilityIO abilityIO = new AbilityIO(this);
+        AllEffectList = abilityIO.EffectList;
+        AllValueList = abilityIO.TourneyList;
         CalculateTotalPt();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        SupportClass.saveIntData(this,"TourneyDataFile","BossLevel",BossLevel);
-        SupportClass.saveIntData(this,"TourneyDataFile","BossHP",BossHP);
-        SupportClass.saveIntData(this,"TourneyDataFile","BossTurn",BossTurn);
+        SupportLib.saveIntData(this,"TourneyDataFile","BossLevel",BossLevel);
+        SupportLib.saveIntData(this,"TourneyDataFile","BossHP",BossHP);
+        SupportLib.saveIntData(this,"TourneyDataFile","BossTurn",BossTurn);
     }
 
+    //Exp system.
+    ExpIO expIO;
+
     //Tourney system.
-    int UserLevel;
     long PtValue = 0;
     int BossLevel = 1;
     int BossHP = 1000;
@@ -113,7 +116,7 @@ public class TourneyActivity extends AppCompatActivity {
                         startActivity(i);
                         finish();
                     }else{
-                        SupportClass.CreateNoticeDialog(this,
+                        SupportLib.CreateNoticeDialog(this,
                                 getString(R.string.NoticeWordTran),
                                 getString(R.string.StartTourneyHintTran),
                                 getString(R.string.ConfirmWordTran)
@@ -163,29 +166,29 @@ public class TourneyActivity extends AppCompatActivity {
                 .setView(BossInfLayout)
                 .setPositiveButton(getString(R.string.ConfirmWordTran), (dialogInterface, i) -> {
                     //1.read input.
-                    int Level = SupportClass.getInputNumber(InputLevelView);
-                    int HP = SupportClass.getInputNumber(InputHPView);
-                    int Turn = SupportClass.getInputNumber(InputTurnView);
+                    int Level = SupportLib.getInputNumber(InputLevelView);
+                    int HP = SupportLib.getInputNumber(InputHPView);
+                    int Turn = SupportLib.getInputNumber(InputTurnView);
                     //2.data fixing branch.fix data which not correct, but right data will pass these code.
-                    if(Level < 1 || Level < UserLevel - 33 || Level > UserLevel + 33){//if Input Level not in UserLevel+ 33, the damage will be 0 constantly, if it in UserLevel - 33, the Pt will below 0.
-                        Level = SupportClass.getIntData(this,"TourneyDataFile","BossLevel",UserLevel);//reset value to default(User) level.
+                    if(Level < 1 || Level < expIO.UserLevel - 33 || Level > expIO.UserLevel + 33){//if Input Level not in UserLevel+ 33, the damage will be 0 constantly, if it in UserLevel - 33, the Pt will below 0.
+                        Level = SupportLib.getIntData(this,"TourneyDataFile","BossLevel",expIO.UserLevel);//reset value to default(User) level.
                     }else if(InputLevelView.getText().length() == 0){
                         Level = BossLevel;//reset value to previous value.
                     }
                     if(HP < 1){
-                        HP = SupportClass.getIntData(this,"TourneyDataFile","BossHP",1000);
+                        HP = SupportLib.getIntData(this,"TourneyDataFile","BossHP",1000);
                     }else if(InputHPView.getText().length() == 0){
                         HP = BossHP;//reset value to previous value.
                     }
                     if(Turn < 1){
-                        Turn = SupportClass.getIntData(this,"TourneyDataFile","BossTurn",10);
+                        Turn = SupportLib.getIntData(this,"TourneyDataFile","BossTurn",10);
                     }else if(Turn > 1000){
                         Turn = 1000;
                     }else if(InputTurnView.getText().length() == 0){
                         Turn = BossTurn;//reset value to previous value.
                     }
                     //3.pass data to global variables.completed process.
-                    SupportClass.CreateNoticeDialog(this,
+                    SupportLib.CreateNoticeDialog(this,
                             getString(R.string.ReportWordTran),
                             getString(R.string.SavingCompletedTran) + "\n" +
                                     getString(R.string.BossLevelWordTran) + "\n" +
@@ -261,10 +264,10 @@ public class TourneyActivity extends AppCompatActivity {
         if(PtIndex == 0){
             PtIndex = 1;
         }
-        LevelIndex = (BossLevel - UserLevel) * 0.03 + 1;
+        LevelIndex = (BossLevel - expIO.UserLevel) * 0.03 + 1;
         PtValue = (long) ( BossHP / BossTurn * PtIndex * LevelIndex);
         BossAbilityView.setText(BossAbility.toString());
-        EvaluationValueView.setText(SupportClass.ReturnKiloLongString(PtValue) + "");
+        EvaluationValueView.setText(SupportLib.ReturnKiloLongString(PtValue) + "");
     }//end of Tourney system.
 }
 

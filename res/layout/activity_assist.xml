@@ -232,7 +232,22 @@
             android:text="@string/AutoCaseWordTran"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/AutoClearAnswerSwitch" />
+            app:layout_constraintTop_toBottomOf="@+id/PopWrongWindowSwitch" />
+
+        <Switch
+            android:id="@+id/PopWrongWindowSwitch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:checked="true"
+            android:onClick="ChangeSwitchState"
+            android:text="@string/AutoWrongWindowTran"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/AutoClearAnswerSwitch"
+            tools:ignore="TouchTargetSizeCheck" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -9,20 +9,18 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MenuItem;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -58,7 +56,7 @@ public class SettingActivity extends AppCompatActivity {
         });
 
         InitializingAutoQuestLevel();//DO NOT MOVE POSITION.
-        EditText TypeQuestTitle = findViewById(R.id.TypeQuestTitle);
+        TypeQuestTitle = findViewById(R.id.TypeQuestTitle);
         TypeQuestTitle.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { CalculateQuestLevel(); }
@@ -71,7 +69,7 @@ public class SettingActivity extends AppCompatActivity {
                 CalculateQuestLevel();
             }
         });
-        EditText TypeQuestAnswer = findViewById(R.id.TypeQuestAnswer);
+        TypeQuestAnswer = findViewById(R.id.TypeQuestAnswer);
         TypeQuestAnswer.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { CalculateQuestLevel(); }
@@ -85,22 +83,34 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
-        //Loading AppMode from SharedPreference.
-        InitializingAppMode();
+        //Loading Experiment Switch from SharedPreference.
         ImportExperiment();
     }
 
-    //override return button on ActionBar.
-    //thanks to: https://blog.csdn.net/z8711042/article/details/28903275 !
+
+
+    //override return button on global system.
+    //listen return button, thanks to: https://www.cnblogs.com/HDK2016/p/8695052.html !
+    //method support: https://blog.csdn.net/ccpat/article/details/45176665 !
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {//if setting icon in Menu be touched.
-            Intent i = new Intent(this,MainActivity.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
-            return true;//keep it here!
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){//if user touch return button, and the key is pressed.
+            //0.preparation: listing all Function Layout in this activity.
+            ScrollView SettingButtonList = findViewById(R.id.SettingButtonList);
+            if(SettingButtonList.getVisibility() == View.GONE){
+                //1.Close all Layout.
+                CloseAllLayout();
+                //2. showing ButtonList and close ReturnButton showing to provide user Functions which can be chosen.
+                SettingButtonList.setVisibility(View.VISIBLE);
+                return false;//stop this time of return action of Activity.
+            }else{
+                Intent i = new Intent(this,MainActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
+                return true;//continue return action.
+            }
         }
-        return super.onOptionsItemSelected(item);
+        return super.onKeyDown(keyCode, event);//continue execute system's return process.
     }//end of override.
 
     @Override
@@ -115,47 +125,53 @@ public class SettingActivity extends AppCompatActivity {
         //save data when Activity is onPause().
         @SuppressLint("UseSwitchCompatOrMaterialCode")
         Switch AutoQuestLevelSwitch = findViewById(R.id.AutoQuestLevelSwitch);
-        SupportClass.saveBooleanData(this,"TimerSettingProfile","AutoQuestLevel",AutoQuestLevelSwitch.isChecked());
+        SupportLib.saveBooleanData(this,"TimerSettingProfile","AutoQuestLevel",AutoQuestLevelSwitch.isChecked());
     }
 
 
     //Quest Making system.
+    EditText TypeQuestTitle;
+    EditText TypeQuestAnswer;
     int QuestTotalNumber = 0;
     int QuestLevel = 1;
     //main method, provide support for store id number.
     //Thanks to:https://www.jianshu.com/p/59b266c644f3
     public void StoreQuest(View view){
         ContentValues values = new ContentValues();
-        EditText TypeQuestTitle = findViewById(R.id.TypeQuestTitle);
-        EditText TypeQuestAnswer = findViewById(R.id.TypeQuestAnswer);
         EditText TypeQuestHint = findViewById(R.id.TypeQuestHint);
-        QuestDataBaseBasic QuestDataBase = new QuestDataBaseBasic(this);
+        QuestDbHelper QuestDataBase = new QuestDbHelper(this);
         SQLiteDatabase db = QuestDataBase.getWritableDatabase();
-        //1.hint content empty check.
+        //1.content empty check.
+        String TitleText = TypeQuestTitle.getText().toString();
+        String AnswerText = TypeQuestAnswer.getText().toString();
         String HintText = TypeQuestHint.getText().toString();
         if(HintText.equals("")){
             HintText = "Nothing";//default value, DO NOT CHANGE!
         }
         //2. store data to db.
-        if(!TypeQuestTitle.getText().toString().equals("") || !TypeQuestAnswer.getText().toString().equals("") || QuestTotalNumber < ValueClass.QUEST_MAX_NUMBER){
-                //prepare the data collection need to be put into database.
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestTitle,TypeQuestTitle.getText().toString());
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestAnswer,TypeQuestAnswer.getText().toString());
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestType,getString(R.string.QuestQuestionTypeTran));
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestLevel,QuestLevel);
-                values.put(QuestDataBaseBasic.COLUMN_NAME_QuestHint,HintText);
-
-                //initializing the database. And put the data collection in it.
-                long newRowId = db.insert(QuestDataBaseBasic.TABLE_NAME, null, values);
+        if(!TitleText.isEmpty() && !AnswerText.isEmpty() && QuestTotalNumber < ValueLib.QUEST_MAX_NUMBER){
+            //prepare the data collection need to be put into database.
+            values.put(QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestTitle,TitleText);
+            values.put(QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestAnswer,AnswerText);
+            values.put(QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestType,getString(R.string.QuestQuestionTypeTran));
+            values.put(QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestLevel,QuestLevel);
+            values.put(QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestHint,HintText);
+            //initializing the database. And put the data collection in it.
+            db.insert(QuestDbHelper.TABLE_NAME, null, values);
             //reset the user interface.
             ClearQuestInput(null);
 
             //save current total number of id,and show it to user by this sub method.
             SavedShowIdNumber();
-        }else{
-            SupportClass.CreateNoticeDialog(this,
+        }else if(QuestTotalNumber > ValueLib.QUEST_MAX_NUMBER){
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ErrorWordTran),
                     "The max Limit of Quest number is 5,000. You can't add more Quest than this number.",
+                    getString(R.string.ConfirmWordTran));
+        }else{
+            SupportLib.CreateNoticeDialog(this,
+                    getString(R.string.ErrorWordTran),
+                    "You can't create a Quest with empty Title or Answer.",
                     getString(R.string.ConfirmWordTran));
         }
     }
@@ -186,8 +202,6 @@ public class SettingActivity extends AppCompatActivity {
     }
 
     public void ClearQuestInput(View view){
-        EditText TypeQuestTitle = findViewById(R.id.TypeQuestTitle);
-        EditText TypeQuestAnswer = findViewById(R.id.TypeQuestAnswer);
         EditText TypeQuestHint = findViewById(R.id.TypeQuestHint);
         SeekBar ChooseQuestLevelBar = findViewById(R.id.ChooseQuestLevelBar);
         TypeQuestTitle.setText("");
@@ -203,8 +217,6 @@ public class SettingActivity extends AppCompatActivity {
         @SuppressLint("UseSwitchCompatOrMaterialCode")
         Switch AutoQuestLevelSwitch = findViewById(R.id.AutoQuestLevelSwitch);
         if(AutoQuestLevelSwitch.isChecked()){
-            EditText TypeQuestTitle = findViewById(R.id.TypeQuestTitle);
-            EditText TypeQuestAnswer = findViewById(R.id.TypeQuestAnswer);
             TextView ShowQuestLevelView = findViewById(R.id.ShowQuestLevelView);
             SeekBar ChooseQuestLevelBar = findViewById(R.id.ChooseQuestLevelBar);
             //1.get and calculate Quest Level from Title and Answer String Length.
@@ -222,68 +234,72 @@ public class SettingActivity extends AppCompatActivity {
             ShowQuestLevelView.setText(QuestLevel + "");
             ChooseQuestLevelBar.setProgress(QuestLevel - 1);
         }
+        //record in this time, if the Quest is null or empty.
+
     }
 
     //lv.1 method, sub method of CalculateQuestLevel() method.
     private void InitializingAutoQuestLevel(){
         @SuppressLint("UseSwitchCompatOrMaterialCode")
         Switch AutoQuestLevelSwitch = findViewById(R.id.AutoQuestLevelSwitch);
-        AutoQuestLevelSwitch.setChecked(SupportClass.getBooleanData(this,"TimerSettingProfile","AutoQuestLevel",false));
+        AutoQuestLevelSwitch.setChecked(SupportLib.getBooleanData(this,"TimerSettingProfile","AutoQuestLevel",false));
     }//end of Auto Quest Level Function.
     //end of Quest Making system.
 
 
-    //AppMode Management system.
-    public void ChooseAppMode(View view){
-        //basic preparation.
-        RadioButton NormalMode = findViewById(R.id.ChooseNormalMode);//view number id 1000178
-        RadioButton GameMode = findViewById(R.id.ChooseGameMode);//view number id 1000226
-        RadioButton FocusMode = findViewById(R.id.ChooseFocusMode);
-        RadioGroup AppModeChoice = findViewById(R.id.ChooseAppModeView);
-        SharedPreferences ChooseAppMode = getSharedPreferences("ChooseAppModeProfile", MODE_PRIVATE);
-        SharedPreferences.Editor editor= ChooseAppMode.edit();
-
-        int ModeCheckedId;
-        ModeCheckedId = AppModeChoice.getCheckedRadioButtonId();
-        if (ModeCheckedId == NormalMode.getId()){
-            editor.putString("AppMode", "Normal");
-        }else if(ModeCheckedId == GameMode.getId()) {
-            editor.putString("AppMode", "Game");
-        }else if(ModeCheckedId == FocusMode.getId()){
-            editor.putString("AppMode","Focus");
+    //AppMode Menu system.
+    //thanks to: https://developer.android.google.cn/guide/topics/ui/dialogs !
+    public void ShowModeMenu(View view){
+        //0.preparation.
+        final String[] AppMode = {SupportLib.getStringData(this, "ChooseAppModeProfile", "AppMode", ValueLib.NORMAL_MODE)};
+        //1.Mode List preparation.
+        CharSequence[] ModeItemList = {ValueLib.NORMAL_MODE, ValueLib.FOCUS_MODE, ValueLib.GAME_MODE};
+        int SelectedItemId;
+        if(AppMode[0].equals(ValueLib.NORMAL_MODE)){
+            SelectedItemId = 0;
+        }else if(AppMode[0].equals(ValueLib.FOCUS_MODE)){
+            SelectedItemId = 1;
+        }else{
+            SelectedItemId = 2;//Game Mode.
         }
-        editor.apply();
-    }
-
-    private void InitializingAppMode(){
-        SharedPreferences ChooseAppMode = getSharedPreferences("ChooseAppModeProfile", MODE_PRIVATE);
-        String AppModeText = ChooseAppMode.getString("AppMode", "Normal");
-        RadioButton NormalMode = findViewById(R.id.ChooseNormalMode);
-        RadioButton GameMode = findViewById(R.id.ChooseGameMode);
-        RadioButton FocusMode = findViewById(R.id.ChooseFocusMode);
-        RadioGroup AppModeChoice = findViewById(R.id.ChooseAppModeView);
-        assert AppModeText != null;
-        switch (AppModeText) {
-            case "Game":
-                AppModeChoice.check(GameMode.getId());
-                break;
-            case "Focus":
-                AppModeChoice.check(FocusMode.getId());
-                break;
-            default:
-                //do it just for more reliable.
-                AppModeChoice.check(NormalMode.getId());
-                break;
-        }
-    }
-
-    public void ShowModeInfoDialog(View view){
-        SupportClass.CreateNoticeDialog(this,
+        //2.set single choice dialog to user.
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(getString(R.string.AppModeWordTran));
+        dialog.setSingleChoiceItems(ModeItemList, SelectedItemId, (dialog12, which) -> {
+            switch (which)
+            {
+                case -1:
+                    SupportLib.CreateNoticeDialog(this,
+                            getString(R.string.ErrorWordTran),
+                            "NO Mode Selected, please Select a Mode or Cancel the dialog to keep the original option.",
+                            getString(R.string.ConfirmWordTran));
+                    break;
+                case 0:
+                    AppMode[0] = ValueLib.NORMAL_MODE;
+                    break;
+                case 1:
+                    AppMode[0] = ValueLib.FOCUS_MODE;
+                    break;
+                case 2:
+                    AppMode[0] = ValueLib.GAME_MODE;
+                    break;
+            }
+            //3.save AppMode changed.
+            SupportLib.saveStringData(this,"ChooseAppModeProfile","AppMode", AppMode[0]);
+        });
+        dialog.setCancelable(true);
+        dialog.setNegativeButton(getString(R.string.HelpWordTran), (dialogInterface, i) -> SupportLib.CreateNoticeDialog(
+                this,
                 getString(R.string.HelpWordTran),
                 getString(R.string.AppModeHelpTran),
-                getString(R.string.ConfirmWordTran)
+                getString(R.string.ConfirmWordTran))
         );
-    }//end of AppMode Management system.
+        dialog.setPositiveButton(
+                getString(R.string.CloseWordTran),
+                (dialog1, id) -> dialog1.cancel());
+        AlertDialog DialogView = dialog.create();
+        DialogView.show();
+    }//end of AppMode Menu system.
 
 
     //Experiment Function.
@@ -292,43 +308,28 @@ public class SettingActivity extends AppCompatActivity {
     private void ImportExperiment(){
         @SuppressLint("UseSwitchCompatOrMaterialCode")
         Switch EXPItemSwitch = findViewById(R.id.EXPItemSwitch);
-        EXPItemSwitch.setChecked(SupportClass.getBooleanData(this,"EXPFuncFile","ItemSystemEnable",false));
+        EXPItemSwitch.setChecked(SupportLib.getBooleanData(this,"EXPFuncFile","ItemSystemEnable",false));
     }
     public void ChangeItemEXPState(View view){
         @SuppressLint("UseSwitchCompatOrMaterialCode")
         Switch EXPItemSwitch = findViewById(R.id.EXPItemSwitch);
-        SupportClass.saveBooleanData(this,"EXPFuncFile","ItemSystemEnable",EXPItemSwitch.isChecked());
+        SupportLib.saveBooleanData(this,"EXPFuncFile","ItemSystemEnable",EXPItemSwitch.isChecked());
     }
 
     public void ShowExperimentHelp(View view){
-        SupportClass.CreateNoticeDialog(
+        SupportLib.CreateNoticeDialog(
                 this,
                 getString(R.string.HelpWordTran),
-                ValueClass.EXPERIMENT_HELP,
+                ValueLib.EXPERIMENT_HELP,
                 getString(R.string.ConfirmWordTran));
     }//end of Experiment Function.
 
 
     //layout management system.
-    public void CloseFunctionLayout(View view){
-        //0.preparation: listing all Function Layout in this activity.
-        Button ReturnSettingButton = findViewById(R.id.ReturnSettingButton);
-        LinearLayout ButtonLayout = findViewById(R.id.ButtonLayout);
-
-        //1.Close all Layout.
-        CloseAllLayout();
-
-        //2. showing ButtonLayout and close ReturnButton showing to provide user Functions which can be chosen.
-        ButtonLayout.setVisibility(View.VISIBLE);
-        ReturnSettingButton.setVisibility(View.GONE);
-    }
-
     //main method.
     @SuppressLint("SetTextI18n")
     public void OpenFunctionLayout(View view){
-        Button ReturnSettingButton = findViewById(R.id.ReturnSettingButton);
-        LinearLayout ButtonLayout = findViewById(R.id.ButtonLayout);
-        ConstraintLayout ModeChooseLayout = findViewById(R.id.ModeChooseLayout);
+        ScrollView SettingButtonList = findViewById(R.id.SettingButtonList);
         ConstraintLayout QuestSettingLayout = findViewById(R.id.QuestSettingLayout);
         ConstraintLayout ExperimentLayout = findViewById(R.id.ExperimentLayout);
 
@@ -341,29 +342,21 @@ public class SettingActivity extends AppCompatActivity {
         String ButtonText = AnyButtonView.getText().toString();
 
         //3.open certain Layout. and record which layout have been opened.
-        if(ButtonText.equals(getString(R.string.AppModeWordTran))){
-            ModeChooseLayout.setVisibility(View.VISIBLE);
-        }else if(ButtonText.equals(getString(R.string.AboutQuestTitleTran))){
+        if(ButtonText.equals(getString(R.string.AboutQuestTitleTran))){
             QuestSettingLayout.setVisibility(View.VISIBLE);
         }else if(ButtonText.equals(getString(R.string.EXPFunctionTran))){
             ExperimentLayout.setVisibility(View.VISIBLE);
         }
 
         //4.show return button to user.And close choose Function layout.
-        ReturnSettingButton.setText(getString(R.string.ReturnToWordTran)+ " " + ButtonText +" >");
-        ReturnSettingButton.setVisibility(View.VISIBLE);
-        ButtonLayout.setVisibility(View.GONE);
+        SettingButtonList.setVisibility(View.GONE);
     }
 
     //sub method.
     private void CloseAllLayout(){
-        Button ReturnSettingButton = findViewById(R.id.ReturnSettingButton);
-        ConstraintLayout ModeChooseLayout = findViewById(R.id.ModeChooseLayout);
         ConstraintLayout QuestSettingLayout = findViewById(R.id.QuestSettingLayout);
         ConstraintLayout ExperimentLayout = findViewById(R.id.ExperimentLayout);
 
-        ReturnSettingButton.setVisibility(View.GONE);
-        ModeChooseLayout.setVisibility(View.GONE);
         QuestSettingLayout.setVisibility(View.GONE);
         ExperimentLayout.setVisibility(View.GONE);
     }//end of Layout Management system.
@@ -380,7 +373,7 @@ public class SettingActivity extends AppCompatActivity {
             Intent i = new Intent(this,EditorActivity.class);
             startActivity(i);
         }else{
-            SupportClass.CreateNoticeDialog(
+            SupportLib.CreateNoticeDialog(
                     this,
                     getString(R.string.ErrorWordTran),
                     getString(R.string.NoQuestToEditHintTran),

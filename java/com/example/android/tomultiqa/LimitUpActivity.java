@@ -65,16 +65,17 @@ public class LimitUpActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     public void StartLevelExcess(View view){
         //0.decide if user can upgrade available or not.
-        if(UserPoint >= LevelExcessPoint && UserHaveEXP >= LevelExcessEXP && LevelExcessRank < LevelRankLimit && LEMissionFinish){
+        if(resourceIO.UserPoint >= LevelExcessPoint && expIO.UserHaveEXP >= LevelExcessEXP && LevelExcessRank < LevelRankLimit && LEMissionFinish){
             TextView LevelExcessNumberView = findViewById(R.id.LevelExcessNumberView);
             TextView PointCountInExcess = findViewById(R.id.PointCountInMarket);
             //1.upgrade the Level Rank.
             LevelExcessRank = LevelExcessRank + 1;
             //2.Cost Point and EXP.
-            UserPoint = UserPoint - LevelExcessPoint;
-            PointCountInExcess.setText(SupportClass.ReturnKiloIntString(UserPoint));
-            SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",UserPoint);
-            SupportClass.saveIntData(this,"EXPInformationStoreProfile","UserHaveEXP",UserHaveEXP - LevelExcessEXP);
+            resourceIO.CostPoint(LevelExcessPoint);
+            resourceIO.ApplyChanges(this);
+            PointCountInExcess.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+            expIO.LostEXP(LevelExcessEXP);
+            expIO.ApplyChanges(this);
             //3.show new Rank to user.
             LevelExcessNumberView.setText(LevelExcessRank + "");
             //4. reload the upgrade requirement of New Rank.
@@ -83,20 +84,18 @@ public class LimitUpActivity extends AppCompatActivity {
             CheckLevelExcessMission();
         }else if(LevelExcessRank >= LevelRankLimit){
             //0.1 User have finished all Ranks available.
-            SupportClass.CreateOnlyTextDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ReportWordTran),
                     "You have finished Max Rank.",
-                    getString(R.string.ConfirmWordTran),
-                    "Nothing",
-                    true);
+                    getString(R.string.ConfirmWordTran)
+            );
         }else{
             //0.2 User has not enough Point or EXP to upgrade.
-            SupportClass.CreateOnlyTextDialog(this,
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ReportWordTran),
                     "Upgrade Requirement not finished.",
-                    getString(R.string.ConfirmWordTran),
-                    "Nothing",
-                    true);
+                    getString(R.string.ConfirmWordTran)
+            );
         }
         //5.store Rank data.
         SaveLevelExcess();
@@ -106,11 +105,11 @@ public class LimitUpActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void InitializingLevelExcess(){
         TextView LevelExcessNumberView = findViewById(R.id.LevelExcessNumberView);
-        LevelLimit = SupportClass.getIntData(this,"ExcessDataFile","LevelLimit",50);
-        LevelExcessRank = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessRank",0);
-        LevelExcessATK= SupportClass.getIntData(this,"ExcessDataFile","LevelExcessATK",0);
-        LevelExcessCR = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCR",0);
-        LevelExcessCD = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCD",0);
+        LevelLimit = SupportLib.getIntData(this,"ExcessDataFile","LevelLimit",50);
+        LevelExcessRank = SupportLib.getIntData(this,"ExcessDataFile","LevelExcessRank",0);
+        LevelExcessATK= SupportLib.getIntData(this,"ExcessDataFile","LevelExcessATK",0);
+        LevelExcessCR = SupportLib.getIntData(this,"ExcessDataFile","LevelExcessCR",0);
+        LevelExcessCD = SupportLib.getIntData(this,"ExcessDataFile","LevelExcessCD",0);
         LevelExcessNumberView.setText(LevelExcessRank + "");
         LoadLevelExcessNeed();
         LoadLevelExcessAdd();
@@ -204,11 +203,11 @@ public class LimitUpActivity extends AppCompatActivity {
 
     //lv.1 method, sub method of StartLevelExcess() method.
     private void SaveLevelExcess(){
-        SupportClass.saveIntData(this,"ExcessDataFile","LevelLimit",LevelLimit);
-        SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessRank",LevelExcessRank);
-        SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessATK",LevelExcessATK);
-        SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessCR",LevelExcessCR);
-        SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessCD",LevelExcessCD);
+        SupportLib.saveIntData(this,"ExcessDataFile","LevelLimit",LevelLimit);
+        SupportLib.saveIntData(this,"ExcessDataFile","LevelExcessRank",LevelExcessRank);
+        SupportLib.saveIntData(this,"ExcessDataFile","LevelExcessATK",LevelExcessATK);
+        SupportLib.saveIntData(this,"ExcessDataFile","LevelExcessCR",LevelExcessCR);
+        SupportLib.saveIntData(this,"ExcessDataFile","LevelExcessCD",LevelExcessCD);
     }
 
     //lv.1 method, sub method of LoadLevelExcessNeed() method.
@@ -240,27 +239,25 @@ public class LimitUpActivity extends AppCompatActivity {
 
 
     //resource Import.
-    int UserPoint;
-    int UserMaterial;
+    ResourceIO resourceIO;
 
     @SuppressLint("SetTextI18n")
     private void InitializingResourceData(){
         TextView PointCountInExcess = findViewById(R.id.PointCountInMarket);
         TextView MaterialCountInExcess = findViewById(R.id.KeyCountInMarket);
-        UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-        UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
+        resourceIO = new ResourceIO(this);
         //make number into financial form.
-        PointCountInExcess.setText(SupportClass.ReturnKiloIntString(UserPoint));
-        MaterialCountInExcess.setText(SupportClass.ReturnKiloIntString(UserMaterial));
+        PointCountInExcess.setText(SupportLib.ReturnKiloIntString(resourceIO.UserPoint));
+        MaterialCountInExcess.setText(SupportLib.ReturnKiloIntString(resourceIO.UserMaterial));
     }//end of resource Import.
 
 
     //EXP Import.
-    int UserHaveEXP;
+    ExpIO expIO;
 
     //read EXP data method.
     private void InitializingEXPInformation(){
-        UserHaveEXP = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserHaveEXP",0);
+        expIO = new ExpIO(this);
     }//end of EXP Import.
 
 
@@ -270,11 +267,11 @@ public class LimitUpActivity extends AppCompatActivity {
     int UserRightRate = 0;
 
     private void InitializingQuestData(){
-        UserCombo = SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0);
-        int RightAnswering = SupportClass.getIntData(this,"RecordDataFile","RightAnswering",0);
-        int WrongAnswering = SupportClass.getIntData(this,"RecordDataFile","WrongAnswering",0);
+        UserCombo = SupportLib.getIntData(this,"RecordDataFile","ComboGotten",0);
+        int RightAnswering = SupportLib.getIntData(this,"RecordDataFile","RightAnswering",0);
+        int WrongAnswering = SupportLib.getIntData(this,"RecordDataFile","WrongAnswering",0);
         UserTotalQuest = RightAnswering + WrongAnswering;
-        UserRightRate = SupportClass.CalculatePercent(RightAnswering,UserTotalQuest);
+        UserRightRate = SupportLib.CalculatePercent(RightAnswering,UserTotalQuest);
     }//end of Quest Import.
 
 

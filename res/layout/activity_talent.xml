@@ -75,8 +75,10 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -124,20 +126,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
             android:text="999999"
             app:layout_constraintStart_toEndOf="@+id/CriticalDamageCheckBox"
-            app:layout_constraintTop_toBottomOf="@+id/textView40" />
+            app:layout_constraintTop_toTopOf="@+id/AttackTalentEffectView" />
 
         <TextView
             android:id="@+id/AttackTalentCostView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="8dp"
             android:text="2147483648"
             app:layout_constraintStart_toEndOf="@+id/textView40"
-            app:layout_constraintTop_toBottomOf="@+id/textView38" />
+            app:layout_constraintTop_toTopOf="@+id/AttackTalentEffectView" />
 
         <TextView
             android:id="@+id/textView44"
@@ -153,7 +153,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:text="+123456789"
             app:layout_constraintStart_toEndOf="@+id/textView38"
             app:layout_constraintTop_toBottomOf="@+id/textView44" />
@@ -163,27 +163,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:text="0"
             app:layout_constraintStart_toEndOf="@+id/CriticalDamageCheckBox"
-            app:layout_constraintTop_toBottomOf="@+id/AttackTalentLevelView" />
+            app:layout_constraintTop_toTopOf="@+id/CRTalentCostView" />
 
         <TextView
             android:id="@+id/CRTalentCostView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
             android:text="200"
             app:layout_constraintStart_toEndOf="@+id/textView40"
-            app:layout_constraintTop_toBottomOf="@+id/AttackTalentCostView" />
+            app:layout_constraintTop_toTopOf="@+id/CRTalentEffectView" />
 
         <TextView
             android:id="@+id/CRTalentEffectView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:text="+50.00%"
             app:layout_constraintStart_toEndOf="@+id/textView38"
             app:layout_constraintTop_toBottomOf="@+id/AttackTalentEffectView" />
@@ -193,10 +191,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:text="0"
             app:layout_constraintStart_toEndOf="@+id/CriticalDamageCheckBox"
-            app:layout_constraintTop_toBottomOf="@+id/CRTalentLevelView" />
+            app:layout_constraintTop_toTopOf="@+id/CDTalentEffectView" />
 
         <CheckBox
             android:id="@+id/AttackTalentCheckBox"
@@ -206,7 +203,8 @@
             android:text="@string/ATKWordTran"
             app:layout_constraintBottom_toBottomOf="@+id/AttackTalentLevelView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/AttackTalentLevelView" />
+            app:layout_constraintTop_toTopOf="@+id/AttackTalentLevelView"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <CheckBox
             android:id="@+id/CriticalRateCheckBox"
@@ -216,7 +214,8 @@
             android:text="@string/CritialRateWordTran"
             app:layout_constraintBottom_toBottomOf="@+id/CRTalentLevelView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/CRTalentLevelView" />
+            app:layout_constraintTop_toTopOf="@+id/CRTalentLevelView"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <CheckBox
             android:id="@+id/CriticalDamageCheckBox"
@@ -226,64 +225,53 @@
             android:text="@string/CritialDamageWordTran"
             app:layout_constraintBottom_toBottomOf="@+id/CDTalentLevelView"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/CDTalentLevelView" />
+            app:layout_constraintTop_toTopOf="@+id/CDTalentLevelView"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <TextView
             android:id="@+id/CDTalentCostView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
             android:text="200"
             app:layout_constraintStart_toEndOf="@+id/textView40"
-            app:layout_constraintTop_toBottomOf="@+id/CRTalentCostView" />
+            app:layout_constraintTop_toTopOf="@+id/CDTalentEffectView" />
 
         <TextView
             android:id="@+id/CDTalentEffectView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:text="+150.0%"
             app:layout_constraintStart_toEndOf="@+id/textView38"
             app:layout_constraintTop_toBottomOf="@+id/CRTalentEffectView" />
 
         <Button
             android:id="@+id/UpgradeTalentButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:onClick="UpgradeTalent"
             android:text="@string/UpgardeButtonTran"
             android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/TalentHelpButton" />
 
         <CheckBox
             android:id="@+id/TalentCostAllPointCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/CostAllPointsWordTran"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toTopOf="@+id/UpgradeTalentButton"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/CriticalDamageCheckBox"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <EditText
-            android:id="@+id/UpgradeNumberView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:gravity="center"
-            android:hint="@string/InputTalentLevelHintTran"
-            android:inputType="number"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/CostAllPointsWordTran"
+            android:textSize="15sp"
             app:layout_constraintBottom_toTopOf="@+id/UpgradeTalentButton"
-            app:layout_constraintEnd_toStartOf="@+id/TalentCostAllPointCheckBox"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/TalentCostAllPointCheckBox" />
+            tools:ignore="TouchTargetSizeCheck" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

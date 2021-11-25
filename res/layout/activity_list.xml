@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sol."
-            android:textSize="20sp"
+            android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/ListTimerProgress"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="0 / 1"
-            android:textSize="20sp"
+            android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/ListTimerProgress"
             app:layout_constraintStart_toEndOf="@+id/ListTimerUnitView" />
 
@@ -74,7 +74,7 @@
             android:layout_marginTop="4dp"
             android:gravity="end"
             android:text="2021-06-25"
-            android:textSize="20sp"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="@+id/ListTimerPercentView"
             app:layout_constraintTop_toTopOf="parent" />
 

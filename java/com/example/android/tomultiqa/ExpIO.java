@@ -12,6 +12,12 @@ import android.content.Context;
 public class ExpIO{
 
     //EXP system.
+
+    /**
+     * Reset the Variables in this class from SharedPreference.<br/>
+     * So, when you want to excess these variables, please call constructor to refresh data first.
+     * @param Import context, which used in refresh data.
+     */
     public ExpIO(Context Import){
         InitializingExpData(Import);//import raw data.
         CheckLevel();//initialize data.
@@ -19,31 +25,31 @@ public class ExpIO{
 
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * you can direct calling this variable to get value, but you need to use methods in this class to handle all Exp change operations.<br/>
      * Or it will cause number error.<br/>
      */
     protected int UserLevel;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * you can direct calling this variable to get value, but you need to use methods in this class to handle all Exp change operations.<br/>
      * Or it will cause number error.<br/>
      */
     protected int LevelLimit = 50;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * you can direct calling this variable to get value, but you need to use methods in this class to handle all Exp change operations.<br/>
      * Or it will cause number error.<br/>
      */
     protected int UserHaveEXP;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * you can direct calling this variable to get value, but you need to use methods in this class to handle all Exp change operations.<br/>
      * Or it will cause number error.<br/>
      */
     protected int EXPRecord = 0;
 
     /**
-     * you can direct calling this variable, but you need to use methods in this class to handle all Exp operations.<br/>
+     * you can direct calling this variable to get value, but you need to use methods in this class to handle all Exp change operations.<br/>
      * Or it will cause number error.<br/>
      */
     protected int UserUpgradeEXP = 1;
@@ -51,10 +57,20 @@ public class ExpIO{
     /**
      * You can use this method to add Exp to total number of User having Exp.<br/>
      * And the IO will calculate the current Level, HaveExp, Upgrade Exp.<br/>
+     * Notice: <br/>
+     * 1.Once Adding can't over 1,000,000.<br/>
+     * 2.User can't get any Exp when they having more than 2,000,000 Exp.<br/>
      * @param AddNumber the Number of Exp that you want to give to user.<br/>
      */
+    static final int AddLimit = 1000000;
+
     protected void GetEXP(int AddNumber){
-        UserHaveEXP = UserHaveEXP + AddNumber;
+        if(AddNumber > AddLimit){
+            AddNumber = AddLimit;
+        }
+        if(UserHaveEXP <= AddLimit * 2){
+            UserHaveEXP = UserHaveEXP + AddNumber;
+        }
         CheckLevel();
     }
 
@@ -74,10 +90,14 @@ public class ExpIO{
      * @param context Using in SharedPreferences, which used in saving data.<br/>
      */
     protected void ApplyChanges(Context context){
-        SupportClass.saveIntData(context,"EXPInformationStoreProfile","UserLevel",UserLevel);
-        SupportClass.saveIntData(context,"EXPInformationStoreProfile","UserHaveEXP",UserHaveEXP);
-        SupportClass.saveIntData(context,"ExcessDataFile","LevelLimit",LevelLimit);
-        SupportClass.saveIntData(context,"RecordDataFile","EXPGotten",EXPRecord);
+        SupportLib.saveMultiInt(
+                context,
+                "EXPInformationStoreProfile",
+                new String[]{"UserLevel","UserHaveEXP"},
+                new int[]{UserLevel,UserHaveEXP}
+        );
+        SupportLib.saveIntData(context,"ExcessDataFile","LevelLimit",LevelLimit);
+        SupportLib.saveIntData(context,"RecordDataFile","EXPGotten",EXPRecord);
     }
 
     //check the EXP number, and make level up or down calculation.
@@ -114,9 +134,15 @@ public class ExpIO{
 
     //read EXP data method.
     private void InitializingExpData(Context context){
-        UserLevel = SupportClass.getIntData(context,"EXPInformationStoreProfile","UserLevel",1);
-        UserHaveEXP = SupportClass.getIntData(context,"EXPInformationStoreProfile","UserHaveEXP",0);
-        LevelLimit = SupportClass.getIntData(context,"ExcessDataFile","LevelLimit",50);
-        EXPRecord = SupportClass.getIntData(context,"RecordDataFile","EXPGotten",0);
+        int[] ExpData = SupportLib.getMultiInt(
+                context,
+                "EXPInformationStoreProfile",
+                new String[]{"UserLevel","UserHaveEXP"},
+                new int[]{1,0}
+        );
+        UserLevel = ExpData[0];
+        UserHaveEXP = ExpData[1];
+        LevelLimit = SupportLib.getIntData(context,"ExcessDataFile","LevelLimit",50);
+        EXPRecord = SupportLib.getIntData(context,"RecordDataFile","EXPGotten",0);
     }//the end of EXP system.
 }

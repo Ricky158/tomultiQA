@@ -1,5 +1,6 @@
 package com.example.android.tomultiqa;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -49,9 +51,9 @@ public class BackUpActivity extends AppCompatActivity {
     // https://www.cnblogs.com/yizijianxin/p/12000274.html !
 
     //each element in List is a line in .txt file.
-    ArrayList<String> TextElement = new ArrayList<>();
+    ArrayList<String> LinesInFile = new ArrayList<>();
     //the texts which need to wrote to file.
-    String ContentNeedToAdd = "";
+    StringBuilder ContentNeedToAdd = new StringBuilder();
 
     //newer version, base on android Uri system, thanks to: https://developer.android.google.cn/training/data-storage/shared/documents-files#open !
     // https://www.jianshu.com/p/75eccd29c229 !
@@ -60,6 +62,8 @@ public class BackUpActivity extends AppCompatActivity {
     static final int CREATE_FILE = 1;
     //Request code for selecting backup document.
     static final int PICK_FILE = 2;
+    //Request code for refresh the content of process report UI.
+    static final int PROCESS_SHOW = 3;
 
     //overall backup output process:
     //StartInput() - OpenPicker() - OnActivityResult() - handler() - GetLinesFromUri() - completed.
@@ -73,225 +77,80 @@ public class BackUpActivity extends AppCompatActivity {
     boolean IsPreview = false;//default is false.
 
     //lv.3 method, main method of handle callback from OnActivityResult() method, and complete process.
-    static final int GET_URI_SUCCESS = 100;
-    static final int FILE_CREATE_SUCCESS = 101;
+    static final int FILE_IMPORT_DONE = 100;
+    static final int FILE_EXPORT_DONE = 101;
 
     //SharePreference and Total IO.
+    //thanks to: https://www.yisu.com/zixun/130629.html !
+    @SuppressLint("SetTextI18n")
     private final Handler handler = new Handler(msg -> {
         switch (msg.what){
-            case GET_URI_SUCCESS:// TODO: 2021/9/12 Input data method.
-                //1.get data from file.
-                GetLinesFromUri();
-                //1.1 compatible with Old version files (before 0.31.0), to prevent NPE.
-                if(TextElement.size() == 30){//in version 0.31.0, the file have 30 lines(0 ~ 30）, so we need to add additional 4 lines' default value manually.
-                    TextElement.add(30,"0");
-                    TextElement.add(31, String.valueOf(SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1)));
-                    TextElement.add(32,"1000");
-                    TextElement.add(33,"10");
-                }
-                //2.write data to SharePreferences.
-                if(!IsPreview){
-                    SupportClass.saveIntData(this,"EXPInformationStoreProfile","UserLevel",getPureInt(TextElement.get(3)));
-                    SupportClass.saveIntData(this,"EXPInformationStoreProfile","UserHaveEXP",getPureInt(TextElement.get(4)));
-                    SupportClass.saveIntData(this,"RecordDataFile","RightAnswering",getPureInt(TextElement.get(5)));
-                    SupportClass.saveIntData(this,"RecordDataFile","WrongAnswering",getPureInt(TextElement.get(6)));
-                    SupportClass.saveIntData(this,"TimerSettingProfile","TimerProgress",getPureInt(TextElement.get(7)));
-                    SupportClass.saveIntData(this,"TimerSettingProfile","TimerTargetDay",getPureInt(TextElement.get(8)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","ATKTalentLevel",getPureInt(TextElement.get(9)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","CRTalentLevel",getPureInt(TextElement.get(10)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","QuestCombo",getPureInt(TextElement.get(12)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","UserPoint",getPureInt(TextElement.get(13)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","UserMaterial",getPureInt(TextElement.get(14)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","BossDeadTime",getPureInt(TextElement.get(15)));
-                    SupportClass.saveIntData(this,"RecordDataFile","EXPGotten",getPureInt(TextElement.get(16)));
-                    SupportClass.saveLongData(this,"RecordDataFile","PointGotten",getPureLong(TextElement.get(17)));
-                    SupportClass.saveIntData(this,"RecordDataFile","MaterialGotten",getPureInt(TextElement.get(18)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","CDTalentLevel",getPureInt(TextElement.get(11)));
-                    SupportClass.saveIntData(this,"RecordDataFile","ComboGotten",getPureInt(TextElement.get(19)));
-                    SupportClass.saveIntData(this,"BattleDataProfile","UserConflictFloor",getPureInt(TextElement.get(20)));
-                    SupportClass.saveLongData(this,"TourneyDataFile","MaxPtRecord",getPureLong(TextElement.get(21)));
-                    SupportClass.saveIntData(this,"RecordDataFile","MaxDailyDifficulty",getPureInt(TextElement.get(22)));
-                    SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryLevel",getPureInt(TextElement.get(23)));
-                    SupportClass.saveIntData(this,"AlchemyMasteryFile","MasteryEXP",getPureInt(TextElement.get(24)));
-                    SupportClass.saveIntData(this,"ExcessDataFile","LevelLimit",getPureInt(TextElement.get(25)));
-                    SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessRank",getPureInt(TextElement.get(26)));
-                    SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessATK",getPureInt(TextElement.get(27)));
-                    SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessCR",getPureInt(TextElement.get(28)));
-                    SupportClass.saveIntData(this,"ExcessDataFile","LevelExcessCD",getPureInt(TextElement.get(29)));
-                    SupportClass.saveIntData(this,"RecordDataFile","BattleFail",getPureInt(TextElement.get(30)));
-                    //import Boss Level data belongs to Tourney correction.
-                    int LevelNeedWrite = getPureInt(TextElement.get(31));
-                    int UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
-                    if(LevelNeedWrite < 1 || LevelNeedWrite < UserLevel - 33 || LevelNeedWrite > UserLevel + 33){
-                        LevelNeedWrite = UserLevel;
-                    }
-                    SupportClass.saveIntData(this,"TourneyDataFile","BossLevel",LevelNeedWrite);
-                    //import Boss HP data belongs to Tourney correction.
-                    int HPNeedWrite = getPureInt(TextElement.get(32));
-                    if(HPNeedWrite < 1){
-                        HPNeedWrite = 1;
-                    }
-                    SupportClass.saveIntData(this,"TourneyDataFile","BossHP",HPNeedWrite);
-                    //import Boss Turn data belongs to Tourney correction.
-                    int TurnNeedWrite = getPureInt(TextElement.get(33));
-                    if(TurnNeedWrite < 1 || TurnNeedWrite > 1000){
-                        TurnNeedWrite = 1;
-                    }
-                    SupportClass.saveIntData(this,"TourneyDataFile","BossTurn",TurnNeedWrite);
-                }
-                //2.1 loading Quest data.
-                String QuestLoadReport;
-                int LoadedQuest = ReadAllQuest(IsPreview);
-                if(LoadedQuest <= 0){
-                    QuestLoadReport = getString(R.string.BackupEmptyQuestTran);
-                }else if(IsPreview){
-                    QuestLoadReport = LoadedQuest + getString(R.string.DetectedQuestNumTran);
-                }else{//not preview mode, file have more than 0 Quest.
-                    QuestLoadReport = LoadedQuest + getString(R.string.SuccessLoadQuestTran);
-                }
-                //2.2 loading Item data.
-                String ItemLoadReport;
-                int LoadedItem = ReadAllItems(IsPreview);
-                if(LoadedItem <= 0){
-                    ItemLoadReport = getString(R.string.BackupEmptyItemTran);
-                }else if(IsPreview){
-                    ItemLoadReport = LoadedItem + getString(R.string.DetectedItemNumTran);
+            case FILE_IMPORT_DONE:
+                String[] ReportSet;
+                if(msg.obj instanceof String[]){//if this object is a String[] instance.
+                    ReportSet = (String[]) msg.obj;
                 }else{
-                    ItemLoadReport = LoadedItem + getString(R.string.SuccessLoadItemTran);
+                    ReportSet = new String[]{"Error","Error","Error"};
                 }
-                //3.after used in BackUp process, report result to user.
-                SupportClass.CreateNoticeDialog(this,
+                StringBuilder AllReport = new StringBuilder();
+                for(String Each: ReportSet){
+                    AllReport.append(Each).append("\n\n");
+                }
+                SupportLib.CreateNoticeDialog(this,
                         getString(R.string.FileContentWordTran),
                         getString(R.string.ProgressCompletedTran) + "\n" +
-                                getString(R.string.LevelWordTran) + TextElement.get(3) + "\n" +
-                                getString(R.string.EXPWordTran) + TextElement.get(4) + "\n" +
-                                getString(R.string.AnsweringRightTimeTran) + TextElement.get(5) + "\n" +
-                                getString(R.string.AnsweringWrongTimeTran) + TextElement.get(6) + "\n" +
-                                getString(R.string.TimerProgressWordTran) + TextElement.get(7) + "\n" +
-                                getString(R.string.TimerGoalWordTran) + TextElement.get(8) + "\n" +
-                                getString(R.string.ATKTalentLevelTran) + TextElement.get(9) + "\n" +
-                                getString(R.string.CRTalentLevelTran) + TextElement.get(10) + "\n" +
-                                getString(R.string.CDTalentLevelTran) + TextElement.get(11) + "\n" +
-                                getString(R.string.CurrentQuestComboTran) + TextElement.get(12) + "\n" +
-                                getString(R.string.PointWordTran) + TextElement.get(13) + "\n" +
-                                getString(R.string.MaterialWordTran) + TextElement.get(14) + "\n" +
-                                getString(R.string.BossDeadTimeTran) + TextElement.get(15) + "\n" +
-                                getString(R.string.EXPRecordTran) + TextElement.get(16) + "\n" +
-                                getString(R.string.PointRecordTran) + TextElement.get(17) + "\n" +
-                                getString(R.string.MaterialRecordTran) + TextElement.get(18) + "\n" +
-                                getString(R.string.MaxComboTran) + TextElement.get(19) + "\n" +
-                                getString(R.string.ConflictClearTran) + TextElement.get(20) + "\n" +
-                                getString(R.string.TourneyPtWordTran) + TextElement.get(21) + "\n" +
-                                getString(R.string.DailyClearTran) + TextElement.get(22) + "\n" +
-                                getString(R.string.MasteryWordTran) + TextElement.get(23) + "\n" +
-                                getString(R.string.MasteryEXPTran) + TextElement.get(24) + "\n" +
-                                getString(R.string.LevelLimitTran) + TextElement.get(25) + "\n" +
-                                getString(R.string.LevelExcessTran) + TextElement.get(26) + "\n" +
-                                getString(R.string.LevelExcessATKTran) + TextElement.get(27) + "\n" +
-                                getString(R.string.LevelExcessCRTran) + TextElement.get(28) + "\n" +
-                                getString(R.string.LevelExcessCDTran) + TextElement.get(29) + "\n" +
-                                getString(R.string.BossFailTran) + TextElement.get(30) + "\n" +
-                                getString(R.string.BossLevelWordTran) + TextElement.get(31) + "\n" +
-                                getString(R.string.BossHPWordTran) + TextElement.get(32) + "\n" +
-                                getString(R.string.BattleTurnWordTran) + TextElement.get(33) + "\n" +
-                                QuestLoadReport + "\n\n" + ItemLoadReport,
+                                getString(R.string.LevelWordTran) + LinesInFile.get(3) + "\n" +
+                                getString(R.string.EXPWordTran) + LinesInFile.get(4) + "\n" +
+                                getString(R.string.AnsweringRightTimeTran) + LinesInFile.get(5) + "\n" +
+                                getString(R.string.AnsweringWrongTimeTran) + LinesInFile.get(6) + "\n" +
+                                getString(R.string.TimerProgressWordTran) + LinesInFile.get(7) + "\n" +
+                                getString(R.string.TimerGoalWordTran) + LinesInFile.get(8) + "\n" +
+                                getString(R.string.ATKTalentLevelTran) + LinesInFile.get(9) + "\n" +
+                                getString(R.string.CRTalentLevelTran) + LinesInFile.get(10) + "\n" +
+                                getString(R.string.CDTalentLevelTran) + LinesInFile.get(11) + "\n" +
+                                getString(R.string.CurrentQuestComboTran) + LinesInFile.get(12) + "\n" +
+                                getString(R.string.PointWordTran) + LinesInFile.get(13) + "\n" +
+                                getString(R.string.MaterialWordTran) + LinesInFile.get(14) + "\n" +
+                                getString(R.string.BossDeadTimeTran) + LinesInFile.get(15) + "\n" +
+                                getString(R.string.EXPRecordTran) + LinesInFile.get(16) + "\n" +
+                                getString(R.string.PointRecordTran) + LinesInFile.get(17) + "\n" +
+                                getString(R.string.MaterialRecordTran) + LinesInFile.get(18) + "\n" +
+                                getString(R.string.MaxComboTran) + LinesInFile.get(19) + "\n" +
+                                getString(R.string.ConflictClearTran) + LinesInFile.get(20) + "\n" +
+                                getString(R.string.TourneyPtWordTran) + LinesInFile.get(21) + "\n" +
+                                getString(R.string.DailyClearTran) + LinesInFile.get(22) + "\n" +
+                                getString(R.string.MasteryWordTran) + LinesInFile.get(23) + "\n" +
+                                getString(R.string.MasteryEXPTran) + LinesInFile.get(24) + "\n" +
+                                getString(R.string.LevelLimitTran) + LinesInFile.get(25) + "\n" +
+                                getString(R.string.LevelExcessTran) + LinesInFile.get(26) + "\n" +
+                                getString(R.string.LevelExcessATKTran) + LinesInFile.get(27) + "\n" +
+                                getString(R.string.LevelExcessCRTran) + LinesInFile.get(28) + "\n" +
+                                getString(R.string.LevelExcessCDTran) + LinesInFile.get(29) + "\n" +
+                                getString(R.string.BossFailTran) + LinesInFile.get(30) + "\n" +
+                                getString(R.string.BossLevelWordTran) + LinesInFile.get(31) + "\n" +
+                                getString(R.string.BossHPWordTran) + LinesInFile.get(32) + "\n" +
+                                getString(R.string.BattleTurnWordTran) + LinesInFile.get(33) + "\n" +
+                                AllReport,
                         getString(R.string.ConfirmWordTran)
                 );
                 //4.in the end,
-                TextElement = new ArrayList<>();//reset.
+                LinesInFile = new ArrayList<>();//reset.
                 break;
-            case FILE_CREATE_SUCCESS:// TODO: 2021/9/12 Output data method.
-                //1.1 load data from SharePreferences.
-                //1.2 the content in file.Each AddContent() is a line in .txt file.
-                //User.
-                int UserLevel = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
-                int UserHaveEXP = SupportClass.getIntData(this,"EXPInformationStoreProfile","UserHaveEXP",0);
-                //Answering.
-                int UserRightTimes = SupportClass.getIntData(this,"RecordDataFile","RightAnswering",0);
-                int UserWrongTimes = SupportClass.getIntData(this,"RecordDataFile","WrongAnswering",0);
-                //Sol.Timer
-                int DayProgress = SupportClass.getIntData(this,"TimerSettingProfile","TimerProgress",0);
-                int DayGoal = SupportClass.getIntData(this,"TimerSettingProfile","TimerTargetDay",0);
-                //Talent.
-                int ATKTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","ATKTalentLevel",0);
-                int CRTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CRTalentLevel",0);
-                int CDTalentLevel = SupportClass.getIntData(this,"BattleDataProfile","CDTalentLevel",0);
-                //Resource.
-                int QuestCombo = SupportClass.getIntData(this,"BattleDataProfile","QuestCombo",0);
-                int UserPoint = SupportClass.getIntData(this,"BattleDataProfile","UserPoint",0);
-                int UserMaterial = SupportClass.getIntData(this,"BattleDataProfile","UserMaterial",0);
-                //Record part1.
-                int BossDeadTime = SupportClass.getIntData(this,"BattleDataProfile","BossDeadTime",0);
-                int EXPRecord = SupportClass.getIntData(this,"RecordDataFile","EXPGotten",0);
-                long PointRecord = SupportClass.getLongData(this,"RecordDataFile","PointGotten",0);
-                int MaterialRecord = SupportClass.getIntData(this,"RecordDataFile","MaterialGotten",0);
-                int ComboRecord = SupportClass.getIntData(this,"RecordDataFile","ComboGotten",0);
-                //Conflict.
-                int UserConflictFloor = SupportClass.getIntData(this,"BattleDataProfile","UserConflictFloor",0);
-                //Tourney part1.
-                long TourneyPt = SupportClass.getLongData(this,"TourneyDataFile","MaxPtRecord",0);
-                //Daily.
-                int DailyDifficulty = SupportClass.getIntData(this,"RecordDataFile","MaxDailyDifficulty",0);
-                //Alchemy.
-                int MasteryLevel = SupportClass.getIntData(this,"AlchemyMasteryFile","MasteryLevel",0);
-                int MasteryEXP = SupportClass.getIntData(this,"AlchemyMasteryFile","MasteryEXP",0);
-                //LimitUp.
-                int LevelLimit = SupportClass.getIntData(this,"ExcessDataFile","LevelLimit",50);
-                int LevelExcessRank = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessRank",0);
-                int LevelExcessATK= SupportClass.getIntData(this,"ExcessDataFile","LevelExcessATK",0);
-                int LevelExcessCR = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCR",0);
-                int LevelExcessCD = SupportClass.getIntData(this,"ExcessDataFile","LevelExcessCD",0);
-                //Record part2.
-                int BossFail = SupportClass.getIntData(this,"RecordDataFile","BattleFail",0);
-                //Tourney part2.
-                int BossLevel = SupportClass.getIntData(this,"TourneyDataFile","BossLevel",UserLevel);
-                int BossHP = SupportClass.getIntData(this,"TourneyDataFile","BossHP",1000);
-                int BossTurn = SupportClass.getIntData(this,"TourneyDataFile","BossTurn",10);
-                //2.1 these lines and line4 above are the declaration which will be wrote in file.
-                AddContent("tomultiQA BackUp");//line1: notification and app version code.
-                AddContent(String.valueOf(ValueClass.APP_VERSION));//line2: the App version which file be made.
-                String CurrentDate = SupportClass.getSystemTime();//get file create time.
-                AddContent("Date: " + CurrentDate);//line3: file date.
-                //2.2 write actual content to backup.(line4 and above)
-                AddContent(String.valueOf(UserLevel));
-                AddContent(String.valueOf(UserHaveEXP));
-                AddContent(String.valueOf(UserRightTimes));
-                AddContent(String.valueOf(UserWrongTimes));
-                AddContent(String.valueOf(DayProgress));
-                AddContent(String.valueOf(DayGoal));
-                AddContent(String.valueOf(ATKTalentLevel));
-                AddContent(String.valueOf(CRTalentLevel));
-                AddContent(String.valueOf(CDTalentLevel));
-                AddContent(String.valueOf(QuestCombo));
-                AddContent(String.valueOf(UserPoint));
-                AddContent(String.valueOf(UserMaterial));
-                AddContent(String.valueOf(BossDeadTime));
-                AddContent(String.valueOf(EXPRecord));
-                AddContent(String.valueOf(PointRecord));
-                AddContent(String.valueOf(MaterialRecord));
-                AddContent(String.valueOf(ComboRecord));
-                AddContent(String.valueOf(UserConflictFloor));
-                AddContent(String.valueOf(TourneyPt));
-                AddContent(String.valueOf(DailyDifficulty));
-                AddContent(String.valueOf(MasteryLevel));
-                AddContent(String.valueOf(MasteryEXP));
-                AddContent(String.valueOf(LevelLimit));
-                AddContent(String.valueOf(LevelExcessRank));
-                AddContent(String.valueOf(LevelExcessATK));
-                AddContent(String.valueOf(LevelExcessCR));
-                AddContent(String.valueOf(LevelExcessCD));
-                AddContent(String.valueOf(BossFail));
-                AddContent(String.valueOf(BossLevel));
-                AddContent(String.valueOf(BossHP));
-                AddContent(String.valueOf(BossTurn));
-                //in current version, file have 33 lines, so we will add "0" lines until Line 100.
-                PlaceHolderLine(67);
-                //Start with Line 101.
-                //DO NOT MOVE THESE METHOD POSITION, let the order to be Quest - Items.
-                AddAllQuest();
-                AddAllItems();
-                //3. write all texts to file, override file's native content.
-                ReWriteFile();
+            case FILE_EXPORT_DONE:
+                SupportLib.CreateNoticeDialog(
+                        this,
+                        getString(R.string.NoticeWordTran),
+                        getString(R.string.ExportAppDataTran) + " " + getString(R.string.CompletedWordTran),
+                        getString(R.string.ConfirmWordTran)
+                );
+                break;
+            case PROCESS_SHOW:
+                TextView BackupReportView = findViewById(R.id.BackupReportView);
+                if(msg.obj instanceof String){
+                    BackupReportView.setText( (String) msg.obj);
+                }else{
+                    BackupReportView.setText("Error");
+                }
                 break;
             default:
                 break;
@@ -314,16 +173,278 @@ public class BackUpActivity extends AppCompatActivity {
                 //use handler to callback functions.
             }
             switch (requestCode){
-                case PICK_FILE:
-                    message.what = GET_URI_SUCCESS;
+                case PICK_FILE:// TODO: 2021/9/12 Input data to file method.
+                    //After get all lines in file, then write them into App's database or SharedPreference.
+                    Thread ImportThread = new Thread(() -> {
+                        //1.get data from file.
+                        ShowProcessReport(getString(R.string.StartWordTran));
+                        GetLinesFromUri();
+                        ShowProcessReport(getString(R.string.FinishFileLoadTran));
+                        //1.1 compatible with Old version files (before 0.31.0), to prevent NPE.
+                        if(LinesInFile.size() == 30){//in version 0.31.0, the file have 30 lines(0 ~ 30）, so we need to add additional 4 lines' default value manually.
+                            LinesInFile.add(30,"0");
+                            LinesInFile.add(31, String.valueOf(SupportLib.getIntData(this,"EXPInformationStoreProfile","UserLevel",1)));
+                            LinesInFile.add(32,"1000");
+                            LinesInFile.add(33,"10");
+                        }
+                        //2.write data to SharePreferences.
+                        if(!IsPreview){
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "EXPInformationStoreProfile",
+                                    new String[]{"UserLevel","UserHaveEXP"},
+                                    new int[]{getPureInt(LinesInFile.get(3)),getPureInt(LinesInFile.get(4))}
+                                    );
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "RecordDataFile",
+                                    new String[]{"RightAnswering","WrongAnswering","EXPGotten","MaterialGotten","ComboGotten","MaxDailyDifficulty","BattleFail"},
+                                    new int[]{getPureInt(LinesInFile.get(5)),getPureInt(LinesInFile.get(6)),getPureInt(LinesInFile.get(16)),getPureInt(LinesInFile.get(18)),getPureInt(LinesInFile.get(19)),getPureInt(LinesInFile.get(22)),getPureInt(LinesInFile.get(30))}
+                                    );
+                            SupportLib.saveLongData(this,"RecordDataFile","PointGotten",getPureLong(LinesInFile.get(17)));
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "TimerSettingProfile",
+                                    new String[]{"TimerProgress","TimerTargetDay"},
+                                    new int[]{getPureInt(LinesInFile.get(7)),getPureInt(LinesInFile.get(8))}
+                            );
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "BattleDataProfile",
+                                    new String[]{"ATKTalentLevel","CRTalentLevel","CDTalentLevel","QuestCombo","UserPoint","UserMaterial","BossDeadTime","UserConflictFloor"},
+                                    new int[]{getPureInt(LinesInFile.get(9)),getPureInt(LinesInFile.get(10)),getPureInt(LinesInFile.get(11)),getPureInt(LinesInFile.get(12)),getPureInt(LinesInFile.get(13)),getPureInt(LinesInFile.get(14)),getPureInt(LinesInFile.get(15)),getPureInt(LinesInFile.get(20))}
+                                    );
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "AlchemyMasteryFile",
+                                    new String[]{"MasteryLevel","MasteryEXP",},
+                                    new int[]{getPureInt(LinesInFile.get(23)),getPureInt(LinesInFile.get(24))}
+                            );
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "ExcessDataFile",
+                                    new String[]{"LevelLimit","LevelExcessRank","LevelExcessATK","LevelExcessCR","LevelExcessCD"},
+                                    new int[]{getPureInt(LinesInFile.get(25)),getPureInt(LinesInFile.get(26)),getPureInt(LinesInFile.get(27)),getPureInt(LinesInFile.get(28)),getPureInt(LinesInFile.get(29))}
+                                    );
+                            //2.1 import Boss Level data belongs to Tourney correction.
+                            int LevelNeedWrite = getPureInt(LinesInFile.get(31));
+                            int UserLevel = SupportLib.getIntData(this,"EXPInformationStoreProfile","UserLevel",1);
+                            if(LevelNeedWrite < 1 || LevelNeedWrite < UserLevel - 33 || LevelNeedWrite > UserLevel + 33){
+                                LevelNeedWrite = UserLevel;
+                            }
+                            //2.2 import Boss HP data belongs to Tourney correction.
+                            int HPNeedWrite = getPureInt(LinesInFile.get(32));
+                            if(HPNeedWrite < 1){
+                                HPNeedWrite = 1;
+                            }
+                            //2.3 import Boss Turn data belongs to Tourney correction.
+                            int TurnNeedWrite = getPureInt(LinesInFile.get(33));
+                            if(TurnNeedWrite < 1 || TurnNeedWrite > 1000){
+                                TurnNeedWrite = 1;
+                            }
+                            //2.4 write data after correction.
+                            SupportLib.saveMultiInt(
+                                    this,
+                                    "TourneyDataFile",
+                                    new String[]{"BossLevel","BossHP","BossTurn",},
+                                    new int[]{LevelNeedWrite,HPNeedWrite,TurnNeedWrite}
+                            );
+                            SupportLib.saveLongData(this,"TourneyDataFile","MaxPtRecord",getPureLong(LinesInFile.get(21)));
+                            ShowProcessReport(getString(R.string.FinishShareLoadTran));
+                        }
+                        //2.5 loading Quest data.
+                        String[] ReportSet = new String[]{"Error","Error","Error"};//default value.
+                        int LoadedQuestNumber = ReadAllQuest();
+                        if(LoadedQuestNumber <= 0){
+                            ReportSet[0] = getString(R.string.BackupEmptyQuestTran);
+                        }else if(IsPreview){
+                            ReportSet[0] = LoadedQuestNumber + getString(R.string.DetectedQuestNumTran);
+                        }else{//not preview mode, file have more than 0 Quest.
+                            ReportSet[0] = LoadedQuestNumber + getString(R.string.SuccessLoadQuestTran);
+                        }
+                        ShowProcessReport(getString(R.string.FinishQuestLoadTran));
+                        //2.6 loading Item data.
+                        int LoadedItemNumber = ReadAllItems();
+                        if(LoadedItemNumber <= 0){
+                            ReportSet[1] = getString(R.string.BackupEmptyItemTran);
+                        }else if(IsPreview){
+                            ReportSet[1] = LoadedItemNumber + getString(R.string.DetectedItemNumTran);
+                        }else{
+                            ReportSet[1] = LoadedItemNumber + getString(R.string.SuccessLoadItemTran);
+                        }
+                        ShowProcessReport(getString(R.string.FinishItemLoadTran));
+                        //2.7 loading Note data.
+                        int NoteLoadLines = ReadAllNote();
+                        if(NoteLoadLines <= 0){
+                            ReportSet[2] = getString(R.string.BackupEmptyNoteTran);
+                        }else if(IsPreview){
+                            ReportSet[2] = NoteLoadLines + getString(R.string.DetectedItemNumTran);
+                        }else{
+                            ReportSet[2] = NoteLoadLines + getString(R.string.SuccessLoadNoteTran);
+                        }
+                        ShowProcessReport(getString(R.string.FinishNoteLoadTran));
+                        //3.after used in BackUp process, report result to user.
+                        message.obj = ReportSet;
+                        message.what = FILE_IMPORT_DONE;
+                        handler.sendMessage(message);
+                        ShowProcessReport(getString(R.string.CompletedWordTran));
+                    });
+                    ImportThread.setPriority(Thread.MAX_PRIORITY);
+                    ImportThread.start();
                     break;
-                case CREATE_FILE:
-                    message.what = FILE_CREATE_SUCCESS;
+                case CREATE_FILE:// TODO: 2021/9/12 Output data to file method.
+                    //After file is successfully created in storage, prepare data to be wrote.
+                    Thread ExportThread = new Thread(() -> {
+                        //0.preparation.
+                        ShowProcessReport(getString(R.string.StartWordTran));
+                        //1.1 load data from SharePreferences.
+                        //1.2 the content in file.Each AddContent() is a line in .txt file.
+                        //EXPInformationStoreProfile.
+                        int[] ExpSet = SupportLib.getMultiInt(
+                                this,
+                                "EXPInformationStoreProfile",
+                                new String[]{"UserLevel","UserHaveEXP"},
+                                new int[]{1,0}
+                        );
+                        int UserLevel = ExpSet[0];//User.
+                        int UserHaveEXP = ExpSet[1];
+                        //TimerSettingProfile.
+                        int[] TimeSet = SupportLib.getMultiInt(
+                                this,
+                                "TimerSettingProfile",
+                                new String[]{"TimerProgress","TimerTargetDay"},
+                                new int[]{0,0}
+                        );
+                        int DayProgress = TimeSet[0];//Sol.Timer
+                        int DayGoal = TimeSet[1];
+                        //BattleDataProfile.
+                        int[] BattleSet = SupportLib.getMultiInt(
+                                this,
+                                "BattleDataProfile",
+                                new String[]{"ATKTalentLevel","CRTalentLevel","CDTalentLevel","QuestCombo","UserPoint","UserMaterial","BossDeadTime","UserConflictFloor"},
+                                new int[]{0,0,0,0,0,0,0,0}
+                        );
+                        int ATKTalentLevel = BattleSet[0];//Talent.
+                        int CRTalentLevel = BattleSet[1];
+                        int CDTalentLevel = BattleSet[2];
+                        int QuestCombo = BattleSet[3];//Resource.
+                        int UserPoint = BattleSet[4];
+                        int UserMaterial = BattleSet[5];
+                        int BossDeadTime = BattleSet[6];//Record part1.
+                        int UserConflictFloor = BattleSet[7];//Conflict.
+                        //RecordDataFile.
+                        int[] RecordSet = SupportLib.getMultiInt(
+                                this,
+                                "RecordDataFile",
+                                new String[]{"RightAnswering","WrongAnswering","EXPGotten","MaterialGotten","ComboGotten","BattleFail","MaxDailyDifficulty"},
+                                new int[]{0,0,0,0,0,0,0}
+                        );
+                        int UserRightTimes = RecordSet[0];//Answering.
+                        int UserWrongTimes = RecordSet[1];
+                        int EXPRecord = RecordSet[2];//Record part1.
+                        long PointRecord = SupportLib.getLongData(this,"RecordDataFile","PointGotten",0);
+                        int MaterialRecord = RecordSet[3];
+                        int ComboRecord = RecordSet[4];
+                        int BossFail = RecordSet[5];//Record part2.
+                        int DailyDifficulty = RecordSet[6];//Daily.
+                        //AlchemyMasteryFile.
+                        int[] AlchemySet = SupportLib.getMultiInt(
+                                this,
+                                "AlchemyMasteryFile",
+                                new String[]{"MasteryLevel","MasteryEXP"},
+                                new int[]{0,0}
+                        );
+                        int MasteryLevel = AlchemySet[0];//Alchemy.
+                        int MasteryEXP = AlchemySet[1];
+                        //LimitUp.
+                        int[] ExcessSet = SupportLib.getMultiInt(
+                                this,
+                                "ExcessDataFile",
+                                new String[]{"LevelLimit","LevelExcessRank","LevelExcessATK","LevelExcessCR","LevelExcessCD"},
+                                new int[]{50,0,0,0,0}
+                        );
+                        int LevelLimit = ExcessSet[0];
+                        int LevelExcessRank = ExcessSet[1];
+                        int LevelExcessATK = ExcessSet[2];
+                        int LevelExcessCR = ExcessSet[3];
+                        int LevelExcessCD = ExcessSet[4];
+                        //TourneyDataFile.
+                        int[] TourneySet = SupportLib.getMultiInt(
+                                this,
+                                "TourneyDataFile",
+                                new String[]{"BossLevel","BossHP","BossTurn"},
+                                new int[]{UserLevel,1000,10}
+                        );
+                        //Tourney.
+                        long TourneyPt = SupportLib.getLongData(this,"TourneyDataFile","MaxPtRecord",0);//Tourney part1.
+                        int BossLevel = TourneySet[0];//Tourney part2.
+                        int BossHP = TourneySet[1];
+                        int BossTurn = TourneySet[2];
+                        ShowProcessReport(getString(R.string.FinishFileLoadTran));
+                        //2.1 these lines and line4 above are the declaration which will be wrote in file.
+                        AddContent("tomultiQA BackUp");//line1: notification and app version code.
+                        AddContent(String.valueOf(ValueLib.APP_VERSION));//line2: the App version which file be made.
+                        String CurrentDate = SupportLib.getSystemTime();//get file create time.
+                        AddContent("Date: " + CurrentDate);//line3: file date.
+                        //2.2 write actual content to backup.(line4 and above)
+                        /*
+                        DO NOT CHANGE ORDER OF THESE CODE!
+                        It will affect capability of older version of backup file.
+                        */
+                        AddContent(String.valueOf(UserLevel));
+                        AddContent(String.valueOf(UserHaveEXP));
+                        AddContent(String.valueOf(UserRightTimes));
+                        AddContent(String.valueOf(UserWrongTimes));
+                        AddContent(String.valueOf(DayProgress));
+                        AddContent(String.valueOf(DayGoal));
+                        AddContent(String.valueOf(ATKTalentLevel));
+                        AddContent(String.valueOf(CRTalentLevel));
+                        AddContent(String.valueOf(CDTalentLevel));
+                        AddContent(String.valueOf(QuestCombo));
+                        AddContent(String.valueOf(UserPoint));
+                        AddContent(String.valueOf(UserMaterial));
+                        AddContent(String.valueOf(BossDeadTime));
+                        AddContent(String.valueOf(EXPRecord));
+                        AddContent(String.valueOf(PointRecord));
+                        AddContent(String.valueOf(MaterialRecord));
+                        AddContent(String.valueOf(ComboRecord));
+                        AddContent(String.valueOf(UserConflictFloor));
+                        AddContent(String.valueOf(TourneyPt));
+                        AddContent(String.valueOf(DailyDifficulty));
+                        AddContent(String.valueOf(MasteryLevel));
+                        AddContent(String.valueOf(MasteryEXP));
+                        AddContent(String.valueOf(LevelLimit));
+                        AddContent(String.valueOf(LevelExcessRank));
+                        AddContent(String.valueOf(LevelExcessATK));
+                        AddContent(String.valueOf(LevelExcessCR));
+                        AddContent(String.valueOf(LevelExcessCD));
+                        AddContent(String.valueOf(BossFail));
+                        AddContent(String.valueOf(BossLevel));
+                        AddContent(String.valueOf(BossHP));
+                        AddContent(String.valueOf(BossTurn));
+                        //in current version, file have 33 lines, so we will add "0" lines until Line 100.
+                        PlaceHolderLine(67);
+                        ShowProcessReport(getString(R.string.FinishShareLoadTran));
+                        //Start with Line 101.
+                        //DO NOT MOVE THESE METHOD POSITION, let the order to be Quest - Items.
+                        AddAllQuest();
+                        ShowProcessReport(getString(R.string.FinishQuestLoadTran));
+                        AddAllItems();
+                        ShowProcessReport(getString(R.string.FinishItemLoadTran));
+                        AddAllNote();
+                        ShowProcessReport(getString(R.string.FinishNoteLoadTran));
+                        //3. write all texts above to file, override file's native content.
+                        ReWriteFile();
+                        message.what = FILE_EXPORT_DONE;
+                        handler.sendMessage(message);
+                        ShowProcessReport(getString(R.string.CompletedWordTran));
+                    });
+                    ExportThread.setPriority(Thread.MAX_PRIORITY);
+                    ExportThread.start();
                     break;
                 default:
                     break;
             }
-            handler.sendMessage(message);
         }
     }
 
@@ -393,7 +514,7 @@ public class BackUpActivity extends AppCompatActivity {
                  BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    TextElement.add(line+"\n");
+                    LinesInFile.add(line+"\n");
                 }
             } catch (FileNotFoundException e) {
                 Toast.makeText(this,getString(R.string.FileNotExistTran),Toast.LENGTH_SHORT).show();
@@ -413,12 +534,12 @@ public class BackUpActivity extends AppCompatActivity {
             try {
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(BackUpFileUri, "w");
                 FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
-                fileOutputStream.write(ContentNeedToAdd.getBytes());
+                fileOutputStream.write(ContentNeedToAdd.toString().getBytes());
                 // Let the document provider know you're done by closing the stream.
                 fileOutputStream.close();
                 pfd.close();
                 //reset the record variable.
-                ContentNeedToAdd = "";
+                ContentNeedToAdd = new StringBuilder();
             } catch (FileNotFoundException e) {
                 Toast.makeText(this,getString(R.string.FileNotExistTran),Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
@@ -431,13 +552,11 @@ public class BackUpActivity extends AppCompatActivity {
 
     //lv.2 method, sub method to add Empty Line to file.
     private void PlaceHolderLine(int LineNumber){// TODO: 2021/9/10 for flexibility, I don't recommend you to delete this variable.
-        StringBuilder LineContent = new StringBuilder();
         while (LineNumber > 0){
-            LineContent = LineContent.append("0").append("\n");
+            ContentNeedToAdd = ContentNeedToAdd.append("0").append("\n");
             LineNumber = LineNumber - 1;
         }
-        //do not use AddContent() method in this Activity to replace it, it will generate multi WHITESPACE key.
-        ContentNeedToAdd = ContentNeedToAdd + LineContent.toString();
+        //do not use AddContent("0\n") method in this Activity to replace it, it will generate multi WHITESPACE key.
     }
 
     //lv.1 sub method, call system file picker to select path to store backup file.
@@ -462,18 +581,20 @@ public class BackUpActivity extends AppCompatActivity {
     Cursor QuestCursor = null;//store all Quests data in RAM.
 
     //these are file head and file end, DO NOT CHANGE THEM.
-    static final String QuestFileHead = "-/Quest-Data-Start/-";
-    static final String QuestFileEnd = "-=Quest-Data-End=-";
-    static final String ItemsFileHead = "--Item-Data-Part--";
-    static final String ItemFileEnd = "-=Item-Data-End=-";
+    public static final String QuestFileHead = "-/Quest-Data-Start/-";
+    public static final String QuestFileEnd = "-=Quest-Data-End=-";
+    public static final String ItemsFileHead = "--Item-Data-Part--";
+    public static final String ItemFileEnd = "-=Item-Data-End=-";
+    public static final String NoteFileHead = "-/Note-Data-Start/-";
+    public static final String NoteFileEnd = "-/Note-Data-End/-";
 
     private void AddAllQuest(){
         AddContent(QuestFileHead);//define which line is start for Quest storage.
         //load database.
-        QuestDataBaseBasic QuestDbHelper = new QuestDataBaseBasic(this);
+        QuestDbHelper QuestDbHelper = new QuestDbHelper(this);
         SQLiteDatabase db = QuestDbHelper.getReadableDatabase();
         QuestCursor = db.query(
-                QuestDataBaseBasic.TABLE_NAME,   // The table to query
+                com.example.android.tomultiqa.QuestDbHelper.TABLE_NAME,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 null,              // The columns for the WHERE clause
                 null,          // The values for the WHERE clause
@@ -493,11 +614,11 @@ public class BackUpActivity extends AppCompatActivity {
         int Counting = 0;
         StringBuilder NowAddText = new StringBuilder();
         //preparation.
-        int TitleColumnId = QuestCursor.getColumnIndex(QuestDataBaseBasic.COLUMN_NAME_QuestTitle);
-        int AnswerColumnId = QuestCursor.getColumnIndex(QuestDataBaseBasic.COLUMN_NAME_QuestAnswer);
-        int HintColumnId = QuestCursor.getColumnIndex(QuestDataBaseBasic.COLUMN_NAME_QuestHint);
-        int LevelColumnId = QuestCursor.getColumnIndex(QuestDataBaseBasic.COLUMN_NAME_QuestLevel);
-        int TypeColumnId = QuestCursor.getColumnIndex(QuestDataBaseBasic.COLUMN_NAME_QuestType);
+        int TitleColumnId = QuestCursor.getColumnIndex(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestTitle);
+        int AnswerColumnId = QuestCursor.getColumnIndex(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestAnswer);
+        int HintColumnId = QuestCursor.getColumnIndex(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestHint);
+        int LevelColumnId = QuestCursor.getColumnIndex(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestLevel);
+        int TypeColumnId = QuestCursor.getColumnIndex(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestType);
         if(QuestCursor.moveToFirst()){//if Quest data not empty.
             while (!QuestCursor.isLast()){//if Cursor not pointing last line, the loop will continue.
                 //assume Cursor have X number of Quest.
@@ -540,8 +661,8 @@ public class BackUpActivity extends AppCompatActivity {
             AddContent(NowAddText.toString());
             //add data end, to help app to process file.
             AddContent(QuestFileEnd);
-        }else if(QuestCursor.getCount() > ValueClass.QUEST_MAX_NUMBER) {
-            SupportClass.CreateNoticeDialog(this,
+        }else if(QuestCursor.getCount() > ValueLib.QUEST_MAX_NUMBER) {
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ErrorWordTran),
                     getString(R.string.EmptyQuestFileTran),
                     getString(R.string.ConfirmWordTran)
@@ -549,19 +670,19 @@ public class BackUpActivity extends AppCompatActivity {
         }
     }
 
-    private int ReadAllQuest(boolean IsPreview){
+    private int ReadAllQuest(){
         //use ArrayList function to find file head text to locate which is the start of Reading Quest data, "+1" means move Position to next line of file head.
         //(also the first line of all Quest data).
         //List.indexOf() can't find head out.
         int Position = -1;
         //the max length of all Quest data is the last line of Item's file head 's position.
         int MaxLength = -1;
-        for(String Element: TextElement){
+        for(String Element: LinesInFile){
             if(Element.contains(QuestFileHead)){//get start file head and line.
-                Position = TextElement.indexOf(Element) + 1;
+                Position = LinesInFile.indexOf(Element) + 1;
             }
             if(Element.contains(QuestFileEnd)){//get end file head and line.
-                MaxLength = TextElement.indexOf(Element) - 1;
+                MaxLength = LinesInFile.indexOf(Element) - 1;
             }
         }
         if(Position == -1 || MaxLength == -1){
@@ -575,26 +696,26 @@ public class BackUpActivity extends AppCompatActivity {
         //the String Element in List: TextElement. defining here is for reduce repeat calling.
         String ThisLine;
         //here are the loading process.
-        QuestDataBaseBasic QuestDbHelper = new QuestDataBaseBasic(this);
+        QuestDbHelper QuestDbHelper = new QuestDbHelper(this);
         SQLiteDatabase db = QuestDbHelper.getWritableDatabase();
         ContentValues Inputs = new ContentValues();
         while (Position <= MaxLength){//reading until done MaxLength.
-            ThisLine = getPureString(TextElement.get(Position) );//get this line of String.
+            ThisLine = getPureString(LinesInFile.get(Position) );//get this line of String.
             switch (Counting){
                 case 0:
-                    Inputs.put(QuestDataBaseBasic.COLUMN_NAME_QuestTitle,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestTitle,ThisLine);
                     break;
                 case 1:
-                    Inputs.put(QuestDataBaseBasic.COLUMN_NAME_QuestAnswer,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestAnswer,ThisLine);
                     break;
                 case 2:
-                    Inputs.put(QuestDataBaseBasic.COLUMN_NAME_QuestHint,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestHint,ThisLine);
                     break;
                 case 3:
-                    Inputs.put(QuestDataBaseBasic.COLUMN_NAME_QuestLevel,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestLevel,ThisLine);
                     break;
                 case 4:
-                    Inputs.put(QuestDataBaseBasic.COLUMN_NAME_QuestType,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.QuestDbHelper.DataBaseEntry.COLUMN_NAME_QuestType,ThisLine);
                     break;
                 default:
                     break;
@@ -606,7 +727,7 @@ public class BackUpActivity extends AppCompatActivity {
                 LoadedQuest = LoadedQuest + 1;//recording import Quest number.
                 //finish one Quest data import, submit changes to database.
                 if(!IsPreview){//only not Preview state will actually change database.
-                    db.insert(QuestDataBaseBasic.TABLE_NAME,null,Inputs);
+                    db.insert(com.example.android.tomultiqa.QuestDbHelper.TABLE_NAME,null,Inputs);
                     //after submit data, clear the ContentValue, to prevent from repeat reading.
                     Inputs.clear();
                 }
@@ -617,7 +738,7 @@ public class BackUpActivity extends AppCompatActivity {
             if(QuestCursor == null){//if null, query to fill it.
                 //load database.
                 QuestCursor = db.query(
-                        QuestDataBaseBasic.TABLE_NAME,   // The table to query
+                        com.example.android.tomultiqa.QuestDbHelper.TABLE_NAME,   // The table to query
                         null,             // The array of columns to return (pass null to get all)
                         null,              // The columns for the WHERE clause
                         null,          // The values for the WHERE clause
@@ -626,7 +747,7 @@ public class BackUpActivity extends AppCompatActivity {
                         null               // The sort order
                 );
             }
-            SupportClass.saveIntData(this,"IdNumberStoreProfile","IdNumber",QuestCursor.getCount());
+            SupportLib.saveIntData(this,"IdNumberStoreProfile","IdNumber",QuestCursor.getCount());
         }
         return LoadedQuest;
     }//end of Quest db IO.
@@ -638,10 +759,10 @@ public class BackUpActivity extends AppCompatActivity {
     private void AddAllItems(){
         AddContent(ItemsFileHead);//define which line is start for Item storage.
         //load database.
-        ItemDataBaseBasic ItemDbHelper = new ItemDataBaseBasic(this);
+        ItemDbHelper ItemDbHelper = new ItemDbHelper(this);
         SQLiteDatabase db = ItemDbHelper.getReadableDatabase();
         ItemCursor = db.query(
-                ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,   // The table to query
+                com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.TABLE_NAME,   // The table to query
                 null,             // The array of columns to return (pass null to get all)
                 null,              // The columns for the WHERE clause
                 null,          // The values for the WHERE clause
@@ -660,10 +781,10 @@ public class BackUpActivity extends AppCompatActivity {
         int Counting = 0;
         StringBuilder NowAddText = new StringBuilder();
         //preparation.
-        int NameColumnId = ItemCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName);
-        int TypeColumnId = ItemCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemType);
-        int TextColumnId = ItemCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemText);
-        int NumberColumnId = ItemCursor.getColumnIndex(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber);
+        int NameColumnId = ItemCursor.getColumnIndex(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemName);
+        int TypeColumnId = ItemCursor.getColumnIndex(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemType);
+        int TextColumnId = ItemCursor.getColumnIndex(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemText);
+        int NumberColumnId = ItemCursor.getColumnIndex(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemNumber);
         if(ItemCursor.moveToFirst()){//if Quest data not empty.
             while (!ItemCursor.isLast()){//if Cursor not pointing last line, the loop will continue.
                 //assume Cursor have X number of Quest.
@@ -702,8 +823,8 @@ public class BackUpActivity extends AppCompatActivity {
             AddContent(NowAddText.toString());
             //add data end of Item, to help app to process file.
             AddContent(ItemFileEnd);
-        }else if(ItemCursor.getCount() > ValueClass.ITEM_MAX_NUMBER){
-            SupportClass.CreateNoticeDialog(this,
+        }else if(ItemCursor.getCount() > ValueLib.ITEM_MAX_NUMBER){
+            SupportLib.CreateNoticeDialog(this,
                     getString(R.string.ErrorWordTran),
                     getString(R.string.EmptyItemFileTran),
                     getString(R.string.ConfirmWordTran)
@@ -711,19 +832,19 @@ public class BackUpActivity extends AppCompatActivity {
         }
     }
 
-    private int ReadAllItems(boolean IsPreview){
+    private int ReadAllItems(){
         //use ArrayList function to find file head text to locate which is the start of Reading Quest data, "+1" means move Position to next line of file head.
         //(also the first line of all Quest data).
         //List.indexOf() can't find head out.
         int Position = -1;
         //the max length of all Quest data is the last line of Item's file head 's position.
         int MaxLength = -1;
-        for(String Element: TextElement){
-            if(Element.contains(ItemsFileHead)){//get start file head.
-                Position = TextElement.indexOf(Element) + 1;
+        for(String Element: LinesInFile){
+            if(Element.contains(ItemsFileHead)){//get start file head and line.
+                Position = LinesInFile.indexOf(Element) + 1;
             }
-            if(Element.contains(ItemFileEnd)){
-                MaxLength = TextElement.indexOf(Element) - 1;
+            if(Element.contains(ItemFileEnd)){//get end file head and line.
+                MaxLength = LinesInFile.indexOf(Element) - 1;
             }
         }
         if(Position == -1 || MaxLength == -1){
@@ -737,28 +858,28 @@ public class BackUpActivity extends AppCompatActivity {
         //the String Element in List: TextElement. defining here is for reduce repeat calling.
         String ThisLine;
         //here are the loading process.
-        ItemDataBaseBasic ItemDbHelper = new ItemDataBaseBasic(this);
+        ItemDbHelper ItemDbHelper = new ItemDbHelper(this);
         SQLiteDatabase db = ItemDbHelper.getWritableDatabase();
         SQLiteDatabase db2 = ItemDbHelper.getReadableDatabase();
         ContentValues Inputs = new ContentValues();
         String ThisItemName = "";
         while (Position <= MaxLength){//reading until done MaxLength.
             //get this line of String.
-            ThisLine = getPureString(TextElement.get(Position) );
+            ThisLine = getPureString(LinesInFile.get(Position) );
             //decide where this line in file should write to.
             switch (Counting){
                 case 0:
-                    Inputs.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemName,ThisLine);
                     ThisItemName = ThisLine;//get this to check if this item is existed in database.
                     break;
                 case 1:
-                    Inputs.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemType,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemType,ThisLine);
                     break;
                 case 2:
-                    Inputs.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemText,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemText,ThisLine);
                     break;
                 case 3:
-                    Inputs.put(ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemNumber,ThisLine);
+                    Inputs.put(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemNumber,ThisLine);
                     break;
                 default:
                     break;
@@ -772,10 +893,10 @@ public class BackUpActivity extends AppCompatActivity {
                 //finish one item data import, submit changes to database.
                 if(!IsPreview){//only not Preview state will actually change database.
                     //search this item whether in the database.
-                    String Selection = ItemDataBaseBasic.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
+                    String Selection = com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.COLUMN_NAME_ItemName + " = ?";
                     String[] SelectionArgs = new String[]{ThisItemName};
                     ItemCursor = db2.query(
-                            ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
+                            com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.TABLE_NAME,
                             null,
                             Selection,
                             SelectionArgs,
@@ -787,12 +908,12 @@ public class BackUpActivity extends AppCompatActivity {
                         //check if this item is existed in database now, if true, method will not insert new line, instead of delete existed line first, and insert new one later.
                         //delete existed line (because of you can't update exist row with a ContentValue, which has full data of a line.)
                         db.delete(
-                                ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,
+                                com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.TABLE_NAME,
                                 Selection,
                                 SelectionArgs
                         );
                     }
-                    db.insert(ItemDataBaseBasic.DataBaseEntry.TABLE_NAME,null,Inputs);
+                    db.insert(com.example.android.tomultiqa.ItemDbHelper.DataBaseEntry.TABLE_NAME,null,Inputs);
                     //after submit data, clear the ContentValue, to prevent from repeat reading.
                     Inputs.clear();
                 }
@@ -803,41 +924,113 @@ public class BackUpActivity extends AppCompatActivity {
     }//end of Item db IO.
 
 
-    //lv.1 method, get "\n" number(or Line number) in a String Variable.
-    //thanks to: https://stackoverflow.com/questions/2850203/count-the-number-of-lines-in-a-java-string !
-//    private static int getLineNumber(String str) {
-//        if(str == null || str.isEmpty()) {
-//            return 0;
-//        }
-//        int lines = 1;
-//        int pos = 0;
-//        while ((pos = str.indexOf("\n", pos) + 1) != 0) {
-//            lines++;
-//        }
-//        return lines;
-//    }
-
-    //File Support part.
-    //lv.1 method, sub method of StartExportData() method. Add one line in Content which need to wrote in .txt file.
-    private void AddContent(String Text){
-        ContentNeedToAdd = ContentNeedToAdd + Text + "\n";
+    //Note content IO.
+    private void AddAllNote(){
+        AddContent(NoteFileHead);
+        AddContent(SupportLib.getStringData(this,"FolderProfile","NoteText","-There is no Note-"));
+        AddContent(NoteFileEnd);
     }
 
-    //lv.1 method, sub method of StartImportData() method.
+    private int ReadAllNote(){
+        //preparation.
+        StringBuilder NoteFromFile = new StringBuilder();
+        int Position = -1;
+        int MaxLength = -1;
+        //line number of Note content.
+        int Counting = -1;
+        //get positions.
+        for(String Element: LinesInFile){
+            if(Element.contains(NoteFileHead)){//get start file head and line.
+                Position = LinesInFile.indexOf(Element) + 1;
+            }
+            if(Element.contains(NoteFileEnd)){//get end file head and line.
+                MaxLength = LinesInFile.indexOf(Element) - 1;
+            }
+        }
+        if(Position == -1 || MaxLength == -1){
+            return 0;//if method can't find any file head or file end to mark the range, will cancel this part of loading.
+        }
+        //after get the start and end of content, then read the content in file, and save them in variable.
+        while (Position <= MaxLength){
+            NoteFromFile.append(LinesInFile.get(Position));//don't use getPureString() in here, it will ripe "\n" in note content.
+            Position = Position + 1;
+            Counting = Counting + 1;
+        }
+        if(!IsPreview){
+            //write the data to SharePreferences depending on the content in file with specific position.
+            SupportLib.saveStringData(
+                    this,
+                    "FolderProfile",
+                    "NoteText",
+                    NoteFromFile.toString()
+            );
+        }
+        return Counting;
+    }
+
+
+    //File Support part.
+    //lv.1 method, main method to refresh the Process Report of Backup function UI.
+    ArrayList<String> BackupReport = new ArrayList<>();
+
+    private void ShowProcessReport(String Content){
+        Thread thread = new Thread(() -> {
+            BackupReport.add(Content);
+            StringBuilder AllReport = new StringBuilder();
+            for(String Each: BackupReport){
+                AllReport.append(Each).append("\n");
+            }
+            Message message = Message.obtain();
+            message.what = PROCESS_SHOW;
+            message.obj = AllReport.toString();
+            handler.sendMessage(message);
+        });
+        thread.setPriority(Thread.MAX_PRIORITY);
+        thread.start();
+    }
+
+    //lv.1 method, sub method of StartExportData() method. Add one line in Content which need to wrote in .txt file.
+
+    /**
+     * Use this method to add single line to the total content, which is waiting to wrote to file.
+     * @param Text a line of text you want to input to file.
+     */
+    private void AddContent(String Text){
+        ContentNeedToAdd = ContentNeedToAdd.append(Text).append("\n");
+    }
+
+    /**
+     * lv.1 method, sub method of StartImportData() method.
+     * String.replaceAll("\\s+","") removes all whitespaces and non-visible characters (e.g., tab, \n),;
+     * if String in List have not clear all WHITESPACE and \n character, the reading code will have Error.
+     * So we design this code to do Clear work quickly. And it will turn number in text format to int form.
+     * @param ElementInList Input specific line of file's text.
+     * @return int number after cleared.
+     */
     private static int getPureInt(String ElementInList){
-        //String.replaceAll("\\s+","") removes all whitespaces and non-visible characters (e.g., tab, \n),;
-        //if String in List have not clear all WHITESPACE and \n character, the reading code will have Error.
-        //So we design this code to do Clear work quickly.
+        //
         return Integer.parseInt(ElementInList.replaceAll("\\s+",""));
     }
 
-    //lv.1 method, sub method of StartImportData() method.
+    /**
+     * lv.1 method, sub method of StartImportData() method.
+     * String.replaceAll("\\s+","") removes all whitespaces and non-visible characters (e.g., tab, \n),;
+     * if String in List have not clear all WHITESPACE and \n character, the reading code will have Error.
+     * So we design this code to do Clear work quickly. And it will turn number in text format to long form.
+     * @param ElementInList Input specific line of file's text.
+     * @return long number after cleared.
+     */
     private static long getPureLong(String ElementInList){
         return Long.parseLong(ElementInList.replaceAll("\\s+",""));
     }
 
-    //lv.1 method, sub method to delete all WHITESPACE and /n letter in the String.
-    //if we don't do it for string in the file, the String inputted will include these characters and can't combine with existed data.
+
+    /**
+     * lv.1 method, sub method to delete all WHITESPACE and /n letter in the String.
+     * if we don't do it for string in the file, the String inputted will include these characters and can't combine with existed data.
+     * @param ElementInList Input specific line of file's text.
+     * @return String after cleared.
+     */
     private static String getPureString(String ElementInList){
         return ElementInList.replaceAll("\\s+", "");
     }//end of File Support Part.
@@ -846,9 +1039,9 @@ public class BackUpActivity extends AppCompatActivity {
 
     //Help function.
     public void ShowBackUpHelp(View view){
-        SupportClass.CreateNoticeDialog(this,
+        SupportLib.CreateNoticeDialog(this,
                 getString(R.string.ShopHelpTitleTran),
-                ValueClass.BACKUP_HELP,
+                ValueLib.BACKUP_HELP,
                 getString(R.string.ConfirmWordTran)
              );
     }//end of Help function.
